@@ -8,22 +8,21 @@ services:
       dockerfile: Dockerfile
     container_name: subgame-network
     hostname: subgame-network
-    # ports:
-    #   - "9933:9933"
-    #   - "9944:9944"
-    #   - "30333:30333"
+    ports:
+      - "9933:9933"
+      - "9944:9944"
+      - "30333:30333"
     volumes:
       - .:/subgame
-    # command: bash -c "cargo build --release && ./target/release/subgame
-    #   --base-path /subgame/storage
-    #   --port 30333
-    #   --ws-port 9944
-    #   --rpc-port 9933
-    #   --rpc-external
-    #   --ws-external
-    #   --rpc-cors=all
-    #   --bootnodes /dns4/subgamenode.subgame.org/tcp/30333/p2p/12D3KooWLTFnnpGPLQS1pyPoAA4PGgbsrUCRWASjbgMxd1ejVVT7"
-    command: "tail -f /dev/null"
+    command: bash -c "cargo build --release && ./target/release/subgame
+      --base-path /subgame/storage
+      --port 30333
+      --ws-port 9944
+      --rpc-port 9933
+      --rpc-external
+      --ws-external
+      --rpc-cors=all
+      --bootnodes /dns4/subgamenode.subgame.org/tcp/30333/p2p/12D3KooWLTFnnpGPLQS1pyPoAA4PGgbsrUCRWASjbgMxd1ejVVT7"
 
 networks:
   default:

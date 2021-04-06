@@ -77,15 +77,15 @@ decl_storage! {
 }
 
 decl_event!(
-	pub enum Event<T> where AccountId = <T as frame_system::Config>::AccountId, ChipBalance = ChipBalance<T>, GameIndex = <T as Config>::GameIndex , BlockNumber = <T as frame_system::Config>::BlockNumber {
+	pub enum Event<T> where AccountId = <T as frame_system::Config>::AccountId, ChipBalance = ChipBalance<T>, GameIndex = <T as Config>::GameIndex , BlockNumber = <T as frame_system::Config>::BlockNumber , BlockHash = <T as frame_system::Config>::BlockHash {
 		//	開局（莊家, GameIndex, 獎池金額, 下注區塊）
 		CreateGame(AccountId, GameIndex, ChipBalance, BlockNumber),
 		//	下注（玩家, 遊戲ID, 下注金額, 1:單 or 2:雙, 下注id）
 		Bet(AccountId, GameIndex, ChipBalance, GameMode, u32),
-		//	玩家結算獲獎金額（玩家, 遊戲ID, 贏得金額, 下注ID）
-		BettorResult(AccountId, GameIndex, ChipBalance, u32),
-		//	遊戲結束（莊家, 遊戲ID, 退還莊家金額）
-		GameOver(AccountId, GameIndex, ChipBalance),
+		//	玩家結算獲獎金額（玩家, 遊戲ID, 贏得金額, 下注ID, 遊戲結果（1:單 or 2:雙）, 開獎的Block Hash）
+		BettorResult(AccountId, GameIndex, ChipBalance, u32, GameMode, BlockHash),
+		//	遊戲結束（莊家, 遊戲ID, 莊家拿到的總金額, 遊戲結果（1:單 or 2:雙）, 開獎的Block Hash）
+		GameOver(AccountId, GameIndex, ChipBalance, GameMode, BlockHash),
 	}
 );
 
@@ -208,6 +208,8 @@ decl_module! {
 				// -----------------------獎勵派發-----------------------
 				// 獎池總total
 				let mut owner_pool = game_info.amount;
+				// owner將拿到的總金額
+				let mut owner_get_total_amount = game_info.amount;
 
 				// owner
 				let owner = game_info.owner;
@@ -221,15 +223,20 @@ decl_module! {
 						T::Chips::repatriate_reserved(&owner, &v.user, v.amount).map_err(|err| debug::error!("err: {:?}", err));
 						
 						// 通知下注者獲得金額
-						Self::deposit_event(RawEvent::BettorResult(v.user.clone(), game_id, v.amount, k as u32));
+						Self::deposit_event(RawEvent::BettorResult(v.user.clone(), game_id, v.amount, k as u32, ResultGameMode.unwrap(), block_hash));
 						
 						// 計算獎池剩餘金額
 						owner_pool-=v.amount;
+
+						// Owner輸了，total get amount減少
+						owner_get_total_amount-=v.amount;
 					}
 					// 輸家
 					else{
 						// 下注者發放獎勵給owner
 						T::Chips::repatriate_reserved(&v.user, &owner, v.amount).map_err(|err| debug::error!("err: {:?}", err));
+						// owner贏了，total get amount減少
+						owner_get_total_amount+=v.amount;
 					}
 					
 				}
@@ -237,7 +244,7 @@ decl_module! {
 				T::Chips::unreserve(&owner, owner_pool).map_err(|err| debug::error!("err: {:?}", err));
 
 				// 發送通知
-				Self::deposit_event(RawEvent::GameOver(owner, game_id, owner_pool));
+				Self::deposit_event(RawEvent::GameOver(owner, game_id, owner_get_total_amount, ResultGameMode.unwrap(), block_hash));
 			}
 		}
 	}

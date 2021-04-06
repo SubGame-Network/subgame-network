@@ -46,10 +46,10 @@ use pallet_contracts::weights::WeightInfo;
 /// Import the template pallet.
 pub use pallet_template;
 
-// // chips 
-// pub use pallet_chips;
-// // game 1：guess hash
-// pub use pallet_gametemplates_guess_hash;
+// chips 
+pub use pallet_chips;
+// game 1：guess hash
+pub use pallet_gametemplates_guess_hash;
 
 /// An index to a block.
 pub type BlockNumber = u32;

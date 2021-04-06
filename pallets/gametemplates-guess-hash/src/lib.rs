@@ -77,7 +77,7 @@ decl_storage! {
 }
 
 decl_event!(
-	pub enum Event<T> where AccountId = <T as frame_system::Config>::AccountId, ChipBalance = ChipBalance<T>, GameIndex = <T as Config>::GameIndex , BlockNumber = <T as frame_system::Config>::BlockNumber , BlockHash = <T as frame_system::Config>::BlockHash {
+	pub enum Event<T> where AccountId = <T as frame_system::Config>::AccountId, ChipBalance = ChipBalance<T>, GameIndex = <T as Config>::GameIndex , BlockNumber = <T as frame_system::Config>::BlockNumber , BlockHash = <T as frame_system::Config>::Hash {
 		//	開局（莊家, GameIndex, 獎池金額, 下注區塊）
 		CreateGame(AccountId, GameIndex, ChipBalance, BlockNumber),
 		//	下注（玩家, 遊戲ID, 下注金額, 1:單 or 2:雙, 下注id）
@@ -223,7 +223,7 @@ decl_module! {
 						T::Chips::repatriate_reserved(&owner, &v.user, v.amount).map_err(|err| debug::error!("err: {:?}", err));
 						
 						// 通知下注者獲得金額
-						Self::deposit_event(RawEvent::BettorResult(v.user.clone(), game_id, v.amount, k as u32, ResultGameMode.unwrap(), block_hash));
+						Self::deposit_event(RawEvent::BettorResult(v.user.clone(), game_id, v.amount * 2u32.into(), k as u32, ResultGameMode.unwrap(), block_hash));
 						
 						// 計算獎池剩餘金額
 						owner_pool-=v.amount;

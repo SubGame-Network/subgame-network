@@ -1,4 +1,4 @@
-# subgame pallet
+# subgame Project
 * Gaming chips(`pallet-chips`)：
 It is one of the core modules of SubGame, which mainly includes chip purchase, exchange, and income distribution.
 ![](https://i.imgur.com/UKhJ00s.png)
@@ -36,7 +36,7 @@ Cucumber, a commonly used tool in BDD mode, supports three important purposes:
 ![](https://i.imgur.com/FLfi9Y8.png)
 
 
-### 測試遊戲(guess-hash)模組
+### test game(guess-hash) module
 
 #### 【Scenario】Test the start round function
 【Given】

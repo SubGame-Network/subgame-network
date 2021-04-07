@@ -4,6 +4,7 @@ use node_template_runtime::{
 	AccountId, AuraConfig, BalancesConfig, GenesisConfig, GrandpaConfig,
 	SudoConfig, SystemConfig, WASM_BINARY, Signature
 };
+use sc_service::Properties;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{Verify, IdentifyAccount};
@@ -41,6 +42,15 @@ pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
 	)
 }
 
+
+/// Properties for Subgame.
+pub fn subgame_properties() -> Properties {
+	let mut properties = Properties::new();
+	properties.insert("tokenSymbol".into(), vec!["SGB"].into());
+	properties
+}
+
+
 pub fn development_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm binary not available".to_string())?;
 
@@ -74,7 +84,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 		// Protocol ID
 		None,
 		// Properties
-		None,
+		Some(subgame_properties()),
 		// Extensions
 		None,
 	))
@@ -82,12 +92,6 @@ pub fn development_config() -> Result<ChainSpec, String> {
 
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm binary not available".to_string())?;
-
-	let mut props = serde_json::Map::new();
-	props.insert("ss58Format".to_string(), serde_json::json!(0));
-	props.insert("tokenDecimals".to_string(), serde_json::json!(10));
-	props.insert("tokenSymbol".to_string(), serde_json::json!("SGB"));
-
 	Ok(ChainSpec::from_genesis(
 		// Name
 		"subgame",
@@ -119,7 +123,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 		// Protocol ID
 		None,
 		// Properties
-		Some(props),
+		Some(subgame_properties()),
 		// Extensions
 		None,
 	))

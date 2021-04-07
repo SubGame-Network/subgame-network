@@ -46,10 +46,13 @@ use pallet_contracts::weights::WeightInfo;
 /// Import the template pallet.
 pub use pallet_template;
 
-// // chips 
-// pub use pallet_chips;
-// // game 1：guess hash
-// pub use pallet_gametemplates_guess_hash;
+// / Import the pallet_commodities pallet.
+pub use pallet_commodities;
+
+// chips 
+pub use pallet_chips;
+// game 1：guess hash
+pub use pallet_gametemplates_guess_hash;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -351,6 +354,22 @@ impl pallet_chips::Config for Runtime {
 }
 /*** Pallet Chips ***/
 
+
+/*** Pallet Commodities ***/
+parameter_types! {
+    pub const MaxNFT: u128 = 2^64;
+    pub const MaxNFTPerUser: u64 = 256;
+}
+impl pallet_commodities::Config for Runtime {
+    type CommodityAdmin = frame_system::EnsureRoot<AccountId>;
+	type CommodityInfo = Vec<u8>;
+    type CommodityLimit = MaxNFT;
+    type UserCommodityLimit = MaxNFTPerUser;
+    type Event = Event;
+}
+/*** Pallet Commodities ***/
+
+
 /*** Pallet Game1: Guess Hash ***/
 impl pallet_gametemplates_guess_hash::Config for Runtime {
 	type Event = Event;
@@ -400,6 +419,7 @@ construct_runtime!(
 		Scheduler: pallet_scheduler::{Module, Call, Storage, Event<T>},
 		Chips:  pallet_chips::{Module, Call, Storage, Event<T>},
 		GameGuessHashModule: pallet_gametemplates_guess_hash::{Module, Call, Storage, Event<T>},
+		Commodities: pallet_commodities::{Module, Call, Storage, Event<T>},
 	}
 );
 

@@ -99,6 +99,7 @@ decl_error! {
 		BalanceNotEnough,
 		TransferError,
 		BetAmountLimitError,	// 下注金額到達上限
+		GameOver,	// 遊戲結束
 	}
 }
 
@@ -148,6 +149,11 @@ decl_module! {
 		pub fn bet(origin, game_id: T::GameIndex, value: ChipBalance<T>, game_mode: GameMode) -> dispatch::DispatchResult {
 			// 檢核GameIndex存在
 			ensure!(GameList::<T>::contains_key(game_id), Error::<T>::GameIsNotExist);
+			
+			// 檢查下注的遊戲，是否已經結束
+			let game_info = Self::game_list(&game_id);
+			let now_block_number = <frame_system::Module<T>>::block_number(); 
+			ensure!(now_block_number < game_info.bet_block_number, Error::<T>::GameOver);
 			
 			// 檢核下注金額
 			let is_over_pool = Self::check_bet_over_pool(game_id, value);

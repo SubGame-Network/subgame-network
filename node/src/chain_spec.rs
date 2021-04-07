@@ -13,10 +13,15 @@ use hex_literal::hex;
 // const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 
 /// Specialized `ChainSpec`. This is a specialization of the general Substrate ChainSpec type.
-pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
+pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>; 
 
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm binary not available".to_string())?;
+
+	let mut props = serde_json::Map::new();
+	props.insert("ss58Format".to_string(), serde_json::json!(0));
+	props.insert("tokenDecimals".to_string(), serde_json::json!(10));
+	props.insert("tokenSymbol".to_string(), serde_json::json!("SGB"));
 
 	Ok(ChainSpec::from_genesis(
 		// Name
@@ -49,7 +54,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 		// Protocol ID
 		None,
 		// Properties
-		None,
+		Some(props),
 		// Extensions
 		None,
 	))

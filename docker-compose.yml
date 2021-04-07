@@ -22,6 +22,7 @@ services:
       --rpc-external
       --ws-external
       --rpc-cors=all
+      --pruning=archive
       --bootnodes /dns4/subgamenode.subgame.org/tcp/30333/p2p/12D3KooWLTFnnpGPLQS1pyPoAA4PGgbsrUCRWASjbgMxd1ejVVT7"
 
 networks:

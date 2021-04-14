@@ -94,7 +94,7 @@ decl_module! {
 			// 收款
 			// 【換匯】籌碼換原生幣
 			let origin_amount = Self::exchange_chip_to_token(amount);
-			T::Balances::transfer(&_who, &master_address, origin_amount, ExistenceRequirement::AllowDeath).map_err(|_| Error::<T>::MoneyNotEnough)?;
+			T::Balances::transfer(&_who, &master_address, origin_amount, ExistenceRequirement::KeepAlive).map_err(|_| Error::<T>::MoneyNotEnough)?;
 
 
 			
@@ -142,21 +142,9 @@ decl_module! {
 			// 退回贖金
 			// 【換匯】籌碼換原生幣
 			let origin_amount = Self::exchange_chip_to_token(amount);
-			T::Balances::transfer(&master_address, &_who, origin_amount, ExistenceRequirement::AllowDeath).map_err(|_| Error::<T>::MoneyNotEnough )?;
-
+			T::Balances::transfer(&master_address, &_who, origin_amount, ExistenceRequirement::KeepAlive).map_err(|_| Error::<T>::MoneyNotEnough )?;
 			// 發送事件通知
 			Self::deposit_event(RawEvent::Redemption(_who, amount));
-			Ok(())
-		}
-
-
-		// 查籌碼餘額
-		#[weight = T::WeightInfo::buy_chips()]
-		pub fn get_balance(origin, user: T::AccountId) -> dispatch::DispatchResult {
-			let chips_map = Self::chips_map(&user).unwrap();
-			debug::info!("------------------------------查籌碼餘額------------------------------------------");
-			debug::info!("balance: {:?}", chips_map.balance);
-			debug::info!("reserve: {:?}", chips_map.reserve);
 			Ok(())
 		}
 		

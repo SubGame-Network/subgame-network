@@ -1,11 +1,14 @@
 # SubGame GuessHash Instructions
 
 ## Overview
+
+[SubGame Center](https://gamecenter.subgame.org/)
+
 First of all, if you have successfully set up GuessHash, you can see the following screen.
 
 ![](https://i.imgur.com/GkAq8oH.png)
 
-After connecting to the wallet(https://polkadot.js.org/extension/), you can see that there is currently only one game called GuessHash in SubGame.
+After connecting to the [wallet](https://polkadot.js.org/extension/), you can see that there is currently only one game called GuessHash in SubGame.
 
 ![](https://i.imgur.com/1mfcxhw.png)
 
@@ -20,14 +23,14 @@ After you click to enter the game, you can view the game rules as follows:
 
 ## Get chips
 1. Before the game, you need to exchange for in-game chips (SGP), as shown below.
-2. Here we use the ```chip``` module(https://github.com/SubGame-Network/subgame-network/blob/master/pallets/chips/src/lib.rs), through which the native currency SGB can be exchanged with the in-game chip SGP.
+2. Here we use the ```chip``` [module](https://github.com/SubGame-Network/subgame-network/blob/master/pallets/chips/src/lib.rs), through which the native currency SGB can be exchanged with the in-game chip SGP.
 
 ![](https://i.imgur.com/BtM20Bo.png)
 
 ## Bookmaker
 
 1. Then we can start the game. In the game, we can act as "Bookmaker" & "Player". Let's take a look at the bookmaker's part first and click "create". You can see that the bookmaker can choose the upper limit of the bet for the entire game, and the amount of the upper limit of the bet will be pledged to the end of the game, depending on the result of the game to decide whether to get it back.
-2. Here we use the ```game (guess-hash)``` module (https://github.com/SubGame-Network/subgame-network/blob/master/pallets/gametemplates-guess-hash/src/lib.rs), through which openings can be created, bets and final results can be calculated.
+2. Here we use the ```game (guess-hash)``` [module](https://github.com/SubGame-Network/subgame-network/blob/master/pallets/gametemplates-guess-hash/src/lib.rs), through which openings can be created, bets and final results can be calculated.
 
 ![](https://i.imgur.com/uWSv1CM.png)
 

@@ -1,11 +1,11 @@
 [package]
 authors = ['Substrate DevHub <https://github.com/substrate-developer-hub>']
-description = 'FRAME pallet gametemplates-guess-hash for defining custom runtime logic.'
+description = 'FRAME pallet gametemplates for defining custom runtime logic.'
 edition = '2018'
 homepage = 'https://substrate.dev'
 license = 'Unlicense'
-name = 'pallet-gametemplates-guess-hash'
-repository = 'https://github.com/substrate-developer-hub/substrate-node-gametemplates-guess-hash/'
+name = 'pallet-gametemplates'
+repository = 'https://github.com/substrate-developer-hub/substrate-node-gametemplates/'
 version = '3.0.0'
 
 [package.metadata.docs.rs]
@@ -26,7 +26,6 @@ frame-support = { default-features = false, version = '3.0.0' }
 frame-system = { default-features = false, version = '3.0.0' }
 sp-runtime = { default-features = false, version = '3.0.0' }
 sp-std = { default-features = false, version = '3.0.0' }
-pallet-chips = { version = "3.0.0", default-features = false, path = "../chips" }
 
 # 單元測試用
 balances = { package = 'pallet-balances', version = '3.0.0', default-features = false }
@@ -45,8 +44,4 @@ std = [
     'frame-system/std',
     "sp-runtime/std",
     'sp-std/std',
-    'pallet-chips/std',
-    
-    # 單元測試用
-    'balances/std'
 ]

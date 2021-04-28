@@ -46,11 +46,13 @@ use pallet_contracts::weights::WeightInfo;
 /// Import the template pallet.
 pub use pallet_template;
 
-// / Import the pallet_commodities pallet.
-pub use pallet_commodities;
 
 // chips 
 pub use pallet_chips;
+// game template
+pub use pallet_gametemplates;
+// game center
+pub use pallet_gamecenter;
 // game 1：guess hash
 pub use pallet_gametemplates_guess_hash;
 
@@ -355,19 +357,27 @@ impl pallet_chips::Config for Runtime {
 /*** Pallet Chips ***/
 
 
-/*** Pallet Commodities ***/
-parameter_types! {
-    pub const MaxNFT: u128 = 2^64;
-    pub const MaxNFTPerUser: u64 = 256;
+/*** Pallet GameTemplate ***/
+ord_parameter_types! {
+	pub const TemplateOwner: AccountId = AccountId::from(
+		// 5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL
+		hex_literal::hex!("1cbd2d43530a44705ad088af313e18f80b53ef16b36177cd4b77b846f2a5f07c")
+	);
 }
-impl pallet_commodities::Config for Runtime {
-    type CommodityAdmin = frame_system::EnsureRoot<AccountId>;
-	type CommodityInfo = Vec<u8>;
-    type CommodityLimit = MaxNFT;
-    type UserCommodityLimit = MaxNFTPerUser;
-    type Event = Event;
+impl pallet_gametemplates::Config for Runtime {
+	type Event = Event;
+	type WeightInfo = ();
+	type OwnerAddress = TemplateOwner;
 }
-/*** Pallet Commodities ***/
+/*** Pallet GameTemplate ***/
+
+/*** Pallet GameCenter ***/
+impl pallet_gamecenter::Config for Runtime {
+	type Event = Event;
+	type WeightInfo = ();
+	type GuessHash = GameGuessHashModule;
+}
+/*** Pallet GameCenter ***/
 
 
 /*** Pallet Game1: Guess Hash ***/
@@ -418,8 +428,9 @@ construct_runtime!(
 		Contracts: pallet_contracts::{Module, Call, Config<T>, Storage, Event<T>},
 		Scheduler: pallet_scheduler::{Module, Call, Storage, Event<T>},
 		Chips:  pallet_chips::{Module, Call, Storage, Event<T>},
+		GameTemplates:	pallet_gametemplates::{Module, Call, Storage, Event<T>},
+		GameCenter:	pallet_gamecenter::{Module, Call, Storage, Event<T>},
 		GameGuessHashModule: pallet_gametemplates_guess_hash::{Module, Call, Storage, Event<T>},
-		Commodities: pallet_commodities::{Module, Call, Storage, Event<T>},
 	}
 );
 

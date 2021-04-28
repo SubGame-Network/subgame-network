@@ -3493,10 +3493,11 @@ dependencies = [
  "pallet-aura",
  "pallet-balances",
  "pallet-chips",
- "pallet-commodities",
  "pallet-contracts",
  "pallet-contracts-primitives",
  "pallet-contracts-rpc-runtime-api",
+ "pallet-gamecenter",
+ "pallet-gametemplates",
  "pallet-gametemplates-guess-hash",
  "pallet-grandpa",
  "pallet-randomness-collective-flip",
@@ -3718,20 +3719,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-commodities"
-version = "1.0.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-contracts"
 version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3805,6 +3792,39 @@ dependencies = [
  "pallet-contracts-primitives",
  "parity-scale-codec",
  "sp-api",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-gamecenter"
+version = "3.0.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "pallet-chips",
+ "pallet-gametemplates-guess-hash",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-gametemplates"
+version = "3.0.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
  "sp-runtime",
  "sp-std",
 ]

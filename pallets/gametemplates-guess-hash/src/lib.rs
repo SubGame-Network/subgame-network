@@ -69,10 +69,10 @@ pub const GameModeIsDouble: GameMode = 2;
 
 decl_storage! {
 	trait Store for Module<T: Config> as GameGuessHashModule {
-		pub GameList get(fn game_list): map hasher(blake2_128_concat)  T::GameIndex => GameInfo<T::AccountId, T::BlockNumber, T::BlockNumber, ChipBalance<T>>;
+		pub Games get(fn game_list): map hasher(blake2_128_concat)  T::GameIndex => GameInfo<T::AccountId, T::BlockNumber, T::BlockNumber, ChipBalance<T>>;
 		pub BetList get(fn bet_list): map hasher(blake2_128_concat)  T::GameIndex => Vec<BetInfo<T::AccountId, T::GameIndex, ChipBalance<T>, GameMode>>;
 		pub GameCount get(fn game_count): T::GameIndex;
-		pub DrawMap get(fn draw_map): map hasher(blake2_128_concat) T::BlockNumber => Option<T::GameIndex>;
+		pub DrawMap get(fn draw_map): map hasher(blake2_128_concat) T::BlockNumber => Vec<T::GameIndex>;
 	}
 }
 
@@ -116,76 +116,18 @@ decl_module! {
 		pub fn create_game(origin, bet_next_few_block: u32, amount: ChipBalance<T>) -> dispatch::DispatchResult {
 			// 開局人
 			let sender = ensure_signed(origin)?;
-			// 當前交易的block number
-			let block_number = <frame_system::Module<T>>::block_number(); 
-			// 取得新遊戲的Index
-			let game_id = Self::next_game_id()?;
 
-			// 賭注的區塊
-			let bet_block_number = block_number + bet_next_few_block.into();
-			let game_info = GameInfo{
-				owner: sender.clone(),
-				block_number: block_number,
-				bet_block_number: bet_block_number,
-				amount: amount
-			};
-			<GameList<T>>::insert(&game_id, game_info);
-			<GameCount<T>>::put(game_id);
-			
-			// 派發獎勵的區塊(賭注區塊挖出的後一塊開獎)
-			let draw_block_number = bet_block_number + 1u32.into();
-			<DrawMap<T>>::insert(&draw_block_number, game_id);
-
-			// 進行質押
-			T::Chips::reserve(&sender, amount).map_err(|_| Error::<T>::TransferError )?;
-
-			// 通知開局紀錄
-			Self::deposit_event(RawEvent::CreateGame(sender, game_id, amount, bet_block_number));
+			// 開局
+			Self::_create_game(&sender, bet_next_few_block, amount)?;
 			Ok(())
 		}
 		
 		
 		#[weight = T::WeightInfo::bet()]
 		pub fn bet(origin, game_id: T::GameIndex, value: ChipBalance<T>, game_mode: GameMode) -> dispatch::DispatchResult {
-			// 檢核GameIndex存在
-			ensure!(GameList::<T>::contains_key(game_id), Error::<T>::GameIsNotExist);
-			
-			// 檢查下注的遊戲，是否已經結束
-			let game_info = Self::game_list(&game_id);
-			let now_block_number = <frame_system::Module<T>>::block_number(); 
-			ensure!(now_block_number < game_info.bet_block_number, Error::<T>::GameOver);
-			
-			// 檢核下注金額
-			let is_over_pool = Self::check_bet_over_pool(game_id, value);
-			ensure!(!is_over_pool, Error::<T>::BetAmountLimitError);
-
-			// 檢核遊戲模式
-			if game_mode != GameModeIsDouble && game_mode != GameModeIsSingle {
-				return Err(Error::<T>::GameModeIsNotExist.into())
-			}
-
 			// 下注人
-			let who = ensure_signed(origin)?;
-
-			// 紀錄下注紀錄
-			let new_bet_info = BetInfo{
-				user: who.clone(),
-				game_id: game_id,
-				amount: value,
-				game_mode: game_mode
-			};
-
-			// 新增下注紀錄
-			let mut bet_list = BetList::<T>::get(game_id);	// 取所有下注紀錄
-			let bet_index = bet_list.len();	// 下注id
-			bet_list.insert(bet_index, new_bet_info);	// insert新紀錄
-			<BetList<T>>::insert(&game_id, bet_list);	
-
-			// 進行質押
-			T::Chips::reserve(&who, value).map_err(|err| err)?;
-
-			// 通知下注紀錄
-			Self::deposit_event(RawEvent::Bet(who, game_id, value, game_mode, bet_index as u32));
+			let sender = ensure_signed(origin)?;
+			Self::_bet(&sender, game_id, value, game_mode)?;
 			Ok(())
 		}
 
@@ -195,62 +137,62 @@ decl_module! {
 		}
 
 		fn on_finalize(now: T::BlockNumber) {
-			let game_id = Self::draw_map(now);
+			let game_id_list = Self::draw_map(now);
 			// 準備開獎
-			if game_id.is_some() { 
-				// 返回包含在其中的Some值
-				let game_id = game_id.unwrap();
+			if game_id_list.len() > 0 { 
+				for game_id in game_id_list {
 
-				// 前一筆交易的block hash
-				let block_hash = <frame_system::Module<T>>::block_hash(now-1u32.into());
-				let game_info = Self::game_list(&game_id);
+					// 前一筆交易的block hash
+					let block_hash = <frame_system::Module<T>>::block_hash(now-1u32.into());
+					let game_info = Self::game_list(&game_id);
 
-				// 取得獲勝的模式（單 or 雙）
-				let ResultGameMode = Self::get_game_result(block_hash).ok();
+					// 取得獲勝的模式（單 or 雙）
+					let ResultGameMode = Self::get_game_result(block_hash).ok();
 
-				// 取得下注紀錄
-				let bet_list = Self::bet_list(&game_id);
+					// 取得下注紀錄
+					let bet_list = Self::bet_list(&game_id);
 
-				// -----------------------獎勵派發-----------------------
-				// 獎池總total
-				let mut owner_pool = game_info.amount;
-				// owner將拿到的總金額
-				let mut owner_get_total_amount = game_info.amount;
+					// -----------------------獎勵派發-----------------------
+					// 獎池總total
+					let mut owner_pool = game_info.amount;
+					// owner將拿到的總金額
+					let mut owner_get_total_amount = game_info.amount;
 
-				// owner
-				let owner = game_info.owner;
-				for (k, v) in bet_list.iter().enumerate() {
-					// 贏家
-					if v.game_mode == ResultGameMode.unwrap() {	
-						// 返還下注者本金
-						T::Chips::unreserve(&v.user, v.amount).map_err(|err| debug::error!("err: {:?}", err));
-						// owner.clone();
-						// owner發放獎勵給下注者
-						T::Chips::repatriate_reserved(&owner, &v.user, v.amount).map_err(|err| debug::error!("err: {:?}", err));
+					// owner
+					let owner = game_info.owner;
+					for (k, v) in bet_list.iter().enumerate() {
+						// 贏家
+						if v.game_mode == ResultGameMode.unwrap() {	
+							// 返還下注者本金
+							T::Chips::unreserve(&v.user, v.amount).map_err(|err| debug::error!("err: {:?}", err));
+							// owner.clone();
+							// owner發放獎勵給下注者
+							T::Chips::repatriate_reserved(&owner, &v.user, v.amount).map_err(|err| debug::error!("err: {:?}", err));
+							
+							// 通知下注者獲得金額
+							Self::deposit_event(RawEvent::BettorResult(v.user.clone(), game_id, v.amount * 2u32.into(), k as u32, ResultGameMode.unwrap(), block_hash));
+							
+							// 計算獎池剩餘金額
+							owner_pool-=v.amount;
+
+							// Owner輸了，total get amount減少
+							owner_get_total_amount-=v.amount;
+						}
+						// 輸家
+						else{
+							// 下注者發放獎勵給owner
+							T::Chips::repatriate_reserved(&v.user, &owner, v.amount).map_err(|err| debug::error!("err: {:?}", err));
+							// owner贏了，total get amount減少
+							owner_get_total_amount+=v.amount;
+						}
 						
-						// 通知下注者獲得金額
-						Self::deposit_event(RawEvent::BettorResult(v.user.clone(), game_id, v.amount * 2u32.into(), k as u32, ResultGameMode.unwrap(), block_hash));
-						
-						// 計算獎池剩餘金額
-						owner_pool-=v.amount;
+					}
+					// 獎池剩餘金額返還給owner
+					T::Chips::unreserve(&owner, owner_pool).map_err(|err| debug::error!("err: {:?}", err));
 
-						// Owner輸了，total get amount減少
-						owner_get_total_amount-=v.amount;
-					}
-					// 輸家
-					else{
-						// 下注者發放獎勵給owner
-						T::Chips::repatriate_reserved(&v.user, &owner, v.amount).map_err(|err| debug::error!("err: {:?}", err));
-						// owner贏了，total get amount減少
-						owner_get_total_amount+=v.amount;
-					}
-					
+					// 發送通知
+					Self::deposit_event(RawEvent::GameOver(owner, game_id, owner_get_total_amount, ResultGameMode.unwrap(), block_hash));
 				}
-				// 獎池剩餘金額返還給owner
-				T::Chips::unreserve(&owner, owner_pool).map_err(|err| debug::error!("err: {:?}", err));
-
-				// 發送通知
-				Self::deposit_event(RawEvent::GameOver(owner, game_id, owner_get_total_amount, ResultGameMode.unwrap(), block_hash));
 			}
 		}
 	}
@@ -285,6 +227,78 @@ impl<T: Config> Module<T> {
 		}
 		Ok(game_id)
 	}
+
+	pub fn _create_game(sender: &T::AccountId, bet_next_few_block: u32, amount: ChipBalance<T>) -> sp_std::result::Result<T::GameIndex, DispatchError>  {
+		// 當前交易的block number
+		let block_number = <frame_system::Module<T>>::block_number(); 
+		// 取得新遊戲的Index
+		let game_id = Self::next_game_id()?;
+
+		// 賭注的區塊
+		let bet_block_number = block_number + bet_next_few_block.into();
+		let game_info = GameInfo{
+			owner: sender.clone(),
+			block_number: block_number,
+			bet_block_number: bet_block_number,
+			amount: amount
+		};
+		<Games<T>>::insert(&game_id, game_info);
+		<GameCount<T>>::put(game_id);
+		
+		// 派發獎勵的區塊(賭注區塊挖出的後一塊開獎)
+		let draw_block_number = bet_block_number + 1u32.into();
+		let mut game_id_list = <DrawMap<T>>::get(&draw_block_number);
+		game_id_list.insert(game_id_list.len(), game_id);
+		<DrawMap<T>>::insert(&draw_block_number, game_id_list);
+
+		// 進行質押
+		T::Chips::reserve(&sender, amount).map_err(|_| Error::<T>::TransferError )?;
+
+		// 通知開局紀錄
+		Self::deposit_event(RawEvent::CreateGame(sender.clone(), game_id, amount, bet_block_number));
+		Ok((game_id))
+	}
+
+	pub fn _bet(sender: &T::AccountId, game_id: T::GameIndex, value: ChipBalance<T>, game_mode: GameMode) -> dispatch::DispatchResult {
+		// 檢核GameIndex存在
+		ensure!(Games::<T>::contains_key(game_id), Error::<T>::GameIsNotExist);
+		
+		// 檢查下注的遊戲，是否已經結束
+		let game_info = Self::game_list(&game_id);
+		let now_block_number = <frame_system::Module<T>>::block_number(); 
+		ensure!(now_block_number < game_info.bet_block_number, Error::<T>::GameOver);
+		
+		// 檢核下注金額
+		let is_over_pool = Self::check_bet_over_pool(game_id, value);
+		ensure!(!is_over_pool, Error::<T>::BetAmountLimitError);
+
+		// 檢核遊戲模式
+		if game_mode != GameModeIsDouble && game_mode != GameModeIsSingle {
+			return Err(Error::<T>::GameModeIsNotExist.into())
+		}
+
+		// 紀錄下注紀錄
+		let new_bet_info = BetInfo{
+			user: sender.clone(),
+			game_id: game_id,
+			amount: value,
+			game_mode: game_mode
+		};
+
+		// 新增下注紀錄
+		let mut bet_list = BetList::<T>::get(game_id);	// 取所有下注紀錄
+		let bet_index = bet_list.len();	// 下注id
+		bet_list.insert(bet_index, new_bet_info);	// insert新紀錄
+		<BetList<T>>::insert(&game_id, bet_list);	
+
+		// 進行質押
+		T::Chips::reserve(&sender, value).map_err(|err| err)?;
+
+		// 通知下注紀錄
+		Self::deposit_event(RawEvent::Bet(sender.clone(), game_id, value, game_mode, bet_index as u32));
+		Ok(())
+	}
+
 	// 取得賽果
 	fn get_game_result(block_hash: T::Hash) -> sp_std::result::Result<GameMode, DispatchError>{
 		let block_hash_char: String = format!("{:?}", block_hash);
@@ -313,5 +327,29 @@ impl<T: Config> Module<T> {
 		else{
 			Ok(GameModeIsSingle)
 		}
+	}
+}
+pub trait GuessHashTrait {
+
+}
+
+impl<T: Config> GuessHashTrait for Module<T> {
+
+}
+
+pub trait GuessHashFunc<AccountId, GameIndex, ChipBalance> : GuessHashTrait {
+	fn create_game(sender: &AccountId, bet_next_few_block: u32, amount: ChipBalance)  -> sp_std::result::Result<GameIndex, DispatchError> ;
+	fn bet(sender: &AccountId, game_id: GameIndex, value: ChipBalance, game_mode: GameMode) -> dispatch::DispatchResult ;
+}
+
+impl<T: Config> GuessHashFunc<T::AccountId, T::GameIndex, ChipBalance<T>> for Module<T> {
+	fn create_game(sender: &T::AccountId, bet_next_few_block: u32, amount: ChipBalance<T>) -> sp_std::result::Result<T::GameIndex, DispatchError> {
+		let game_id = Self::_create_game(sender, bet_next_few_block, amount)?;
+		Ok(game_id)
+	}
+	
+	fn bet(sender: &T::AccountId, game_id: T::GameIndex, value: ChipBalance<T>, game_mode: GameMode) -> dispatch::DispatchResult {
+		Self::_bet(sender, game_id, value, game_mode)?;
+		Ok(())
 	}
 }

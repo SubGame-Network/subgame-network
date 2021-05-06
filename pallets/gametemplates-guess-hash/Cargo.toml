@@ -28,7 +28,7 @@ sp-runtime = { default-features = false, version = '3.0.0' }
 sp-std = { default-features = false, version = '3.0.0' }
 pallet-chips = { version = "3.0.0", default-features = false, path = "../chips" }
 
-# 單元測試用
+# use unit test
 balances = { package = 'pallet-balances', version = '3.0.0', default-features = false }
 
 
@@ -47,6 +47,6 @@ std = [
     'sp-std/std',
     'pallet-chips/std',
     
-    # 單元測試用
+    # use unit test
     'balances/std'
 ]

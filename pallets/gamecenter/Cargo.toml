@@ -30,6 +30,7 @@ pallet-gametemplates-guess-hash = { version = "3.0.0", default-features = false,
 pallet-chips = { version = "3.0.0", default-features = false, path = "../chips" }
 
 
+
 [dev-dependencies]
 serde = { version = "1.0.119" }
 sp-core = { default-features = false, version = '3.0.0' }

@@ -147,7 +147,7 @@ fn testnet_genesis(
 		}),
 		pallet_balances: Some(BalancesConfig {
 			// Configure endowed accounts with initial balance of 1 << 60.
-			balances: endowed_accounts.iter().cloned().map(|k|(k, 1000000000000000000)).collect(),
+			balances: endowed_accounts.iter().cloned().map(|k|(k, 5000000000000000000)).collect(),
 		}),
 		pallet_aura: Some(AuraConfig {
 			authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),

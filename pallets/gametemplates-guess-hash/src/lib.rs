@@ -29,24 +29,24 @@ mod default_weight;
 #[derive(Encode, Decode, Default)]
 pub struct GameInfo<Owner, BlockNumber, DrawBlockNumber, Amount> {
     // create game user
-    owner: Owner,
+    pub owner: Owner,
     // Create game current block number
-    block_number: BlockNumber,
+    pub block_number: BlockNumber,
     // Bet block number(draw)
-    bet_block_number: DrawBlockNumber,
+    pub bet_block_number: DrawBlockNumber,
     /// Prize pool amount (the total amount of bets cannot be greater than the prize pool amount)
-    amount: Amount,
+    pub amount: Amount,
 }
 #[derive(Encode, Decode, Default, Debug)]
 pub struct BetInfo<Account, GameIndex, Amount, GameMode> {
     // bet user
-    user: Account,
+    pub user: Account,
     // game index
-    game_id: GameIndex,
+    pub game_id: GameIndex,
     // bet amount
-    amount: Amount,
+    pub amount: Amount,
     // game mode is odd or even(1 or 2)
-    game_mode: GameMode,
+    pub game_mode: GameMode,
 }
 pub trait WeightInfo {
     fn create_game() -> Weight;

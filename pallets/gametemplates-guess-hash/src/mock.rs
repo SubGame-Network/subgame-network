@@ -1,7 +1,5 @@
 use crate as pallet_gametemplates_guess_hash;
-use crate as hex_literal;
 use balances;
-use frame_support::ord_parameter_types;
 use frame_support::parameter_types;
 use frame_system as system;
 use pallet_chips;

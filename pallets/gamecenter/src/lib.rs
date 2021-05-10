@@ -8,6 +8,12 @@ use frame_support::{
 use frame_system::ensure_signed;
 use pallet_gametemplates_guess_hash::{GuessHashFunc, GuessHashTrait};
 
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
+
 mod default_weight;
 
 #[derive(Encode, Decode, Default)]

@@ -44,4 +44,5 @@ std = [
     'frame-system/std',
     "sp-runtime/std",
     'sp-std/std',
+    'balances/std'
 ]

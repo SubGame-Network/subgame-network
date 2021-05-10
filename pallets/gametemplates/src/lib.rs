@@ -8,6 +8,11 @@ use frame_support::{
 use frame_system::ensure_signed;
 mod default_weight;
 
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
 pub trait WeightInfo {
     fn create_template() -> Weight;
 }

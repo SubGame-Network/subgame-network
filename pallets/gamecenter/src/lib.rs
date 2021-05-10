@@ -2,8 +2,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use codec::{Decode, Encode};
 use frame_support::{
-    decl_error, decl_event, decl_module, decl_storage, dispatch, dispatch::Vec,
-    weights::Weight,
+    decl_error, decl_event, decl_module, decl_storage, dispatch, dispatch::Vec, weights::Weight,
 };
 use frame_system::ensure_signed;
 use pallet_gametemplates_guess_hash::{GuessHashFunc, GuessHashTrait};

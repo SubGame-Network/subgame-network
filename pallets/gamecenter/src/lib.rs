@@ -2,15 +2,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use codec::{Decode, Encode};
 use frame_support::{
-    debug, decl_error, decl_event, decl_module, decl_storage, dispatch, dispatch::Vec, ensure,
-    weights::Weight, Parameter,
+    decl_error, decl_event, decl_module, decl_storage, dispatch, dispatch::Vec,
+    weights::Weight,
 };
 use frame_system::ensure_signed;
 use pallet_gametemplates_guess_hash::{GuessHashFunc, GuessHashTrait};
-use sp_runtime::{
-    traits::{AtLeast32Bit, Bounded},
-    DispatchError,
-};
 
 mod default_weight;
 
@@ -28,7 +24,7 @@ pub struct GameInstance<GameInstanceID, Owner, DrawBlockNumber, Chips> {
     game_over: bool,
 }
 
-pub type GameInstanceID = u32;
+pub type GameInstanceId = u32;
 
 pub trait WeightInfo {
     fn play_game() -> Weight;
@@ -38,17 +34,17 @@ pub trait WeightInfo {
 pub trait Config: frame_system::Config {
     type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
     type WeightInfo: WeightInfo;
-    type GuessHash: GuessHashTrait + GuessHashFunc<Self::AccountId, GameInstanceID, u128>;
+    type GuessHash: GuessHashTrait + GuessHashFunc<Self::AccountId, GameInstanceId, u128>;
 }
 
 decl_storage! {
     trait Store for Module<T: Config> as GameCenterModule {
         /// List of games that can still participate in betting
-        pub CurrentGameinstances get(fn get_current_gameinstances): map hasher(blake2_128_concat) u32=> Vec<GameInstance<GameInstanceID, T::AccountId, T::BlockNumber, u128>>;
+        pub CurrentGameinstances get(fn get_current_gameinstances): map hasher(blake2_128_concat) u32=> Vec<GameInstance<GameInstanceId, T::AccountId, T::BlockNumber, u128>>;
         /// List of games that have been drawn
-        pub HistoryGameinstances get(fn get_history_gameinstances): map hasher(blake2_128_concat) u32=> Vec<GameInstance<GameInstanceID, T::AccountId, T::BlockNumber, u128>>;
+        pub HistoryGameinstances get(fn get_history_gameinstances): map hasher(blake2_128_concat) u32=> Vec<GameInstance<GameInstanceId, T::AccountId, T::BlockNumber, u128>>;
         pub PlayMap get(fn get_playmap): map hasher(blake2_128_concat) T::AccountId=> Vec<u32>;
-        DrawMap get(fn draw_map): map hasher(blake2_128_concat) T::BlockNumber => Vec<GameInstanceID>;
+        DrawMap get(fn draw_map): map hasher(blake2_128_concat) T::BlockNumber => Vec<GameInstanceId>;
     }
 }
 
@@ -78,13 +74,13 @@ decl_module! {
 
 
             let block_number = <frame_system::Module<T>>::block_number();
-            let bet_block_number = block_number + bet_next_few_block.into();
+            let _bet_block_number = block_number + bet_next_few_block.into();
 
             // create new game
             let gameinstances = GameInstance{
                 game_instance_id: game_id,
-                owner: sender.clone(),
-                bet_block_number: bet_block_number,
+                owner: sender,
+                bet_block_number: _bet_block_number,
                 chips_pool: amount,
                 game_over: false,
             };
@@ -94,9 +90,9 @@ decl_module! {
             CurrentGameinstances::<T>::insert(&template_id, current_game_list);
 
             // update draw block num
-            let mut drap_map = DrawMap::<T>::get(bet_block_number);
+            let mut drap_map = DrawMap::<T>::get(_bet_block_number);
             drap_map.insert(drap_map.len(), game_id);
-            DrawMap::<T>::insert(bet_block_number, drap_map);
+            DrawMap::<T>::insert(_bet_block_number, drap_map);
 
             Ok(())
         }
@@ -115,9 +111,9 @@ decl_module! {
         fn on_finalize(now: T::BlockNumber) {
             let game_id_list = Self::draw_map(now);
             // ready draw
-            if game_id_list.len() > 0 {
+            if !game_id_list.is_empty() {
                 for game_id in game_id_list {
-                    Self::game_over(1, game_id);
+                    Self::game_over(1, game_id).ok();
                 }
             }
         }
@@ -131,7 +127,7 @@ impl<T: Config> Module<T> {
         let mut current_game_list = CurrentGameinstances::<T>::get(template_id);
         let mut history_game_list = HistoryGameinstances::<T>::get(template_id);
         let mut remove_game_instance_id: usize = 999999999;
-        let mut tmp_data: Option<GameInstance<GameInstanceID, T::AccountId, T::BlockNumber, u128>> =
+        let mut tmp_data: Option<GameInstance<GameInstanceId, T::AccountId, T::BlockNumber, u128>> =
             None;
         for (k, v) in for_current_game_list.into_iter().enumerate() {
             if v.game_instance_id == game_instance_id {

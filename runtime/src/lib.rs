@@ -380,7 +380,7 @@ impl pallet_gametemplates_guess_hash::Config for Runtime {
 /*** Pallet Game1: Guess Hash ***/
 
 /***  scheduler ***/
-/// Define the types required by the Scheduler pallet.
+// Define the types required by the Scheduler pallet.
 parameter_types! {
     pub MaximumSchedulerWeight: Weight = 10_000_000;
     pub const MaxScheduledPerBlock: u32 = 50;

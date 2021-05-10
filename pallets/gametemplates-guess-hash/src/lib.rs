@@ -65,9 +65,9 @@ type ChipBalance<T> = <<T as Config>::Chips as pallet_chips::ChipsTrait>::ChipBa
 /// Define the game mode
 pub type GameMode = u8;
 /// Guess the odd number
-pub const GameModeIsSingle: GameMode = 1;
+pub const GAME_MODE_IS_SINGLE: GameMode = 1;
 /// Guess the even number
-pub const GameModeIsDouble: GameMode = 2;
+pub const GAME_MODE_IS_DOUBLE: GameMode = 2;
 
 decl_storage! {
     trait Store for Module<T: Config> as GameGuessHashModule {
@@ -141,7 +141,7 @@ decl_module! {
         fn on_finalize(now: T::BlockNumber) {
             let game_id_list = Self::draw_map(now);
             // ready draw
-            if game_id_list.len() > 0 {
+            if !game_id_list.is_empty() {
                 for game_id in game_id_list {
 
                     // 前一筆交易的block hash
@@ -149,7 +149,7 @@ decl_module! {
                     let game_info = Self::game_list(&game_id);
 
                     // get winning mode (odd or even)
-                    let ResultGameMode = Self::get_game_result(block_hash).ok();
+                    let result_game_mode = Self::get_game_result(block_hash).ok();
 
                     // Get betting record
                     let bet_list = Self::bet_list(&game_id);
@@ -164,14 +164,14 @@ decl_module! {
                     let owner = game_info.owner;
                     for (k, v) in bet_list.iter().enumerate() {
                         // winner
-                        if v.game_mode == ResultGameMode.unwrap() {
+                        if v.game_mode == result_game_mode.unwrap() {
                             // Return the bettor's principal
-                            T::Chips::unreserve(&v.user, v.amount).map_err(|err| debug::error!("err: {:?}", err));
+                            T::Chips::unreserve(&v.user, v.amount).map_err(|err| debug::error!("err: {:?}", err)).ok();
                             // Owner issues rewards to punters
-                            T::Chips::repatriate_reserved(&owner, &v.user, v.amount).map_err(|err| debug::error!("err: {:?}", err));
+                            T::Chips::repatriate_reserved(&owner, &v.user, v.amount).map_err(|err| debug::error!("err: {:?}", err)).ok();
 
                             // Notify the punter to get the amount
-                            Self::deposit_event(RawEvent::BettorResult(v.user.clone(), game_id, v.amount * 2u32.into(), k as u32, ResultGameMode.unwrap(), block_hash));
+                            Self::deposit_event(RawEvent::BettorResult(v.user.clone(), game_id, v.amount * 2u32.into(), k as u32, result_game_mode.unwrap(), block_hash));
 
                             // Calculate the remaining amount of the prize pool
                             owner_pool-=v.amount;
@@ -182,17 +182,17 @@ decl_module! {
                         // loser
                         else{
                             // The bettor issues a reward to the owner
-                            T::Chips::repatriate_reserved(&v.user, &owner, v.amount).map_err(|err| debug::error!("err: {:?}", err));
+                            T::Chips::repatriate_reserved(&v.user, &owner, v.amount).map_err(|err| debug::error!("err: {:?}", err)).ok();
                             // The owner wins, the total get amount decreases
                             owner_get_total_amount+=v.amount;
                         }
 
                     }
                     // The remaining amount of the prize pool is returned to the owner
-                    T::Chips::unreserve(&owner, owner_pool).map_err(|err| debug::error!("err: {:?}", err));
+                    T::Chips::unreserve(&owner, owner_pool).map_err(|err| debug::error!("err: {:?}", err)).ok();
 
                     // Send notification
-                    Self::deposit_event(RawEvent::GameOver(owner, game_id, owner_get_total_amount, ResultGameMode.unwrap(), block_hash));
+                    Self::deposit_event(RawEvent::GameOver(owner, game_id, owner_get_total_amount, result_game_mode.unwrap(), block_hash));
                 }
             }
         }
@@ -232,57 +232,57 @@ impl<T: Config> Module<T> {
     pub fn _create_game(
         sender: &T::AccountId,
         bet_next_few_block: u32,
-        amount: ChipBalance<T>,
+        _amount: ChipBalance<T>,
     ) -> sp_std::result::Result<T::GameIndex, DispatchError> {
         // Current transaction block number
-        let block_number = <frame_system::Module<T>>::block_number();
+        let _block_number = <frame_system::Module<T>>::block_number();
         // Get the Index of the new game
         let game_id = Self::next_game_id()?;
 
-        let bet_block_number = block_number + bet_next_few_block.into();
+        let _bet_block_number = _block_number + bet_next_few_block.into();
         let game_info = GameInfo {
             owner: sender.clone(),
-            block_number: block_number,
-            bet_block_number: bet_block_number,
-            amount: amount,
+            block_number: _block_number,
+            bet_block_number: _bet_block_number,
+            amount: _amount,
         };
         <Games<T>>::insert(&game_id, game_info);
         <GameCount<T>>::put(game_id);
 
         // The block where the reward is distributed (the next block mined by the betting block is drawn)
-        let draw_block_number = bet_block_number + 1u32.into();
+        let draw_block_number = _bet_block_number + 1u32.into();
         let mut game_id_list = <DrawMap<T>>::get(&draw_block_number);
         game_id_list.insert(game_id_list.len(), game_id);
         <DrawMap<T>>::insert(&draw_block_number, game_id_list);
 
         // Pledge now
-        T::Chips::reserve(&sender, amount).map_err(|_| Error::<T>::TransferError)?;
+        T::Chips::reserve(&sender, _amount).map_err(|_| Error::<T>::TransferError)?;
 
         // Notification of create game
         Self::deposit_event(RawEvent::CreateGame(
             sender.clone(),
             game_id,
-            amount,
-            bet_block_number,
+            _amount,
+            _bet_block_number,
         ));
-        Ok((game_id))
+        Ok(game_id)
     }
 
     /// bet guess hash game
     pub fn _bet(
         sender: &T::AccountId,
-        game_id: T::GameIndex,
+        _game_id: T::GameIndex,
         value: ChipBalance<T>,
-        game_mode: GameMode,
+        _game_mode: GameMode,
     ) -> dispatch::DispatchResult {
         // Check that GameIndex exists
         ensure!(
-            Games::<T>::contains_key(game_id),
+            Games::<T>::contains_key(_game_id),
             Error::<T>::GameIsNotExist
         );
 
         // Check whether the bet game is over
-        let game_info = Self::game_list(&game_id);
+        let game_info = Self::game_list(&_game_id);
         let now_block_number = <frame_system::Module<T>>::block_number();
         ensure!(
             now_block_number < game_info.bet_block_number,
@@ -290,27 +290,27 @@ impl<T: Config> Module<T> {
         );
 
         // Check the bet amount
-        let is_over_pool = Self::check_bet_over_pool(game_id, value);
+        let is_over_pool = Self::check_bet_over_pool(_game_id, value);
         ensure!(!is_over_pool, Error::<T>::BetAmountLimitError);
 
         // Check game mode
-        if game_mode != GameModeIsDouble && game_mode != GameModeIsSingle {
+        if _game_mode != GAME_MODE_IS_DOUBLE && _game_mode != GAME_MODE_IS_SINGLE {
             return Err(Error::<T>::GameModeIsNotExist.into());
         }
 
         // define new betting record
         let new_bet_info = BetInfo {
             user: sender.clone(),
-            game_id: game_id,
+            game_id: _game_id,
             amount: value,
-            game_mode: game_mode,
+            game_mode: _game_mode,
         };
 
         // Record new betting records
-        let mut bet_list = BetList::<T>::get(game_id); // Get all betting records
+        let mut bet_list = BetList::<T>::get(_game_id); // Get all betting records
         let bet_index = bet_list.len(); // New bet id
         bet_list.insert(bet_index, new_bet_info); // insert records
-        <BetList<T>>::insert(&game_id, bet_list);
+        <BetList<T>>::insert(&_game_id, bet_list);
 
         // Pledge now
         T::Chips::reserve(&sender, value).map_err(|err| err)?;
@@ -318,9 +318,9 @@ impl<T: Config> Module<T> {
         // Notification of bet record
         Self::deposit_event(RawEvent::Bet(
             sender.clone(),
-            game_id,
+            _game_id,
             value,
-            game_mode,
+            _game_mode,
             bet_index as u32,
         ));
         Ok(())
@@ -342,15 +342,15 @@ impl<T: Config> Module<T> {
                 is_have_ans = true;
             } else {
             }
-            n = n - 1;
+            n -= 1;
         }
         // even
         if (ans % 2) == 0 {
-            Ok(GameModeIsDouble)
+            Ok(GAME_MODE_IS_DOUBLE)
         }
         // odd
         else {
-            Ok(GameModeIsSingle)
+            Ok(GAME_MODE_IS_SINGLE)
         }
     }
 }

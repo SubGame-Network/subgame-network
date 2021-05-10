@@ -2,14 +2,10 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use codec::{Decode, Encode};
 use frame_support::{
-    debug, decl_error, decl_event, decl_module, decl_storage, dispatch, dispatch::Vec, ensure,
-    traits::Get, weights::Weight, Parameter,
+    decl_error, decl_event, decl_module, decl_storage, dispatch, dispatch::Vec, ensure,
+    traits::Get, weights::Weight,
 };
 use frame_system::ensure_signed;
-use sp_runtime::{
-    traits::{AtLeast32Bit, Bounded},
-    DispatchError,
-};
 mod default_weight;
 
 pub trait WeightInfo {
@@ -63,13 +59,13 @@ decl_module! {
 
             let mut templates = Self::get_templates();
             let new_template_id = templates.len() as u32;
-            let newTemplate = Template{
+            let new_template = Template{
                 template_id: new_template_id,
                 template_name: template_name,
             };
-            templates.insert(templates.len(), newTemplate.clone());
+            templates.insert(templates.len(), new_template.clone());
             Templates::put(templates);
-            TemplateMap::insert(new_template_id, newTemplate);
+            TemplateMap::insert(new_template_id, new_template);
             // Send event notification
             RawEvent::CreateTemplate(sender, new_template_id, template_name);
             Ok(())

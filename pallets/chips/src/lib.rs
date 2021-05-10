@@ -4,7 +4,7 @@
 
 use codec::{Decode, Encode};
 use frame_support::{
-    debug, decl_error, decl_event, decl_module, decl_storage, dispatch, ensure,
+    decl_error, decl_event, decl_module, decl_storage, dispatch, ensure,
     traits::{Currency, ExistenceRequirement, Get},
     weights::Weight,
     Parameter,

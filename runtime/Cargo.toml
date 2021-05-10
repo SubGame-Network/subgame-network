@@ -26,7 +26,6 @@ serde = { features = ['derive'], optional = true, version = '1.0.119' }
 pallet-scheduler = { default-features = false, version = '3.0.0' }
 
 # local dependencies
-pallet-template = { path = '../pallets/template', default-features = false, version = '3.0.0' }
 pallet-gametemplates = { path = '../pallets/gametemplates', default-features = false, version = '3.0.0' }
 pallet-gamecenter = { path = '../pallets/gamecenter', default-features = false, version = '3.0.0' }
 pallet-gametemplates-guess-hash = { path = '../pallets/gametemplates-guess-hash', default-features = false, version = '3.0.0' }
@@ -86,7 +85,6 @@ std = [
     'pallet-grandpa/std',
     'pallet-randomness-collective-flip/std',
     'pallet-sudo/std',
-    'pallet-template/std',
     'pallet-timestamp/std',
     'pallet-transaction-payment/std',
     'pallet-transaction-payment-rpc-runtime-api/std',

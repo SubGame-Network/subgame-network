@@ -45,9 +45,6 @@ pub use sp_runtime::{Perbill, Permill};
 use pallet_contracts::weights::WeightInfo;
 /*** Pallet Contracts ***/
 
-/// Import the template pallet.
-pub use pallet_template;
-
 // chips
 pub use pallet_chips;
 // game template
@@ -273,11 +270,6 @@ impl pallet_sudo::Config for Runtime {
     type Call = Call;
 }
 
-/// Configure the template pallet in pallets/template.
-impl pallet_template::Config for Runtime {
-    type Event = Event;
-}
-
 /*** Pallet Contracts ***/
 pub const MILLICENTS: Balance = 1_000_000_000;
 pub const CENTS: Balance = 1_000 * MILLICENTS;
@@ -421,8 +413,6 @@ construct_runtime!(
         Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
         TransactionPayment: pallet_transaction_payment::{Module, Storage},
         Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>},
-        // Include the custom logic from the template pallet in the runtime.
-        TemplateModule: pallet_template::{Module, Call, Storage, Event<T>},
         Contracts: pallet_contracts::{Module, Call, Config<T>, Storage, Event<T>},
         Scheduler: pallet_scheduler::{Module, Call, Storage, Event<T>},
         Chips:  pallet_chips::{Module, Call, Storage, Event<T>},

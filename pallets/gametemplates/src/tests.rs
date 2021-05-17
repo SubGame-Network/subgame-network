@@ -6,7 +6,7 @@ use frame_support::{
     traits::{OnFinalize, OnInitialize},
 };
 
-// 【Scenario】test create template success
+/// 【Scenario】test create template success
 #[test]
 fn create_template() {
     new_test_ext().execute_with(|| {
@@ -22,7 +22,7 @@ fn create_template() {
     });
 }
 
-// 【Scenario】test create template faild
+/// 【Scenario】test create template faild
 #[test]
 fn create_template_failded_when_permission_denied() {
     new_test_ext().execute_with(|| {

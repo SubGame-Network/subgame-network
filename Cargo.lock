@@ -3486,49 +3486,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "node-template-runtime"
-version = "3.0.0"
-dependencies = [
- "frame-benchmarking",
- "frame-executive",
- "frame-support",
- "frame-system",
- "frame-system-benchmarking",
- "frame-system-rpc-runtime-api",
- "hex-literal",
- "pallet-aura",
- "pallet-balances",
- "pallet-chips",
- "pallet-contracts",
- "pallet-contracts-primitives",
- "pallet-contracts-rpc-runtime-api",
- "pallet-gamecenter",
- "pallet-gametemplates",
- "pallet-gametemplates-guess-hash",
- "pallet-grandpa",
- "pallet-randomness-collective-flip",
- "pallet-scheduler",
- "pallet-sudo",
- "pallet-timestamp",
- "pallet-transaction-payment",
- "pallet-transaction-payment-rpc-runtime-api",
- "parity-scale-codec",
- "serde",
- "sp-api",
- "sp-block-builder",
- "sp-consensus-aura",
- "sp-core",
- "sp-inherents",
- "sp-offchain",
- "sp-runtime",
- "sp-session",
- "sp-std",
- "sp-transaction-pool",
- "sp-version",
- "substrate-wasm-builder",
-]
-
-[[package]]
 name = "nodrop"
 version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7163,7 +7120,6 @@ dependencies = [
  "hex 0.3.2",
  "hex-literal",
  "jsonrpc-core",
- "node-template-runtime",
  "pallet-contracts",
  "pallet-contracts-rpc",
  "pallet-transaction-payment-rpc",
@@ -7192,8 +7148,52 @@ dependencies = [
  "sp-runtime",
  "sp-transaction-pool",
  "structopt",
+ "subgame-runtime",
  "substrate-build-script-utils",
  "substrate-frame-rpc-system",
+]
+
+[[package]]
+name = "subgame-runtime"
+version = "3.0.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-executive",
+ "frame-support",
+ "frame-system",
+ "frame-system-benchmarking",
+ "frame-system-rpc-runtime-api",
+ "hex-literal",
+ "pallet-aura",
+ "pallet-balances",
+ "pallet-chips",
+ "pallet-contracts",
+ "pallet-contracts-primitives",
+ "pallet-contracts-rpc-runtime-api",
+ "pallet-gamecenter",
+ "pallet-gametemplates",
+ "pallet-gametemplates-guess-hash",
+ "pallet-grandpa",
+ "pallet-randomness-collective-flip",
+ "pallet-scheduler",
+ "pallet-sudo",
+ "pallet-timestamp",
+ "pallet-transaction-payment",
+ "pallet-transaction-payment-rpc-runtime-api",
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-block-builder",
+ "sp-consensus-aura",
+ "sp-core",
+ "sp-inherents",
+ "sp-offchain",
+ "sp-runtime",
+ "sp-session",
+ "sp-std",
+ "sp-transaction-pool",
+ "sp-version",
+ "substrate-wasm-builder",
 ]
 
 [[package]]

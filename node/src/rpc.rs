@@ -7,13 +7,13 @@
 
 use std::sync::Arc;
 
-use node_template_runtime::{opaque::Block, AccountId, Balance, BlockNumber, Index};
 use pallet_contracts_rpc::{Contracts, ContractsApi};
 pub use sc_rpc_api::DenyUnsafe;
 use sp_api::ProvideRuntimeApi;
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 use sp_transaction_pool::TransactionPool;
+use subgame_runtime::{opaque::Block, AccountId, Balance, BlockNumber, Index};
 
 /// Full client dependencies.
 pub struct FullDeps<C, P> {

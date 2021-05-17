@@ -12,7 +12,7 @@ use sp_runtime::{
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
-// Configure a mock runtime to test the pallet.
+/// Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
     pub enum Test where
         Block = Block,
@@ -78,7 +78,7 @@ impl pallet_gametemplate::Config for Test {
     type OwnerAddress = OwnerAddress;
 }
 
-// Build genesis storage according to the mock runtime.
+/// Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
     let mut t = system::GenesisConfig::default()
         .build_storage::<Test>()

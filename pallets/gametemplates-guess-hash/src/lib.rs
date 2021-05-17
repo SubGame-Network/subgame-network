@@ -26,26 +26,28 @@ mod tests;
 
 mod default_weight;
 
+/// Game detail info
 #[derive(Encode, Decode, Default)]
 pub struct GameInfo<Owner, BlockNumber, DrawBlockNumber, Amount> {
-    // create game user
+    /// create game user
     pub owner: Owner,
-    // Create game current block number
+    /// Create game current block number
     pub block_number: BlockNumber,
-    // Bet block number(draw)
+    /// Bet block number(draw)
     pub bet_block_number: DrawBlockNumber,
-    /// Prize pool amount (the total amount of bets cannot be greater than the prize pool amount)
+    //// Prize pool amount (the total amount of bets cannot be greater than the prize pool amount)
     pub amount: Amount,
 }
+/// Bet detail info
 #[derive(Encode, Decode, Default, Debug)]
 pub struct BetInfo<Account, GameIndex, Amount, GameMode> {
-    // bet user
+    /// bet user
     pub user: Account,
-    // game index
+    /// game index
     pub game_id: GameIndex,
-    // bet amount
+    /// bet amount
     pub amount: Amount,
-    // game mode is odd or even(1 or 2)
+    /// game mode is odd or even(1 or 2)
     pub game_mode: GameMode,
 }
 pub trait WeightInfo {
@@ -60,6 +62,7 @@ pub trait Config: frame_system::Config {
     type Chips: ChipsTrait + ChipsTransfer<Self::AccountId>;
 }
 
+/// chips unit type
 type ChipBalance<T> = <<T as Config>::Chips as pallet_chips::ChipsTrait>::ChipBalance;
 
 /// Define the game mode
@@ -71,9 +74,13 @@ pub const GAME_MODE_IS_DOUBLE: GameMode = 2;
 
 decl_storage! {
     trait Store for Module<T: Config> as GameGuessHashModule {
+        /// List of all games, including not yet drawn and already drawn
         pub Games get(fn game_list): map hasher(blake2_128_concat)  T::GameIndex => GameInfo<T::AccountId, T::BlockNumber, T::BlockNumber, ChipBalance<T>>;
+        /// List of betting records
         pub BetList get(fn bet_list): map hasher(blake2_128_concat)  T::GameIndex => Vec<BetInfo<T::AccountId, T::GameIndex, ChipBalance<T>, GameMode>>;
+        /// The current total number of games
         pub GameCount get(fn game_count): T::GameIndex;
+        /// Can use block num to check which games are about to be drawn.
         pub DrawMap get(fn draw_map): map hasher(blake2_128_concat) T::BlockNumber => Vec<T::GameIndex>;
     }
 }
@@ -326,7 +333,7 @@ impl<T: Config> Module<T> {
         Ok(())
     }
 
-    // Get the result
+    /// Get the result
     fn get_game_result(block_hash: T::Hash) -> sp_std::result::Result<GameMode, DispatchError> {
         let block_hash_char: String = format!("{:?}", block_hash);
         let char_vec: Vec<char> = block_hash_char.chars().collect();
@@ -371,7 +378,7 @@ pub trait GuessHashFunc<AccountId, GameIndex, ChipBalance>: GuessHashTrait {
         game_mode: GameMode,
     ) -> dispatch::DispatchResult;
 }
-
+/// Provided to other modules（new game/ bet）
 impl<T: Config> GuessHashFunc<T::AccountId, T::GameIndex, ChipBalance<T>> for Module<T> {
     fn create_game(
         sender: &T::AccountId,

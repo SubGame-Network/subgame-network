@@ -2,49 +2,46 @@ use crate::mock::{new_test_ext, Chips, Event, Origin, System, Test};
 use crate::{mock::*, Error};
 use frame_support::{assert_noop, assert_ok};
 
-// 待補上測試是否正確Event
-// To Do
-
-// 【Scenario】購買籌碼
+/// 【Scenario】Buy chips
 #[test]
 fn buy_chips() {
     new_test_ext().execute_with(|| {
-        // 首次購買籌碼
+        // First purchase of chips
         // 【Given】Arrange
 
         // 【When】Act
-        // 購買1000籌碼
+        // Buy 1000 chips
         assert_ok!(Chips::buy_chips(Origin::signed(1), 1000));
         // 【Then】Assert
-        // 檢查籌碼餘額=1000
+        // Check the chip balance=1000
         assert_eq!(Chips::chips_map(1).unwrap().balance, 1000);
         assert_eq!(Chips::chips_map(1).unwrap().reserve, 0);
 
-        // 再次購買籌碼
+        // Buy chips again
 
         // 【Given】Arrange
 
         // 【When】Act
-        // 再購買1000籌碼
+        // Buy another 1,000 chips
         assert_ok!(Chips::buy_chips(Origin::signed(1), 1000));
 
         // 【Then】Assert
-        // 檢查籌碼餘額=2000
+        // Check the chip balance=2000
         assert_eq!(Chips::chips_map(1).unwrap().balance, 2000);
         assert_eq!(Chips::chips_map(1).unwrap().reserve, 0);
     });
 }
 
-// 【Scenario】餘額不足以購買籌碼
+/// 【Scenario】The balance is not enough to buy chips
 #[test]
 fn buy_chips_failed_when_not_enough_money() {
     new_test_ext().execute_with(|| {
         // 【Given】Arrange
-        // F user 沒有token
+        // F user No token
 
         // 【When】Act
         // 【Then】Assert
-        // 購買籌碼 && 返回Error MoneyNotEnough
+        // Buy chips && return Error MoneyNotEnough
         assert_noop!(
             Chips::buy_chips(Origin::signed(6), 1000),
             Error::<Test>::MoneyNotEnough
@@ -52,7 +49,7 @@ fn buy_chips_failed_when_not_enough_money() {
     });
 }
 
-// 【Scenario】贖回
+/// 【Scenario】Redemption
 #[test]
 fn redemption_all_chips() {
     new_test_ext().execute_with(|| {
@@ -61,31 +58,31 @@ fn redemption_all_chips() {
         let _ = Chips::buy_chips(Origin::signed(1), 1000);
 
         // 【When】Act
-        // 贖回
+        // Redemption
         assert_ok!(Chips::redemption(Origin::signed(1), 1000));
         // 【Then】Assert
-        // 檢查籌碼餘額=0
+        // Check the chip balance=0
         assert_eq!(Chips::chips_map(1).unwrap().balance, 0);
         assert_eq!(Chips::chips_map(1).unwrap().reserve, 0);
     });
 }
-// 【Scenario】贖回失敗（沒購買過籌碼）
+/// 【Scenario】Redemption failed (no chips have been purchased)
 #[test]
 fn redemption_failded_when_never_bought_chips() {
     new_test_ext().execute_with(|| {
         // 【Given】Arrange
-        // F user 沒有買過籌碼
+        // F user haven't bought any chips
 
         // 【When】Act
         // 【Then】Assert
-        // 贖回 && 返回Error ChipsIsNotExist
+        // Redeem && Return Error ChipsIsNotExist
         assert_noop!(
             Chips::redemption(Origin::signed(1), 1000),
             Error::<Test>::NeverBoughtChips
         );
     });
 }
-// 【Scenario】贖回失敗（籌碼不足）
+/// 【Scenario】Redemption failed (insufficient chips)
 #[test]
 fn redemption_failded_when_chips_is_not_enough() {
     new_test_ext().execute_with(|| {
@@ -95,7 +92,7 @@ fn redemption_failded_when_chips_is_not_enough() {
 
         // 【When】Act
         // 【Then】Assert
-        // 贖回 && 返回Error ChipsIsNotExist
+        // Redeem && Return Error ChipsIsNotExist
         assert_noop!(
             Chips::redemption(Origin::signed(1), 1000),
             Error::<Test>::ChipsIsNotEnough
@@ -103,12 +100,3 @@ fn redemption_failded_when_chips_is_not_enough() {
         assert_eq!(Chips::chips_map(1).unwrap().balance, 10);
     });
 }
-
-// Moudle Test
-// To Do
-
-// 質押
-
-// 解押
-
-// 轉移

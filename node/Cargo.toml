@@ -29,7 +29,7 @@ serde = { version = "1.0.100", features = ["derive"] }
 serde_json = "1.0.40"
 
 # local dependencies
-node-template-runtime = { path = '../runtime', version = '3.0.0' }
+subgame-runtime = { path = '../runtime', version = '3.0.0' }
 
 # Substrate dependencies
 frame-benchmarking = '3.0.0'
@@ -66,4 +66,4 @@ features = ["precommit-hook", "run-cargo-test", "run-cargo-clippy"]
 
 [features]
 default = []
-runtime-benchmarks = ['node-template-runtime/runtime-benchmarks']
+runtime-benchmarks = ['subgame-runtime/runtime-benchmarks']

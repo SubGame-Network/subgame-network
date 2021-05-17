@@ -80,9 +80,8 @@ impl pallet_chips::Config for Test {
     type WeightInfo = ();
 }
 
-// Build genesis storage according to the mock runtime.
+/// Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-    // 初始化分配錢
     let mut t = system::GenesisConfig::default()
         .build_storage::<Test>()
         .unwrap();

@@ -25,7 +25,7 @@ With this command, you should see something like this if your node is running su
 2021-03-16 10:56:51  🏷 Node name: few-size-5380
 2021-03-16 10:56:51  👤 Role: AUTHORITY
 2021-03-16 10:56:51  💾 Database: RocksDb at /tmp/substrateP1jD7H/chains/dev/db
-2021-03-16 10:56:51  ⛓  Native runtime: node-template-100 (node-template-1.tx1.au1)
+2021-03-16 10:56:51  ⛓  Native runtime: subgame-100 (subgame-1.tx1.au1)
 2021-03-16 10:56:51  🔨 Initializing Genesis block/state (state: 0x17df…04a0, header-hash: 0xc43b…ed16)
 2021-03-16 10:56:51  👴 Loading GRANDPA authority set from genesis on what appears to be first startup.
 2021-03-16 10:56:51  ⏱  Loaded block-time = 6000 milliseconds from genesis on first-launch

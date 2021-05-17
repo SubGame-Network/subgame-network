@@ -48,7 +48,9 @@ decl_storage! {
         pub CurrentGameinstances get(fn get_current_gameinstances): map hasher(blake2_128_concat) u32=> Vec<GameInstance<GameInstanceId, T::AccountId, T::BlockNumber, u128>>;
         /// List of games that have been drawn
         pub HistoryGameinstances get(fn get_history_gameinstances): map hasher(blake2_128_concat) u32=> Vec<GameInstance<GameInstanceId, T::AccountId, T::BlockNumber, u128>>;
+        /// Play Record
         pub PlayMap get(fn get_playmap): map hasher(blake2_128_concat) T::AccountId=> Vec<u32>;
+        /// Draw Record
         DrawMap get(fn draw_map): map hasher(blake2_128_concat) T::BlockNumber => Vec<GameInstanceId>;
     }
 }

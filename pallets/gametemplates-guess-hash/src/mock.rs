@@ -12,7 +12,7 @@ use sp_runtime::{
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
-// Configure a mock runtime to test the pallet.
+/// Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
     pub enum Test where
         Block = Block,
@@ -69,10 +69,10 @@ impl balances::Config for Test {
     type WeightInfo = ();
 }
 
-// 籌碼模組
 parameter_types! {
     pub const MasterAddress: u32 = 3;
 }
+/// Chips module
 impl pallet_chips::Config for Test {
     type Event = Event;
     type Balances = balances::Module<Self>;
@@ -81,7 +81,7 @@ impl pallet_chips::Config for Test {
     type WeightInfo = ();
 }
 
-// 遊戲模組
+/// Game module
 impl pallet_gametemplates_guess_hash::Config for Test {
     type Event = Event;
     type GameIndex = u32;
@@ -89,12 +89,12 @@ impl pallet_gametemplates_guess_hash::Config for Test {
     type Chips = Chips;
 }
 
-// Build genesis storage according to the mock runtime.
+/// Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
     let mut t = system::GenesisConfig::default()
         .build_storage::<Test>()
         .unwrap();
-    // 初始化分配錢
+    // Initial allocation of money
     balances::GenesisConfig::<Test> {
         // Provide some initial balances
         balances: vec![

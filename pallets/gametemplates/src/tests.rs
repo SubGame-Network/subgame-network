@@ -1,9 +1,7 @@
-use super::*;
-use crate::mock::{new_test_ext, Event, GameTemplate, Origin, System, Test};
-use crate::{mock::*, Error};
+use crate::mock::{new_test_ext, GameTemplate, Origin, Test};
+use crate::{Error};
 use frame_support::{
-    assert_noop, assert_ok,
-    traits::{OnFinalize, OnInitialize},
+    assert_noop, assert_ok
 };
 
 /// 【Scenario】test create template success

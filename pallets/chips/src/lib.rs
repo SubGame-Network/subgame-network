@@ -113,12 +113,12 @@ decl_module! {
             }else{
                 // Return the Some value contained in it
                 let c = chips_map.unwrap();
-                let balance = c.balance + amount;
-                let reserve = c.reserve;
+                let new_balance = c.balance + amount;
+                let new_reserve = c.reserve;
 
                 let new_chips = ChipsDetail{
-                    balance: balance,
-                    reserve: reserve,
+                    balance: new_balance,
+                    reserve: new_reserve,
                 };
                 <ChipsMap<T>>::mutate(&_who, |chips_detail| *chips_detail = Some(new_chips));
             }
@@ -141,7 +141,7 @@ decl_module! {
 
 
             // Update chips
-            chips_map.balance = chips_map.balance - amount;
+            chips_map.balance -= amount;
             <ChipsMap<T>>::mutate(&_who, |chips_detail| *chips_detail = Some(chips_map));
 
             // Ransom refund
@@ -194,8 +194,8 @@ impl<T: Config> ChipsTransfer<T::AccountId> for Module<T> {
         ensure!(chips_map.balance >= amount, Error::<T>::ChipsIsNotEnough);
 
         // update chips
-        chips_map.balance = chips_map.balance - amount;
-        chips_map.reserve = chips_map.reserve + amount;
+        chips_map.balance -= amount;
+        chips_map.reserve += amount;
         <ChipsMap<T>>::mutate(&_who, |chips_detail| *chips_detail = Some(chips_map));
 
         // Send event notification

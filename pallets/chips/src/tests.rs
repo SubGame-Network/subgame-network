@@ -1,5 +1,5 @@
-use crate::mock::{new_test_ext, Chips, Event, Origin, System, Test};
-use crate::{mock::*, Error};
+use crate::mock::{new_test_ext, Chips, Origin, Test};
+use crate::{Error};
 use frame_support::{assert_noop, assert_ok};
 
 /// 【Scenario】Buy chips

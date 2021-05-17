@@ -1,8 +1,6 @@
-use super::*;
-use crate::mock::{new_test_ext, Chips, Event, GameGuessHashModule, Origin, System, Test};
-use crate::{mock::*, Error};
+use crate::mock::{new_test_ext, Chips, GameGuessHashModule, Origin, System};
 use frame_support::{
-    assert_noop, assert_ok,
+    assert_ok,
     traits::{OnFinalize, OnInitialize},
 };
 

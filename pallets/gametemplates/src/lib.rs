@@ -37,8 +37,7 @@ decl_storage! {
 }
 
 decl_event!(
-    pub enum Event<T>
-    where
+    pub enum Event<T> where
         AccountId = <T as frame_system::Config>::AccountId,
     {
         CreateTemplate(AccountId, u32, u32),
@@ -57,7 +56,7 @@ decl_module! {
         fn deposit_event() = default;
         /// create new template
         #[weight = T::WeightInfo::create_template()]
-        pub fn create_template(origin, template_name: u32) -> dispatch::DispatchResult {
+        pub fn create_template(origin, new_template_name: u32) -> dispatch::DispatchResult {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();
             ensure!(owner == sender, Error::<T>::PermissionDenied);
@@ -66,13 +65,13 @@ decl_module! {
             let new_template_id = templates.len() as u32;
             let new_template = Template{
                 template_id: new_template_id,
-                template_name: template_name,
+                template_name: new_template_name,
             };
-            templates.insert(templates.len(), new_template.clone());
+            templates.insert(templates.len(), new_template);
             Templates::put(templates);
             TemplateMap::insert(new_template_id, new_template);
             // Send event notification
-            RawEvent::CreateTemplate(sender, new_template_id, template_name);
+            Self::deposit_event(RawEvent::CreateTemplate(sender, new_template_id, new_template_name));
             Ok(())
         }
     }

@@ -3898,6 +3898,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-swap"
+version = "3.0.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
 name = "pallet-timestamp"
 version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7177,6 +7191,7 @@ dependencies = [
  "pallet-randomness-collective-flip",
  "pallet-scheduler",
  "pallet-sudo",
+ "pallet-swap",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",

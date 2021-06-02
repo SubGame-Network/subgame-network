@@ -53,6 +53,8 @@ pub use pallet_gametemplates;
 pub use pallet_gamecenter;
 // game 1：guess hash
 pub use pallet_gametemplates_guess_hash;
+// swap
+pub use pallet_swap;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -108,7 +110,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("subgame"),
     impl_name: create_runtime_str!("subgame"),
     authoring_version: 1,
-    spec_version: 109,
+    spec_version: 110,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -348,6 +350,21 @@ impl pallet_chips::Config for Runtime {
 }
 /*** Pallet Chips ***/
 
+/*** Pallet SWAP ***/
+ord_parameter_types! {
+    pub const SwapOwner: AccountId = AccountId::from(
+        // 5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL
+        hex_literal::hex!("1cbd2d43530a44705ad088af313e18f80b53ef16b36177cd4b77b846f2a5f07c")
+    );
+}
+impl pallet_swap::Config for Runtime {
+    type Event = Event;
+    type Balances = pallet_balances::Module<Runtime>;
+    type OwnerAddress = SwapOwner;
+    type WeightInfo = ();
+}
+/*** Pallet Chips ***/
+
 /*** Pallet GameTemplate ***/
 ord_parameter_types! {
     pub const TemplateOwner: AccountId = AccountId::from(
@@ -419,6 +436,7 @@ construct_runtime!(
         GameTemplates:	pallet_gametemplates::{Module, Call, Storage, Event<T>},
         GameCenter:	pallet_gamecenter::{Module, Call, Storage, Event<T>},
         GameGuessHashModule: pallet_gametemplates_guess_hash::{Module, Call, Storage, Event<T>},
+        SwapModule: pallet_swap::{Module, Call, Storage, Event<T>},
     }
 );
 

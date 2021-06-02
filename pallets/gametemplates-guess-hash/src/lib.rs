@@ -156,7 +156,7 @@ decl_module! {
                     let game_info = Self::game_list(&game_id);
 
                     // get winning mode (odd or even)
-                    let result_game_mode = Self::get_game_result(block_hash).ok();
+                    let result_game_mode = Self::get_game_result(block_hash);
 
                     // Get betting record
                     let bet_list = Self::bet_list(&game_id);
@@ -171,14 +171,14 @@ decl_module! {
                     let owner = game_info.owner;
                     for (k, v) in bet_list.iter().enumerate() {
                         // winner
-                        if v.game_mode == result_game_mode.unwrap() {
+                        if v.game_mode == result_game_mode {
                             // Return the bettor's principal
                             T::Chips::unreserve(&v.user, v.amount).map_err(|err| debug::error!("err: {:?}", err)).ok();
                             // Owner issues rewards to punters
                             T::Chips::repatriate_reserved(&owner, &v.user, v.amount).map_err(|err| debug::error!("err: {:?}", err)).ok();
 
                             // Notify the punter to get the amount
-                            Self::deposit_event(RawEvent::BettorResult(v.user.clone(), game_id, v.amount * 2u32.into(), k as u32, result_game_mode.unwrap(), block_hash));
+                            Self::deposit_event(RawEvent::BettorResult(v.user.clone(), game_id, v.amount * 2u32.into(), k as u32, result_game_mode, block_hash));
 
                             // Calculate the remaining amount of the prize pool
                             owner_pool-=v.amount;
@@ -199,7 +199,7 @@ decl_module! {
                     T::Chips::unreserve(&owner, owner_pool).map_err(|err| debug::error!("err: {:?}", err)).ok();
 
                     // Send notification
-                    Self::deposit_event(RawEvent::GameOver(owner, game_id, owner_get_total_amount, result_game_mode.unwrap(), block_hash));
+                    Self::deposit_event(RawEvent::GameOver(owner, game_id, owner_get_total_amount, result_game_mode, block_hash));
                 }
             }
         }
@@ -334,7 +334,7 @@ impl<T: Config> Module<T> {
     }
 
     /// Get the result
-    fn get_game_result(block_hash: T::Hash) -> sp_std::result::Result<GameMode, DispatchError> {
+    fn get_game_result(block_hash: T::Hash) -> GameMode {
         let block_hash_char: String = format!("{:?}", block_hash);
         let char_vec: Vec<char> = block_hash_char.chars().collect();
 
@@ -353,11 +353,11 @@ impl<T: Config> Module<T> {
         }
         // even
         if (ans % 2) == 0 {
-            Ok(GAME_MODE_IS_DOUBLE)
+            GAME_MODE_IS_DOUBLE
         }
         // odd
         else {
-            Ok(GAME_MODE_IS_SINGLE)
+            GAME_MODE_IS_SINGLE
         }
     }
 }

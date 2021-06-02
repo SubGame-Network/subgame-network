@@ -30,16 +30,16 @@ pub struct SwapRecord<Account1, Account2, ChainType, CoinType> {
 /// Define the chain type
 pub type ChainType = u8;
 /// subgame
-pub const ChainSubgame: ChainType = 1;
+pub const CHAIN_SUBGAME: ChainType = 1;
 /// eth
-pub const ChainEth: ChainType = 2;
+pub const CHAIN_ETH: ChainType = 2;
 /// heco
-pub const ChainHeco: ChainType = 3;
+pub const CHAIN_HECO: ChainType = 3;
 
 /// Define the coin type
 pub type CoinType = u8;
 /// sgb
-pub const CoinSGB: CoinType = 1;
+pub const COIN_SGB: CoinType = 1;
 
 
 
@@ -93,12 +93,12 @@ decl_module! {
 
         /// outchain to subgame (sgb)
         #[weight = T::WeightInfo::send()]
-        pub fn Send(origin, to_address: T::AccountId, amount: BalanceOf<T>, coin_type: CoinType, hash: Vec<u16>) -> dispatch::DispatchResult {
+        pub fn send(origin, to_address: T::AccountId, amount: BalanceOf<T>, coin_type: CoinType, hash: Vec<u16>) -> dispatch::DispatchResult {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();
             ensure!(owner == sender, Error::<T>::PermissionDenied);
            
-            ensure!(coin_type == CoinSGB, Error::<T>::CoinTypeNotFound);
+            ensure!(coin_type == COIN_SGB, Error::<T>::CoinTypeNotFound);
         
             T::Balances::transfer(&owner, &to_address, amount, ExistenceRequirement::KeepAlive).map_err(|_| Error::<T>::MoneyNotEnough)?;
 
@@ -110,12 +110,12 @@ decl_module! {
         
         /// outchain to subgame (sgb)
         #[weight = T::WeightInfo::receive_swap()]
-        pub fn ReceiveSwap(origin, to_address: Vec<u16>, amount: BalanceOf<T>, chain_type: ChainType, coin_type: CoinType) -> dispatch::DispatchResult {
+        pub fn receive_swap(origin, to_address: Vec<u16>, amount: BalanceOf<T>, chain_type: ChainType, coin_type: CoinType) -> dispatch::DispatchResult {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();
             
-            ensure!(chain_type == ChainEth || chain_type == ChainHeco, Error::<T>::ChainTypeNotFound);
-            ensure!(coin_type == CoinSGB, Error::<T>::CoinTypeNotFound);
+            ensure!(chain_type == CHAIN_ETH || chain_type == CHAIN_HECO, Error::<T>::ChainTypeNotFound);
+            ensure!(coin_type == COIN_SGB, Error::<T>::CoinTypeNotFound);
 
             T::Balances::transfer(&sender, &owner, amount, ExistenceRequirement::KeepAlive).map_err(|_| Error::<T>::MoneyNotEnough)?;
 

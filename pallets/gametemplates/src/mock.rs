@@ -2,7 +2,6 @@ use crate as pallet_gametemplate;
 use balances;
 use frame_support::parameter_types;
 use frame_system as system;
-use frame_system::GenesisConfig as OtherGenesisConfig;
 use sp_core::H256;
 use sp_runtime::{
     testing::Header,
@@ -12,7 +11,7 @@ use sp_runtime::{
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
-/// Configure a mock runtime to test the pallet.
+// Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
     pub enum Test where
         Block = Block,

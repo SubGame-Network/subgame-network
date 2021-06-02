@@ -140,7 +140,7 @@ decl_module! {
             Ok(())
         }
 
-        fn on_initialize(now: T::BlockNumber) -> Weight {
+        fn on_initialize(_now: T::BlockNumber) -> Weight {
             T::WeightInfo::on_finalize(2u32)
         }
 

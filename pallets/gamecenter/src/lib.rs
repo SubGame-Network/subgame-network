@@ -51,7 +51,7 @@ decl_storage! {
         /// Play Record
         pub PlayMap get(fn get_playmap): map hasher(blake2_128_concat) T::AccountId=> Vec<u32>;
         /// Draw Record
-        DrawMap get(fn draw_map): map hasher(blake2_128_concat) T::BlockNumber => Vec<GameInstanceId>;
+        pub DrawMap get(fn draw_map): map hasher(blake2_128_concat) T::BlockNumber => Vec<GameInstanceId>;
     }
 }
 
@@ -111,7 +111,7 @@ decl_module! {
             T::GuessHash::bet(&sender, game_id , amount, game_mode)?;
             Ok(())
         }
-        fn on_initialize(now: T::BlockNumber) -> Weight {
+        fn on_initialize(_now: T::BlockNumber) -> Weight {
             T::WeightInfo::on_finalize(2u32)
         }
 

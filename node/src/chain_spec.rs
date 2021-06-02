@@ -43,7 +43,7 @@ pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
 /// Properties for Subgame.
 pub fn subgame_properties() -> Properties {
     let mut properties = Properties::new();
-    properties.insert("ss58Format".into(), 42.into());
+    properties.insert("ss58Format".into(), 27.into());
     properties.insert("tokenDecimals".into(), vec![10].into());
     properties.insert("tokenSymbol".into(), vec!["SGB"].into());
     properties
@@ -65,7 +65,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
         // Name
         "subgame_dev",
         // ID
-        "dev",
+        "subgame_dev",
         ChainType::Development,
         move || {
             testnet_genesis(
@@ -104,7 +104,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
         // Name
         "subgame_testnet",
         // ID
-        "testnet",
+        "subgame_testnet",
         ChainType::Local,
         move || {
             testnet_genesis(
@@ -161,15 +161,15 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                 // Initial PoA authorities
                 vec![
                     (
-                        hex!["50a03202347d4cb254b62c476aef48b1cf0f44603913674b805d19e1a8987208"]
+                        hex!["cc5cca7c16f2e9e8200feb5c37bdf9477b0a1655121131cc12c4d8287d826a3c"]
                             .unchecked_into(),
-                        hex!["e3bda27d551a3fbff7e58f4388ecd33ffccdf877c55bf559e32f3076a61beb45"]
+                        hex!["65e7a65555736015ade3d367b679fbb97ea10103220c97395e6b28f8ed5fdc42"]
                             .unchecked_into(),
                     ),
                     (
-                        hex!["088b874d19c72096c1a5b1b7789592a980d712a79c5e5d4b5493f1b4bb3d6151"]
+                        hex!["aae8e7cf280cacf0b1c192f07ea56f6855b06b2ed60b673b96c20a5fc2a27f05"]
                             .unchecked_into(),
-                        hex!["7e41726e3d43b84d44c02e92daa7ab51207bfdd0d3202af5aa4ef8505e7e1f51"]
+                        hex!["36d4de857c1627d8db85947f86b9d8ea9ad6a58600eaf6b2266e3f2fb8298f5f"]
                             .unchecked_into(),
                     ),
                 ],

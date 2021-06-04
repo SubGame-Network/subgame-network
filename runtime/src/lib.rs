@@ -110,7 +110,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("subgame"),
     impl_name: create_runtime_str!("subgame"),
     authoring_version: 1,
-    spec_version: 110,
+    spec_version: 112,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -436,7 +436,7 @@ construct_runtime!(
         GameTemplates:	pallet_gametemplates::{Module, Call, Storage, Event<T>},
         GameCenter:	pallet_gamecenter::{Module, Call, Storage, Event<T>},
         GameGuessHashModule: pallet_gametemplates_guess_hash::{Module, Call, Storage, Event<T>},
-        SwapModule: pallet_swap::{Module, Call, Storage, Event<T>},
+        Swap: pallet_swap::{Module, Call, Storage, Event<T>},
     }
 );
 

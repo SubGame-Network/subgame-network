@@ -110,7 +110,11 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("subgame"),
     impl_name: create_runtime_str!("subgame"),
     authoring_version: 1,
+<<<<<<< HEAD
     spec_version: 112,
+=======
+    spec_version: 111,
+>>>>>>> dcc0716620b23b57f8adeb99da8ae338f909cdcd
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,

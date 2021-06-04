@@ -25,8 +25,8 @@ pub use pallet_gametemplates;
 // Add this code
 ord_parameter_types! {
     pub const TemplateOwner: AccountId = AccountId::from(
-        // 5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL
-        hex_literal::hex!("1cbd2d43530a44705ad088af313e18f80b53ef16b36177cd4b77b846f2a5f07c")
+        // 5CwARBdeFR8MJGvpHv7kaab2akiebDFGF9TDvRa5MimyGtEJ
+        hex_literal::hex!("267bae633094eeb37b830d26ff4c6fa1e65ac162ef2e75ded0b8153f01beaa2f")
     );
 }
 impl pallet_gametemplates::Config for Runtime {

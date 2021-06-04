@@ -110,7 +110,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("subgame"),
     impl_name: create_runtime_str!("subgame"),
     authoring_version: 1,
-    spec_version: 112,
+    spec_version: 114,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -337,8 +337,8 @@ impl pallet_contracts::Config for Runtime {
 /*** Pallet Chips ***/
 ord_parameter_types! {
     pub const W3FValidity: AccountId = AccountId::from(
-        // 5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL
-        hex_literal::hex!("1cbd2d43530a44705ad088af313e18f80b53ef16b36177cd4b77b846f2a5f07c")
+        // 5CwARBdeFR8MJGvpHv7kaab2akiebDFGF9TDvRa5MimyGtEJ
+        hex_literal::hex!("267bae633094eeb37b830d26ff4c6fa1e65ac162ef2e75ded0b8153f01beaa2f")
     );
 }
 impl pallet_chips::Config for Runtime {
@@ -353,8 +353,8 @@ impl pallet_chips::Config for Runtime {
 /*** Pallet SWAP ***/
 ord_parameter_types! {
     pub const SwapOwner: AccountId = AccountId::from(
-        // 5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL
-        hex_literal::hex!("1cbd2d43530a44705ad088af313e18f80b53ef16b36177cd4b77b846f2a5f07c")
+        // 5CwARBdeFR8MJGvpHv7kaab2akiebDFGF9TDvRa5MimyGtEJ
+        hex_literal::hex!("267bae633094eeb37b830d26ff4c6fa1e65ac162ef2e75ded0b8153f01beaa2f")
     );
 }
 impl pallet_swap::Config for Runtime {
@@ -368,8 +368,8 @@ impl pallet_swap::Config for Runtime {
 /*** Pallet GameTemplate ***/
 ord_parameter_types! {
     pub const TemplateOwner: AccountId = AccountId::from(
-        // 5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL
-        hex_literal::hex!("1cbd2d43530a44705ad088af313e18f80b53ef16b36177cd4b77b846f2a5f07c")
+        // 5CwARBdeFR8MJGvpHv7kaab2akiebDFGF9TDvRa5MimyGtEJ
+        hex_literal::hex!("267bae633094eeb37b830d26ff4c6fa1e65ac162ef2e75ded0b8153f01beaa2f")
     );
 }
 impl pallet_gametemplates::Config for Runtime {

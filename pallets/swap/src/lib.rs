@@ -52,9 +52,9 @@ pub type BalanceOf<T> =
 decl_storage! {
     trait Store for Module<T: Config> as Chips {
         /// from other chain to subgame chain
-        pub InRecord get(fn in_record):Vec<SwapRecord<Vec<u16>, T::AccountId, u8, u8> >;
+        pub InRecord get(fn in_record):Vec<SwapRecord<Vec<u8>, T::AccountId, u8, u8> >;
         /// subgame chain to other chain
-        pub OutRecord get(fn out_record):Vec<SwapRecord<T::AccountId, Vec<u16>, u8, u8> >;
+        pub OutRecord get(fn out_record):Vec<SwapRecord<T::AccountId, Vec<u8>, u8, u8> >;
     }
 }
 
@@ -65,9 +65,9 @@ decl_event!(
         BalanceOf = BalanceOf<T>
     {
         /// Swap to subgame
-        Send(AccountId, BalanceOf, Vec<u16>),
+        Send(AccountId, BalanceOf, Vec<u8>),
         /// Swap from subgame
-        ReceiveSwap(AccountId, Vec<u16>, u8, u8, BalanceOf),
+        ReceiveSwap(AccountId, Vec<u8>, u8, u8, BalanceOf),
     }
 );
 
@@ -89,7 +89,7 @@ decl_module! {
 
         /// outchain to subgame (sgb)
         #[weight = (100_000, DispatchClass::Normal, Pays::No)]
-        pub fn send(origin, to_address: T::AccountId, amount: BalanceOf<T>, coin_type: u8, hash: Vec<u16>) -> dispatch::DispatchResult {
+        pub fn send(origin, to_address: T::AccountId, amount: BalanceOf<T>, coin_type: u8, hash: Vec<u8>) -> dispatch::DispatchResult {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();
             ensure!(owner == sender, Error::<T>::PermissionDenied);
@@ -106,7 +106,7 @@ decl_module! {
         
         /// outchain to subgame (sgb)
         #[weight = T::WeightInfo::receive_swap()]
-        pub fn receive_swap(origin, to_address: Vec<u16>, amount: BalanceOf<T>, chain_type: u8, coin_type: u8) -> dispatch::DispatchResult {
+        pub fn receive_swap(origin, to_address: Vec<u8>, amount: BalanceOf<T>, chain_type: u8, coin_type: u8) -> dispatch::DispatchResult {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();
             

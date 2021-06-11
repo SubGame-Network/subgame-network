@@ -1,11 +1,11 @@
 [package]
-authors = ['Substrate DevHub <https://github.com/substrate-developer-hub>']
-description = 'FRAME pallet gametemplates-guess-hash for defining custom runtime logic.'
+authors = ['SubGame']
+description = 'Game template 1 Guess Hash: Please guess the block hash, the last number is odd or even. Winner gets chips.'
 edition = '2018'
-homepage = 'https://substrate.dev'
-license = 'Unlicense'
+homepage = 'https://www.subgame.org'
+license = 'Apache-2.0 License'
 name = 'pallet-gametemplates-guess-hash'
-repository = 'https://github.com/substrate-developer-hub/substrate-node-gametemplates-guess-hash/'
+repository = 'https://github.com/SubGame-Network/subgame-network'
 version = '3.0.0'
 
 [package.metadata.docs.rs]

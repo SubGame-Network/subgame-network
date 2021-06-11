@@ -1,11 +1,11 @@
 [package]
-authors = ['Substrate DevHub <https://github.com/substrate-developer-hub>']
-description = 'FRAME pallet chips for defining custom runtime logic.'
+authors = ['SubGame']
+description = 'Responsible for managing the user’s chips, after purchasing chips, you can use the chips to participate in the game'
 edition = '2018'
-homepage = 'https://substrate.dev'
-license = 'Unlicense'
+homepage = 'https://www.subgame.org'
+license = 'Apache-2.0 License'
 name = 'pallet-chips'
-repository = 'https://github.com/substrate-developer-hub/substrate-node-chips/'
+repository = 'https://github.com/SubGame-Network/subgame-network'
 version = '3.0.0'
 
 [package.metadata.docs.rs]

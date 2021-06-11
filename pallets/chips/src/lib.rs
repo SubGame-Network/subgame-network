@@ -11,7 +11,7 @@ use frame_support::{
 };
 use frame_system::ensure_signed;
 use sp_runtime::{
-    traits::{AtLeast32BitUnsigned, Member},
+    traits::{AtLeast32BitUnsigned, Member, CheckedAdd, CheckedSub},
     DispatchResult, SaturatedConversion,
 };
 
@@ -113,11 +113,13 @@ decl_module! {
             }else{
                 // Return the Some value contained in it
                 let c = chips_map.unwrap();
-                let new_balance = c.balance + amount;
+                let new_balance = c.balance.checked_add(&amount);
+                ensure!(new_balance != None, Error::<T>::StorageOverflow);
+                
                 let new_reserve = c.reserve;
 
                 let new_chips = ChipsDetail{
-                    balance: new_balance,
+                    balance: new_balance.unwrap(),
                     reserve: new_reserve,
                 };
                 <ChipsMap<T>>::mutate(&_who, |chips_detail| *chips_detail = Some(new_chips));
@@ -141,7 +143,9 @@ decl_module! {
 
 
             // Update chips
-            chips_map.balance -= amount;
+            let new_balance = chips_map.balance.checked_sub(&amount);
+            ensure!(new_balance != None, Error::<T>::StorageOverflow);
+            chips_map.balance = new_balance.unwrap();
             <ChipsMap<T>>::mutate(&_who, |chips_detail| *chips_detail = Some(chips_map));
 
             // Ransom refund

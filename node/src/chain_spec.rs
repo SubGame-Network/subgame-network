@@ -167,11 +167,11 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                 hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(),
                 // Pre-funded accounts
                 vec![
-                    (hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(), 4999999980000000000),  // 499999998
+                    (hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(), 4999998000000000000),  // 499999800
                     // // 5FpfTNAjx3yjU8P6N74uwGj19bpuEXrHTHRm1pWdxAw8Pn65	
-                    (hex!["a63b69bded2ac349e87634116fe96ae1cd1e700f851317aee1a00f0745ec6c1a"].into(), 10000000000),    // 1
+                    (hex!["a63b69bded2ac349e87634116fe96ae1cd1e700f851317aee1a00f0745ec6c1a"].into(), 1000000000000),    // 100
                     // 5EyJyiFeYtDxdzXbk62wTZSnHyn3Rwhbc56oELNzJVTG2rRY	
-                    (hex!["8097750cd4845d1e9b5ad167845dfceb43511271ea3ac966f082e7ba003aa87c"].into(), 10000000000),    // 1
+                    (hex!["8097750cd4845d1e9b5ad167845dfceb43511271ea3ac966f082e7ba003aa87c"].into(), 1000000000000),    // 100
                 ],
                 true,
             )
@@ -236,11 +236,11 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                 hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(),
                 // Pre-funded accounts
                 vec![
-                    (hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(), 499999998000000000),  // 499999998
+                    (hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(), 4999998000000000000),  // 499999800
                     // // 5FWWuhHThTUSL97FBpXU9EwobbZ6YZqCs8ryRGDvzAqhfzYF	
-                    (hex!["98643a2c1477740412cf7b2d7203443626b191523df56ba35ec4a4c5b56b814c"].into(), 1000000000),    // 1
+                    (hex!["98643a2c1477740412cf7b2d7203443626b191523df56ba35ec4a4c5b56b814c"].into(), 1000000000000),    // 100
                     // 5Gitx5RkseoZeGcyLmmTA48GZBf2WE3TD4TnrWWgtgm1VJFK	
-                    (hex!["ce119a358c2c5e0e1e52301e77c7997dee651ee67a436b03d60252dc5494c03a"].into(), 1000000000),    // 1
+                    (hex!["ce119a358c2c5e0e1e52301e77c7997dee651ee67a436b03d60252dc5494c03a"].into(), 1000000000000),    // 100
                 ],
                 true,
             )
@@ -258,7 +258,7 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
     ))
 }
 
-const STASH: Balance = 5000000000; // 0.5
+const STASH: Balance = 500000000000; // 50
 
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(

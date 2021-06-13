@@ -155,8 +155,8 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                         hex!["682e00bb24c69cd815f4e09dc345a78f3db1191654650bb1e249fbe87f009764"].into(),
                         // 5GNegtwtqxUkjt6JRDy3tbjqWzpaPsW1yjURRr4nyNn4kftb	
                         hex!["bea0af5cbdf831165065bc48495aefe3d6acfcce8ff3b67a1051cd74eecaa86a"].unchecked_into(),
-                        // 5EJV2e3hJncrQ7AfnmUDG5pmYRRc8K5HLYAuJB61ygcHfWho	
-                        hex!["62fab8287b053efaf7c533d1024d8279779b3c5586f8246f273488695ee2ac56"].unchecked_into(),
+                        // 5DXHpnbhLVjhuE1JGH86q8h3XLGeBmde7pXpGbuqyrPpu3dB	
+                        hex!["4082f57de59206d7fcfb839acaa109a63e7860430e0fdaf2edfacdfa2d7cee04"].unchecked_into(),
                         // 5GNegtwtqxUkjt6JRDy3tbjqWzpaPsW1yjURRr4nyNn4kftb	
                         hex!["bea0af5cbdf831165065bc48495aefe3d6acfcce8ff3b67a1051cd74eecaa86a"].unchecked_into(),
                         // 5GNegtwtqxUkjt6JRDy3tbjqWzpaPsW1yjURRr4nyNn4kftb	

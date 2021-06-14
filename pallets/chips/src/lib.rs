@@ -198,8 +198,14 @@ impl<T: Config> ChipsTransfer<T::AccountId> for Module<T> {
         ensure!(chips_map.balance >= amount, Error::<T>::ChipsIsNotEnough);
 
         // update chips
-        chips_map.balance -= amount;
-        chips_map.reserve += amount;
+        let new_balance = chips_map.balance.checked_sub(&amount);
+        let new_reserve = chips_map.reserve.checked_add(&amount);
+
+        ensure!(new_balance != None, Error::<T>::StorageOverflow);
+        ensure!(new_reserve != None, Error::<T>::StorageOverflow);
+
+        chips_map.balance = new_balance.unwrap();
+        chips_map.reserve = new_reserve.unwrap();
         <ChipsMap<T>>::mutate(&_who, |chips_detail| *chips_detail = Some(chips_map));
 
         // Send event notification
@@ -216,8 +222,15 @@ impl<T: Config> ChipsTransfer<T::AccountId> for Module<T> {
         ensure!(chips_map.reserve >= amount, Error::<T>::ChipsIsNotEnough);
 
         // update chips
-        chips_map.balance += amount;
-        chips_map.reserve -= amount;
+
+        let new_balance = chips_map.balance.checked_add(&amount);
+        let new_reserve = chips_map.reserve.checked_sub(&amount);
+
+        ensure!(new_balance != None, Error::<T>::StorageOverflow);
+        ensure!(new_reserve != None, Error::<T>::StorageOverflow);
+
+        chips_map.balance = new_balance.unwrap();
+        chips_map.reserve = new_reserve.unwrap();
         <ChipsMap<T>>::mutate(&_who, |chips_detail| *chips_detail = Some(chips_map));
 
         // Send event notification
@@ -239,11 +252,15 @@ impl<T: Config> ChipsTransfer<T::AccountId> for Module<T> {
         ensure!(chips_from.reserve >= amount, Error::<T>::ChipsIsNotEnough);
 
         // from update chip
-        chips_from.reserve -= amount;
+        let new_reserve = chips_from.reserve.checked_sub(&amount);
+        ensure!(new_reserve != None, Error::<T>::StorageOverflow);
+        chips_from.reserve = new_reserve.unwrap();
         <ChipsMap<T>>::mutate(&from, |chips_detail| *chips_detail = Some(chips_from));
 
         // to update chip
-        chips_to.balance += amount;
+        let new_balance = chips_to.balance.checked_add(&amount);
+        ensure!(new_balance != None, Error::<T>::StorageOverflow);
+        chips_to.balance = new_balance.unwrap();
         <ChipsMap<T>>::mutate(&to, |chips_detail| *chips_detail = Some(chips_to));
 
         // Send event notification

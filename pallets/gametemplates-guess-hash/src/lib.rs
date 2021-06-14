@@ -8,7 +8,7 @@ use frame_support::{
 };
 use frame_system::ensure_signed;
 use sp_runtime::{
-    traits::{AtLeast32Bit, Bounded},
+    traits::{AtLeast32Bit, Bounded, CheckedAdd},
     DispatchError,
 };
 
@@ -228,11 +228,11 @@ impl<T: Config> Module<T> {
 
     /// Get new game_id
     fn next_game_id() -> sp_std::result::Result<T::GameIndex, DispatchError> {
-        let game_id = Self::game_count() + 1u32.into();
-        if game_id == T::GameIndex::max_value() {
-            return Err(Error::<T>::GameCountOverflow.into());
+        let game_id = Self::game_count().checked_add(&1u32.into());
+        if game_id == None {
+            return Err(Error::<T>::StorageOverflow.into());
         }
-        Ok(game_id)
+        Ok(game_id.unwrap())
     }
 
     /// create guess hash game
@@ -246,7 +246,13 @@ impl<T: Config> Module<T> {
         // Get the Index of the new game
         let game_id = Self::next_game_id()?;
 
-        let _bet_block_number = _block_number + bet_next_few_block.into();
+        let new_block_num = _block_number.checked_add(&bet_next_few_block.into());
+        ensure!(
+            new_block_num != None,
+            Error::<T>::StorageOverflow
+        );
+        let _bet_block_number = new_block_num.unwrap();
+        
         let game_info = GameInfo {
             owner: sender.clone(),
             block_number: _block_number,
@@ -257,7 +263,12 @@ impl<T: Config> Module<T> {
         <GameCount<T>>::put(game_id);
 
         // The block where the reward is distributed (the next block mined by the betting block is drawn)
-        let draw_block_number = _bet_block_number + 1u32.into();
+        let new_draw_block_number = _bet_block_number.checked_add(&1u32.into());
+        ensure!(
+            new_draw_block_number != None,
+            Error::<T>::StorageOverflow
+        );
+        let draw_block_number = new_draw_block_number.unwrap();
         let mut game_id_list = <DrawMap<T>>::get(&draw_block_number);
         game_id_list.insert(game_id_list.len(), game_id);
         <DrawMap<T>>::insert(&draw_block_number, game_id_list);

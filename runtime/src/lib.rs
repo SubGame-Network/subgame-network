@@ -322,11 +322,9 @@ impl pallet_offences::Config for Runtime {
 	type OnOffenceHandler = Staking;
 	type WeightSoftLimit = OffencesWeightSoftLimit;
 }
-
 /*** Pallet offences ***/
 
-
-
+#[allow(non_fmt_panic)]
 pallet_staking_reward_curve::build! {
 	const REWARD_CURVE: PiecewiseLinear<'static> = curve!(
 		min_inflation: 0_025_000,

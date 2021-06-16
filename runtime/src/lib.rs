@@ -65,6 +65,8 @@ pub use pallet_gamecenter;
 pub use pallet_gametemplates_guess_hash;
 // swap
 pub use pallet_swap;
+// stake
+pub use pallet_stake;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -855,6 +857,22 @@ impl pallet_scheduler::Config for Runtime {
 }
 /***  scheduler ***/
 
+/*** Pallet Stake ***/
+ord_parameter_types! {
+    pub const StakeOwner: AccountId = AccountId::from(
+        // 5CwARBdeFR8MJGvpHv7kaab2akiebDFGF9TDvRa5MimyGtEJ
+        hex_literal::hex!("267bae633094eeb37b830d26ff4c6fa1e65ac162ef2e75ded0b8153f01beaa2f")
+    );
+}
+impl pallet_stake::Config for Runtime {
+    type Event = Event;
+    type Balances = pallet_balances::Module<Runtime>;
+    type OwnerAddress = StakeOwner;
+    type WeightInfo = ();
+    type Currency = Balances;
+}
+/*** Pallet Stake ***/
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -898,6 +916,7 @@ construct_runtime!(
         GameCenter:	pallet_gamecenter::{Module, Call, Storage, Event<T>},
         GameGuessHashModule: pallet_gametemplates_guess_hash::{Module, Call, Storage, Event<T>},
         Swap: pallet_swap::{Module, Call, Storage, Event<T>},
+        Stake: pallet_stake::{Module, Call, Storage, Event<T>},
     }
 );
 

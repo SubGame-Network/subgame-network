@@ -860,8 +860,8 @@ impl pallet_scheduler::Config for Runtime {
 /*** Pallet Stake ***/
 ord_parameter_types! {
     pub const StakeOwner: AccountId = AccountId::from(
-        // 5CwARBdeFR8MJGvpHv7kaab2akiebDFGF9TDvRa5MimyGtEJ
-        hex_literal::hex!("267bae633094eeb37b830d26ff4c6fa1e65ac162ef2e75ded0b8153f01beaa2f")
+        // 5Cicojwqik9TqnsfX8o5ghgtHZi2jSDQDLQH2ophRjd2FxE2
+        hex_literal::hex!("1cea52eeaf9fed98d4539330afcf8f10d501073cdf4561ee0bdf44f17fca234f")
     );
 }
 impl pallet_stake::Config for Runtime {

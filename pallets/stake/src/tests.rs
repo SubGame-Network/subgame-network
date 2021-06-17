@@ -39,6 +39,21 @@ fn sign_up_exists() {
 }
 
 #[test]
+fn sign_up_account_format_is_wrong() {
+    new_test_ext().execute_with(|| {
+        let user = 2;
+        
+        let account = "ABCDEFG8";
+        let account_vec = account.clone().as_bytes().to_vec();
+
+        let referrer_account = "stake01";
+        let referrer_account_vec = referrer_account.as_bytes().to_vec();
+
+        assert_noop!(SubGameStake::sign_up(Origin::signed(user.clone()), account_vec.clone(), referrer_account_vec.clone()), Error::<Test>::AccountFormatIsWrong);
+    });
+}
+
+#[test]
 fn stake_user_not_exists() {
     new_test_ext().execute_with(|| {
         let user = 2;

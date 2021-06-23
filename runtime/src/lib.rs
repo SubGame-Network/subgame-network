@@ -63,8 +63,8 @@ pub use pallet_gametemplates;
 pub use pallet_gamecenter;
 // game 1：guess hash
 pub use pallet_gametemplates_guess_hash;
-// swap
-pub use pallet_swap;
+// bridge
+pub use pallet_bridge;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -135,7 +135,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("subgame"),
     impl_name: create_runtime_str!("subgame"),
     authoring_version: 1,
-    spec_version: 100,
+    spec_version: 101,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -698,10 +698,10 @@ impl pallet_transaction_payment::Config for Runtime {
     type FeeMultiplierUpdate = ();
 }
 
-impl pallet_sudo::Config for Runtime {
-    type Event = Event;
-    type Call = Call;
-}
+// impl pallet_sudo::Config for Runtime {
+//     type Event = Event;
+//     type Call = Call;
+// }
 
 impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
 	where
@@ -790,17 +790,17 @@ impl pallet_chips::Config for Runtime {
 }
 /*** Pallet Chips ***/
 
-/*** Pallet SWAP ***/
+/*** Pallet Bridge ***/
 ord_parameter_types! {
-    pub const SwapOwner: AccountId = AccountId::from(
+    pub const BridgeOwner: AccountId = AccountId::from(
         // 5CwARBdeFR8MJGvpHv7kaab2akiebDFGF9TDvRa5MimyGtEJ
         hex_literal::hex!("267bae633094eeb37b830d26ff4c6fa1e65ac162ef2e75ded0b8153f01beaa2f")
     );
 }
-impl pallet_swap::Config for Runtime {
+impl pallet_bridge::Config for Runtime {
     type Event = Event;
     type Balances = pallet_balances::Module<Runtime>;
-    type OwnerAddress = SwapOwner;
+    type OwnerAddress = BridgeOwner;
     type WeightInfo = ();
 }
 /*** Pallet Chips ***/
@@ -867,7 +867,7 @@ construct_runtime!(
         Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent},
         Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
         TransactionPayment: pallet_transaction_payment::{Module, Storage},
-        Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>},
+        // Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>},
         Contracts: pallet_contracts::{Module, Call, Config<T>, Storage, Event<T>},
         Scheduler: pallet_scheduler::{Module, Call, Storage, Event<T>},
         // Staking dependancies
@@ -897,7 +897,7 @@ construct_runtime!(
         GameTemplates:	pallet_gametemplates::{Module, Call, Storage, Event<T>},
         GameCenter:	pallet_gamecenter::{Module, Call, Storage, Event<T>},
         GameGuessHashModule: pallet_gametemplates_guess_hash::{Module, Call, Storage, Event<T>},
-        Swap: pallet_swap::{Module, Call, Storage, Event<T>},
+        Bridge: pallet_bridge::{Module, Call, Storage, Event<T>},
     }
 );
 

@@ -4,7 +4,7 @@ description = 'Responsible for managing the user’s chips, after purchasing chi
 edition = '2018'
 homepage = 'https://www.subgame.org'
 license = 'Apache-2.0 License'
-name = 'pallet-swap'
+name = 'pallet-bridge'
 repository = 'https://github.com/SubGame-Network/subgame-network'
 version = '3.0.0'
 

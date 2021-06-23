@@ -31,7 +31,7 @@ pallet-gametemplates = { path = '../pallets/gametemplates', default-features = f
 pallet-gamecenter = { path = '../pallets/gamecenter', default-features = false, version = '3.0.0' }
 pallet-gametemplates-guess-hash = { path = '../pallets/gametemplates-guess-hash', default-features = false, version = '3.0.0' }
 pallet-chips = { path = '../pallets/chips', default-features = false, version = '3.0.0' }
-pallet-swap = { path = '../pallets/swap', default-features = false, version = '3.0.0' }
+pallet-bridge = { path = '../pallets/bridge', default-features = false, version = '3.0.0' }
 
 
 # Substrate dependencies

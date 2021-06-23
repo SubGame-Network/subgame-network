@@ -9,16 +9,18 @@ use frame_support::{
     weights::{Weight, Pays, DispatchClass}
 };
 use frame_system::ensure_signed;
-
+// use sp_runtime::{{
+//     traits::{CheckedAdd, CheckedSub}
+// }};
 use frame_support::traits::Vec;
 
 mod default_weight;
 pub trait WeightInfo {
-    fn receive_swap() -> Weight;
+    fn receive_bridge() -> Weight;
 }
 
 #[derive(Encode, Decode, Default, Copy, Clone)]
-pub struct SwapRecord<Account1, Account2, ChainType, CoinType> {
+pub struct BridgeRecord<Account1, Account2, ChainType, CoinType> {
     from: Account1,
     to: Account2,
     amount: u128,
@@ -52,9 +54,12 @@ pub type BalanceOf<T> =
 decl_storage! {
     trait Store for Module<T: Config> as Chips {
         /// from other chain to subgame chain
-        pub InRecord get(fn in_record):Vec<SwapRecord<Vec<u8>, T::AccountId, u8, u8> >;
+        pub InRecord get(fn in_record):Vec<BridgeRecord<Vec<u8>, T::AccountId, u8, u8> >;
         /// subgame chain to other chain
-        pub OutRecord get(fn out_record):Vec<SwapRecord<T::AccountId, Vec<u8>, u8, u8> >;
+        pub OutRecord get(fn out_record):Vec<BridgeRecord<T::AccountId, Vec<u8>, u8, u8> >;
+        // bridge amount need bigger than BridgeMinLimit
+        // pub BridgeMinLimit get(fn bridge_min_limit): Some(BalanceOf<T>);
+
     }
 }
 
@@ -64,10 +69,10 @@ decl_event!(
         AccountId = <T as frame_system::Config>::AccountId,
         BalanceOf = BalanceOf<T>
     {
-        /// Swap to subgame
+        /// Bridge to subgame
         Send(AccountId, BalanceOf, Vec<u8>),
-        /// Swap from subgame
-        ReceiveSwap(AccountId, Vec<u8>, u8, u8, BalanceOf),
+        /// Bridge from subgame
+        ReceiveBridge(AccountId, Vec<u8>, u8, u8, BalanceOf),
     }
 );
 
@@ -78,7 +83,8 @@ decl_error! {
         CoinTypeNotFound,
         ChainTypeNotFound,
         NeverBoughtChips,
-        PermissionDenied
+        PermissionDenied,
+        BridgeNotEnoughMinLimt
     }
 }
 
@@ -105,10 +111,14 @@ decl_module! {
 
         
         /// outchain to subgame (sgb)
-        #[weight = T::WeightInfo::receive_swap()]
-        pub fn receive_swap(origin, to_address: Vec<u8>, amount: BalanceOf<T>, chain_type: u8, coin_type: u8) -> dispatch::DispatchResult {
+        #[weight = T::WeightInfo::receive_bridge()]
+        pub fn receive_bridge(origin, to_address: Vec<u8>, amount: BalanceOf<T>, chain_type: u8, coin_type: u8) -> dispatch::DispatchResult {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();
+            // let bridge_min_limit = T::BridgeMinLimit::get();
+            // if bridge_min_limit == None {
+
+            // }
             
             ensure!(chain_type == CHAIN_ETH || chain_type == CHAIN_HECO, Error::<T>::ChainTypeNotFound);
             ensure!(coin_type == COIN_SGB, Error::<T>::CoinTypeNotFound);
@@ -116,7 +126,7 @@ decl_module! {
             T::Balances::transfer(&sender, &owner, amount, ExistenceRequirement::KeepAlive).map_err(|_| Error::<T>::MoneyNotEnough)?;
 
             // Send event notification
-            Self::deposit_event(RawEvent::ReceiveSwap(sender, to_address, chain_type, coin_type, amount));
+            Self::deposit_event(RawEvent::ReceiveBridge(sender, to_address, chain_type, coin_type, amount));
             Ok(())
         }
 

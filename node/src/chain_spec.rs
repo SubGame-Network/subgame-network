@@ -12,7 +12,7 @@ use sp_runtime::traits::{IdentifyAccount, Verify};
 use subgame_runtime::ContractsConfig;
 use subgame_runtime::{
     opaque::SessionKeys,
-    AccountId, BabeConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature,
+    AccountId, BabeConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
     StakerStatus, Balance,
 	SessionConfig, StakingConfig, ImOnlineConfig,
     SystemConfig, WASM_BINARY,
@@ -95,6 +95,8 @@ pub fn development_config() -> Result<ChainSpec, String> {
                 wasm_binary,
                 // Initial PoA authorities
                 vec![authority_keys_from_seed("Alice")],
+                 // Sudo account
+                 get_account_id_from_seed::<sr25519::Public>("Alice"),
                 // Pre-funded accounts
                 vec![
                     (get_account_id_from_seed::<sr25519::Public>("Alice"), 5000000000000000000),
@@ -161,6 +163,8 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                         hex!["bea0af5cbdf831165065bc48495aefe3d6acfcce8ff3b67a1051cd74eecaa86a"].unchecked_into(),
                     ),
                 ],
+                // Sudo account
+                hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(),
                 // Pre-funded accounts
                 vec![
                     (hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(), 4999998000000000000),  // 499999800
@@ -284,6 +288,8 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                         hex!["86a8b858dd647620fd2099621650850bb740c6e71bca5b57fd59d4cdc567dd31"].unchecked_into(),
                     ),
                 ],
+                // Sudo account
+                hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(),
                 // Pre-funded accounts
                 vec![
                     (hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(), 4999994000000000000), // 499999400
@@ -322,6 +328,7 @@ const STASH: Balance = 500000000000; // 50
 fn testnet_genesis(
     wasm_binary: &[u8],
     initial_authorities: Vec<(AccountId, AccountId, BabeId, GrandpaId, ImOnlineId, AuthorityDiscoveryId)>,
+    root_key: AccountId,
     endowed_accounts: Vec<(AccountId, u128)>,
     enable_println: bool,
 ) -> GenesisConfig {
@@ -339,12 +346,17 @@ fn testnet_genesis(
                 .map(|k| (k.0.clone(), k.1.clone()))
                 .collect(),
         }),
+        pallet_sudo: Some(SudoConfig {
+			// Assign network admin rights.
+			key: root_key,
+		}),
         pallet_grandpa: Some(GrandpaConfig {
 			authorities: vec![] 
 		}),
         pallet_indices: Some(IndicesConfig { indices: vec![] }),
 		// Staking related configs
 		pallet_babe: Some(BabeConfig { authorities: vec![] }),
+        pallet_democracy: Default::default(),
 		//pallet_authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
 		pallet_im_online: Some(ImOnlineConfig { keys: vec![] }),
 		//pallet_treasury: Some(Default::default()),
@@ -397,6 +409,7 @@ fn testnet_genesis(
 fn mainnet_genesis(
     wasm_binary: &[u8],
     initial_authorities: Vec<(AccountId, AccountId, BabeId, GrandpaId, ImOnlineId, AuthorityDiscoveryId)>,
+    root_key: AccountId,
     endowed_accounts: Vec<(AccountId, u128)>,
     enable_println: bool,
 ) -> GenesisConfig {
@@ -414,12 +427,17 @@ fn mainnet_genesis(
                 .map(|k| (k.0.clone(), k.1.clone()))
                 .collect(),
         }),
+        pallet_sudo: Some(SudoConfig {
+			// Assign network admin rights.
+			key: root_key,
+		}),
         pallet_grandpa: Some(GrandpaConfig {
 			authorities: vec![] 
 		}),
         pallet_indices: Some(IndicesConfig { indices: vec![] }),
 		// Staking related configs
 		pallet_babe: Some(BabeConfig { authorities: vec![] }),
+        pallet_democracy: Default::default(),
 		//pallet_authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
 		pallet_im_online: Some(ImOnlineConfig { keys: vec![] }),
 		//pallet_treasury: Some(Default::default()),

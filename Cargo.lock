@@ -3848,6 +3848,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-democracy"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f2be1b6b34f7208d4e85bb2129de6ed319e43e2cf7ae6fc8f3e32797f55724b"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-elections-phragmen"
 version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7482,6 +7498,7 @@ dependencies = [
  "pallet-contracts",
  "pallet-contracts-primitives",
  "pallet-contracts-rpc-runtime-api",
+ "pallet-democracy",
  "pallet-elections-phragmen",
  "pallet-gamecenter",
  "pallet-gametemplates",

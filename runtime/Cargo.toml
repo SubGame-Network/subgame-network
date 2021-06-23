@@ -44,6 +44,7 @@ frame-system-benchmarking = { default-features = false, optional = true, version
 frame-system-rpc-runtime-api = { default-features = false, version = '3.0.0' }
 # Staking dependencies
 pallet-babe = { default-features = false, version = '3.0.0' }
+pallet-democracy = { version = "3.0.0", default-features =false }
 pallet-session = { version = "3.0.0", default-features = false, features = ["historical"] }
 pallet-staking = { version = "3.0.0", default-features = false }
 pallet-staking-reward-curve = { version = "3.0.0", default-features = false }
@@ -120,6 +121,7 @@ std = [
 	"pallet-recovery/std",
     "pallet-session/std",
 	"pallet-staking/std",
+    "pallet-democracy/std",
     'pallet-authorship/std',
     'pallet-im-online/std',
     'pallet-offences/std',

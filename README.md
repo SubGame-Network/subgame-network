@@ -2,7 +2,13 @@
 
 <img src="./assets/images/web3_foundation_grants_badge_black.png" height="100"/>
 
-[SubGame](https://www.subgame.org/) is a public chain development team based on the Polkadot Para chain. It hopes to build a public chain with cross-chain interoperability. In addition to creating game applications, it can also build various types of application scenarios to create a common cross-chain industry. The blockchain infrastructure provides unlimited possibilities for distributed mobile applications.
+SubGame offers module source code allow developer can secondly develop. Among of the module source code, multi-module game engine plays a major role since the game engine helps the game designers to bring characters of the blockchain game to life.
+
+SubGame builds multiple applications through a complete technical architecture, including game type modules, payment model interfaces, communication field development, dataon-chain applications.Until now, we currently focus on game type modules. Until now, we had generated five game settlement modules and game lobby in the first phase. The future scope of the designing software modules are aligned with the development of blockchain applications. Among the software modules in the future, SubGame gets on with  KYC-NFTs for any type of property, NFTs embedded with game IP and NFTs auction platforms.
+
+SubGame is also fully developed project, which is under the Web3 foundation Grants Program, and our token,SGB, has list at least on seven exchanges. Theses accomplishments also get several of VC attractions.
+
+Our enterprise strategy empower global developers and users to increasingly and easily engage on the development of the cross-chain. Heco,Huobi ECO Chain, support SGB. Meanwhile, TokenPocket also support SubGame mainnet,which is the third Polkadot project to access TokenPocket after Polkadot and Kusama on TokenPocket.
 
 ## Getting Started
 

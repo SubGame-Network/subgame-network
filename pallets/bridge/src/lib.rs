@@ -58,7 +58,7 @@ decl_storage! {
         /// subgame chain to other chain
         pub OutRecord get(fn out_record):Vec<BridgeRecord<T::AccountId, Vec<u8>, u8, u8> >;
         // bridge amount need bigger than BridgeMinLimit
-        // pub BridgeMinLimit get(fn bridge_min_limit): Some(BalanceOf<T>);
+        pub BridgeMinLimit get(fn bridge_min_limit): Option<BalanceOf<T>>;
 
     }
 }
@@ -84,7 +84,8 @@ decl_error! {
         ChainTypeNotFound,
         NeverBoughtChips,
         PermissionDenied,
-        BridgeNotEnoughMinLimt
+        BridgeNotEnoughMinLimt,
+        SwapAmountLessThenLimit
     }
 }
 
@@ -115,11 +116,9 @@ decl_module! {
         pub fn receive_bridge(origin, to_address: Vec<u8>, amount: BalanceOf<T>, chain_type: u8, coin_type: u8) -> dispatch::DispatchResult {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();
-            // let bridge_min_limit = T::BridgeMinLimit::get();
-            // if bridge_min_limit == None {
-
-            // }
-            
+            let default_limit: BalanceOf<T> = 10u32.into();
+            let bridge_min_limit = Self::bridge_min_limit();
+            ensure!(bridge_min_limit == None && amount >= default_limit || bridge_min_limit != None && amount >=  bridge_min_limit.unwrap(), Error::<T>::SwapAmountLessThenLimit);
             ensure!(chain_type == CHAIN_ETH || chain_type == CHAIN_HECO, Error::<T>::ChainTypeNotFound);
             ensure!(coin_type == COIN_SGB, Error::<T>::CoinTypeNotFound);
 
@@ -130,5 +129,14 @@ decl_module! {
             Ok(())
         }
 
+        /// outchain to subgame (sgb)
+        #[weight = T::WeightInfo::receive_bridge()]
+        pub fn update_min_limit(origin, amount: BalanceOf<T>) -> dispatch::DispatchResult {
+            let sender = ensure_signed(origin)?;
+            let owner = T::OwnerAddress::get();
+            ensure!(owner == sender, Error::<T>::PermissionDenied);
+            <BridgeMinLimit<T>>::put(amount);
+            Ok(())
+        }
     }
 }

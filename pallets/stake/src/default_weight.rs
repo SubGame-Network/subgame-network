@@ -25,4 +25,9 @@ impl crate::WeightInfo for () {
             .saturating_add(DbWeight::get().reads(2 as Weight))
             .saturating_add(DbWeight::get().writes(1 as Weight))
     }
+    fn import_stake() -> Weight {
+        (10_000 as Weight)
+            .saturating_add(DbWeight::get().reads(4 as Weight))
+            .saturating_add(DbWeight::get().writes(5 as Weight))
+    }
 }

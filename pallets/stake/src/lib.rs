@@ -23,6 +23,7 @@ pub trait WeightInfo {
     fn stake() -> Weight;
     fn unlock() -> Weight;
     fn withdraw() -> Weight;
+    fn import_stake() -> Weight;
 }
 
 type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
@@ -149,6 +150,43 @@ decl_module! {
             T::Currency::transfer(&sender, &_who, amount, ExistenceRequirement::KeepAlive)?;
 
             Self::deposit_event(RawEvent::Withdraw(_who, amount));
+            Ok(())
+        }
+
+        #[weight = (T::WeightInfo::stake(), DispatchClass::Normal, Pays::No)]
+        pub fn import_stake(origin, _who: T::AccountId, account: Vec<u8>, referrer_account: Vec<u8>, amount: BalanceOf<T>) -> dispatch::DispatchResult {
+            let sender = ensure_signed(origin)?;
+            let owner = T::OwnerAddress::get();
+            ensure!(owner == sender, Error::<T>::PermissionDenied);
+
+            let _account_str = core::str::from_utf8(&account).unwrap().to_lowercase();
+            ensure!(_account_str.len() <= 7, Error::<T>::AccountFormatIsWrong);
+            let _account = _account_str.as_bytes().to_vec();
+            
+            let _referrer_account_str = core::str::from_utf8(&referrer_account).unwrap().to_lowercase();
+            let _referrer_account = _referrer_account_str.as_bytes().to_vec();
+
+            let user_info_map = UserInfoMap::<T>::contains_key(&_who);
+            if user_info_map == false {
+                let user_info = UserInfo{
+                    account: _account.clone(),
+                    referrer_account: _referrer_account.clone(),
+                };
+                <UserInfoMap::<T>>::insert(&_who, user_info);
+            }
+
+            let account_map = AccountMap::<T>::contains_key(_account.clone());
+            if account_map == false {
+                <AccountMap::<T>>::insert(_account.clone(), &_who);
+
+                Self::deposit_event(RawEvent::SignUp(_who.clone(), _account, _referrer_account));
+            }
+
+            T::Currency::reserve(&_who, T::Currency::reserved_balance(&_who) + amount).map_err(|_| Error::<T>::MoneyNotEnough )?;
+            <StakePool::<T>>::put(Self::stake_pool() + amount);
+            <UserStake::<T>>::insert(&_who, Self::user_stake(&_who) + amount);
+
+            Self::deposit_event(RawEvent::Stake(_who, amount));
             Ok(())
         }
     }

@@ -85,6 +85,7 @@ decl_module! {
             
             let _account_str = core::str::from_utf8(&account).unwrap().to_lowercase();
             ensure!(_account_str.len() <= 7, Error::<T>::AccountFormatIsWrong);
+            ensure!(_account_str != "gametop", Error::<T>::AccountFormatIsWrong);
             let _account = _account_str.as_bytes().to_vec();
             
             let _referrer_account_str = core::str::from_utf8(&referrer_account).unwrap().to_lowercase();

@@ -51,6 +51,10 @@ fn sign_up_account_format_is_wrong() {
         let referrer_account_vec = referrer_account.as_bytes().to_vec();
 
         assert_noop!(SubGameStake::sign_up(Origin::signed(user.clone()), account_vec.clone(), referrer_account_vec.clone()), Error::<Test>::AccountFormatIsWrong);
+        
+        let account = "gametop";
+        let account_vec = account.clone().as_bytes().to_vec();
+        assert_noop!(SubGameStake::sign_up(Origin::signed(user.clone()), account_vec.clone(), referrer_account_vec.clone()), Error::<Test>::AccountFormatIsWrong);
     });
 }
 

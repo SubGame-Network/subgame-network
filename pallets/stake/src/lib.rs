@@ -24,6 +24,7 @@ pub trait WeightInfo {
     fn unlock() -> Weight;
     fn withdraw() -> Weight;
     fn import_stake() -> Weight;
+    fn modify_user() -> Weight;
 }
 
 type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
@@ -61,6 +62,7 @@ decl_event!(
         Stake(AccountId, Balance),
         Unlock(AccountId, Balance),
         Withdraw(AccountId, Balance),
+        ModifyUser(AccountId, Vec<u8>, Vec<u8>),
     }
 );
 
@@ -154,7 +156,7 @@ decl_module! {
             Ok(())
         }
 
-        #[weight = (T::WeightInfo::stake(), DispatchClass::Normal, Pays::No)]
+        #[weight = (T::WeightInfo::import_stake(), DispatchClass::Normal, Pays::No)]
         pub fn import_stake(origin, _who: T::AccountId, account: Vec<u8>, referrer_account: Vec<u8>, amount: BalanceOf<T>) -> dispatch::DispatchResult {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();
@@ -162,10 +164,15 @@ decl_module! {
 
             let _account_str = core::str::from_utf8(&account).unwrap().to_lowercase();
             ensure!(_account_str.len() <= 7, Error::<T>::AccountFormatIsWrong);
+            ensure!(_account_str != "gametop", Error::<T>::AccountFormatIsWrong);
             let _account = _account_str.as_bytes().to_vec();
             
             let _referrer_account_str = core::str::from_utf8(&referrer_account).unwrap().to_lowercase();
             let _referrer_account = _referrer_account_str.as_bytes().to_vec();
+
+            T::Currency::reserve(&_who, T::Currency::reserved_balance(&_who) + amount).map_err(|_| Error::<T>::MoneyNotEnough )?;
+            <StakePool::<T>>::put(Self::stake_pool() + amount);
+            <UserStake::<T>>::insert(&_who, Self::user_stake(&_who) + amount);
 
             let user_info_map = UserInfoMap::<T>::contains_key(&_who);
             if user_info_map == false {
@@ -183,11 +190,37 @@ decl_module! {
                 Self::deposit_event(RawEvent::SignUp(_who.clone(), _account, _referrer_account));
             }
 
-            T::Currency::reserve(&_who, T::Currency::reserved_balance(&_who) + amount).map_err(|_| Error::<T>::MoneyNotEnough )?;
-            <StakePool::<T>>::put(Self::stake_pool() + amount);
-            <UserStake::<T>>::insert(&_who, Self::user_stake(&_who) + amount);
-
             Self::deposit_event(RawEvent::Stake(_who, amount));
+            Ok(())
+        }
+
+        #[weight = (T::WeightInfo::modify_user(), DispatchClass::Normal, Pays::No)]
+        pub fn modify_user(origin, _who: T::AccountId, account: Vec<u8>, referrer_account: Vec<u8>) -> dispatch::DispatchResult {
+            let sender = ensure_signed(origin)?;
+            let owner = T::OwnerAddress::get();
+            ensure!(owner == sender, Error::<T>::PermissionDenied);
+
+            let _account_str = core::str::from_utf8(&account).unwrap().to_lowercase();
+            ensure!(_account_str.len() <= 7, Error::<T>::AccountFormatIsWrong);
+            ensure!(_account_str != "gametop", Error::<T>::AccountFormatIsWrong);
+            let _account = _account_str.as_bytes().to_vec();
+            
+            let _referrer_account_str = core::str::from_utf8(&referrer_account).unwrap().to_lowercase();
+            let _referrer_account = _referrer_account_str.as_bytes().to_vec();
+
+            ensure!(AccountMap::<T>::contains_key(_account.clone()), Error::<T>::UserNotExists);
+            let _old_who = Self::account_map(_account.clone());
+
+            <UserInfoMap::<T>>::remove(&_old_who);
+
+            let user_info = UserInfo{
+                account: _account.clone(),
+                referrer_account: _referrer_account.clone(),
+            };
+            <UserInfoMap::<T>>::insert(&_who, user_info);
+            <AccountMap::<T>>::insert(_account.clone(), &_who);
+
+            Self::deposit_event(RawEvent::ModifyUser(_who, _account, _referrer_account));
             Ok(())
         }
     }

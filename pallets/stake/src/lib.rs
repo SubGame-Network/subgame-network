@@ -73,6 +73,7 @@ decl_error! {
         UserNotExists,
         MoneyNotEnough,
         PermissionDenied,
+        StakeAmountWrong,
     }
 }
 
@@ -112,7 +113,7 @@ decl_module! {
             let _who = ensure_signed(origin)?;
             ensure!(UserInfoMap::<T>::contains_key(&_who), Error::<T>::UserNotExists);
 
-            T::Currency::reserve(&_who, T::Currency::reserved_balance(&_who) + amount).map_err(|_| Error::<T>::MoneyNotEnough )?;
+            T::Currency::reserve(&_who, amount).map_err(|_| Error::<T>::MoneyNotEnough )?;
             <StakePool::<T>>::put(Self::stake_pool() + amount);
             <UserStake::<T>>::insert(&_who, Self::user_stake(&_who) + amount);
 

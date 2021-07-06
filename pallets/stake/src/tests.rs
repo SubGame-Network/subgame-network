@@ -7,7 +7,7 @@ fn sign_up() {
     new_test_ext().execute_with(|| {
         let user = 2;
         
-        let account = "Ss01";
+        let account = "s234567";
         let account_vec = account.clone().as_bytes().to_vec();
 
         let referrer_account = "gametop";
@@ -25,7 +25,7 @@ fn sign_up_exists() {
     new_test_ext().execute_with(|| {
         let user = 2;
         
-        let account = "Ss01";
+        let account = "s234567";
         let account_vec = account.as_bytes().to_vec();
         
         let referrer_account = "gametop";
@@ -73,7 +73,7 @@ fn stake() {
         let user = 2;
         let amount: u64 = 1000;
 
-        let account = "Ss01";
+        let account = "s234567";
         let account_vec = account.clone().as_bytes().to_vec();
         let referrer_account = "gametop";
         let referrer_account_vec = referrer_account.as_bytes().to_vec();
@@ -100,7 +100,7 @@ fn unlock_money_not_enough() {
         let user = 2;
         let amount: u64 = 1000;
 
-        let account = "Ss01";
+        let account = "s234567";
         let account_vec = account.clone().as_bytes().to_vec();
         let referrer_account = "gametop";
         let referrer_account_vec = referrer_account.as_bytes().to_vec();
@@ -117,7 +117,7 @@ fn unlock() {
         let user = 2;
         let amount: u64 = 1000;
 
-        let account = "Ss01";
+        let account = "s234567";
         let account_vec = account.clone().as_bytes().to_vec();
         let referrer_account = "gametop";
         let referrer_account_vec = referrer_account.as_bytes().to_vec();
@@ -138,7 +138,7 @@ fn withdraw() {
         let amount: u64 = 1000;
         let default_balance: u64 = 1000000;
 
-        let account = "Ss01";
+        let account = "s234567";
         let account_vec = account.clone().as_bytes().to_vec();
         let referrer_account = "gametop";
         let referrer_account_vec = referrer_account.as_bytes().to_vec();
@@ -154,7 +154,7 @@ fn import_stake() {
     new_test_ext().execute_with(|| {
         let owner = 1;
         let user = 2;
-        let account = "ss01";
+        let account = "s234567";
         let account_vec = account.clone().as_bytes().to_vec();
         let referrer_account = "gametop";
         let referrer_account_vec = referrer_account.as_bytes().to_vec();

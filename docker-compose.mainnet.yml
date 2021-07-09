@@ -14,7 +14,7 @@ services:
       - "30333:30333"
     volumes:
       - .:/subgame
-    command: bash -c "cargo build --release && ./target/release/subgame
+    command: bash -c "./subgame.mainnet
       --chain main 
       --base-path /subgame/storage
       --port 30333

@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  subgame-network:
+    image: subgame/network
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: subgame-network
+    hostname: subgame-network
+    ports:
+      - "9933:9933"
+      - "9944:9944"
+      - "30333:30333"
+    volumes:
+      - .:/subgame
+    command: bash -c "cargo build --release && ./target/release/subgame
+      --chain main 
+      --base-path /subgame/storage
+      --port 30333
+      --ws-port 9944
+      --rpc-port 9933
+      --rpc-external
+      --ws-external
+      --rpc-cors=all
+      --pruning=archive
+      --bootnodes /ip4/18.167.97.87/tcp/30333/p2p/12D3KooWNtQFxhJGfn3vKx9t8YTatxSNocsz73jZoxaoRSS8UCxJ"
+
+networks:
+  default:
+    driver: bridge

@@ -137,7 +137,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("subgame"),
     impl_name: create_runtime_str!("subgame"),
     authoring_version: 1,
-    spec_version: 106,
+    spec_version: 107,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -925,11 +925,15 @@ ord_parameter_types! {
         // 5Cicojwqik9TqnsfX8o5ghgtHZi2jSDQDLQH2ophRjd2FxE2
         hex_literal::hex!("1cea52eeaf9fed98d4539330afcf8f10d501073cdf4561ee0bdf44f17fca234f")
     );
+    pub const ImportOwner: AccountId = AccountId::from(
+        hex_literal::hex!("f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515")
+    );
 }
 impl pallet_stake::Config for Runtime {
     type Event = Event;
     type Balances = pallet_balances::Module<Runtime>;
     type OwnerAddress = StakeOwner;
+    type ImportAddress = ImportOwner;
     type WeightInfo = ();
     type Currency = Balances;
 }

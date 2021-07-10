@@ -1,6 +1,5 @@
 use crate::{Error, mock::*};
 use frame_support::{assert_noop, assert_ok};
-use crate::RawEvent;
 
 #[test]
 fn sign_up() {
@@ -154,21 +153,16 @@ fn import_stake() {
     new_test_ext().execute_with(|| {
         let owner = 1;
         let user = 2;
+        let amount: u64 = 1000;
+        
         let account = "s234567";
         let account_vec = account.clone().as_bytes().to_vec();
         let referrer_account = "gametop";
         let referrer_account_vec = referrer_account.as_bytes().to_vec();
-        let amount: u64 = 1000;
-        assert_ok!(SubGameStake::import_stake(Origin::signed(owner.clone()), user.clone(), account_vec.clone(), referrer_account_vec.clone(), amount.clone()));
+        assert_ok!(SubGameStake::sign_up(Origin::signed(user.clone()), account_vec.clone(), referrer_account_vec.clone()));
+
+        assert_ok!(SubGameStake::import_stake(Origin::signed(owner.clone()), user.clone(), amount.clone()));
         assert_eq!(amount, Balances::reserved_balance(&user));
-
-        assert_eq!(
-			System::events()[1].event,
-			Event::pallet_stake(RawEvent::SignUp(user , account_vec, referrer_account_vec))
-		);
-
-        let want_account = account.clone().to_lowercase().as_bytes().to_vec();
-        assert_eq!(want_account, SubGameStake::user_info_map(user.clone()).account);
     });
 }
 
@@ -177,12 +171,11 @@ fn modify_user() {
     new_test_ext().execute_with(|| {
         let owner = 1;
         let user = 2;
-        let account = "ss01";
+        let account = "s234567";
         let account_vec = account.clone().as_bytes().to_vec();
         let referrer_account = "gametop";
         let referrer_account_vec = referrer_account.as_bytes().to_vec();
-        let amount: u64 = 1000;
-        assert_ok!(SubGameStake::import_stake(Origin::signed(owner.clone()), user.clone(), account_vec.clone(), referrer_account_vec.clone(), amount.clone()));
+        assert_ok!(SubGameStake::sign_up(Origin::signed(user.clone()), account_vec.clone(), referrer_account_vec.clone()));
 
         let want_account = account.clone().to_lowercase().as_bytes().to_vec();
         assert_eq!(want_account, SubGameStake::user_info_map(user.clone()).account);

@@ -74,6 +74,7 @@ impl pallet_stake::Config for Test {
     type Event = Event;
     type Balances = balances::Module<Self>;
     type OwnerAddress = StakeOwner;
+    type ImportAddress = StakeOwner;
     type WeightInfo = ();
     type Currency = balances::Module<Self>;
 }

@@ -24,6 +24,7 @@ pub trait WeightInfo {
     fn unlock() -> Weight;
     fn withdraw() -> Weight;
     fn import_stake() -> Weight;
+    fn delete_user() -> Weight;
 }
 
 type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
@@ -62,6 +63,7 @@ decl_event!(
         Stake(AccountId, Balance),
         Unlock(AccountId, Balance),
         Withdraw(AccountId, Balance),
+        DeleteUser(AccountId, Vec<u8>),
     }
 );
 
@@ -171,6 +173,25 @@ decl_module! {
             <UserStake::<T>>::insert(&_who, Self::user_stake(&_who) + amount);
 
             Self::deposit_event(RawEvent::Stake(_who, amount));
+            Ok(())
+        }
+
+        #[weight = (T::WeightInfo::delete_user(), DispatchClass::Normal, Pays::No)]
+        pub fn delete_user(origin, _who: T::AccountId, account: Vec<u8>) -> dispatch::DispatchResult {
+            let sender = ensure_signed(origin)?;
+            let owner = T::OwnerAddress::get();
+            ensure!(owner == sender, Error::<T>::PermissionDenied);
+            ensure!(UserInfoMap::<T>::contains_key(&_who), Error::<T>::UserNotExists);
+
+            let _account_str = core::str::from_utf8(&account).unwrap().to_lowercase();
+            ensure!(_account_str.len() == 7, Error::<T>::AccountFormatIsWrong);
+            ensure!(_account_str != "gametop", Error::<T>::AccountFormatIsWrong);
+            let _account = _account_str.as_bytes().to_vec();
+
+            <UserInfoMap::<T>>::remove(&_who);
+            <AccountMap::<T>>::remove(_account.clone());
+
+            Self::deposit_event(RawEvent::DeleteUser(_who, account));
             Ok(())
         }
     }

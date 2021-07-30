@@ -165,3 +165,24 @@ fn import_stake() {
         assert_eq!(amount, Balances::reserved_balance(&user));
     });
 }
+
+#[test]
+fn delete_user() {
+    new_test_ext().execute_with(|| {
+        let owner = 1;
+        let user = 2;
+        
+        let account = "s234567";
+        let account_vec = account.clone().as_bytes().to_vec();
+
+        let referrer_account = "gametop";
+        let referrer_account_vec = referrer_account.as_bytes().to_vec();
+
+        assert_ok!(SubGameStake::sign_up(Origin::signed(user.clone()), account_vec.clone(), referrer_account_vec.clone()));
+
+        assert_ok!(SubGameStake::delete_user(Origin::signed(owner.clone()), user.clone(), account_vec.clone()));
+
+        let want_account = "".as_bytes().to_vec();
+        assert_eq!(want_account, SubGameStake::user_info_map(user.clone()).account);
+    });
+}

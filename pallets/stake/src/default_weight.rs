@@ -30,4 +30,9 @@ impl crate::WeightInfo for () {
             .saturating_add(DbWeight::get().reads(1 as Weight))
             .saturating_add(DbWeight::get().writes(4 as Weight))
     }
+    fn delete_user() -> Weight {
+        (10_000 as Weight)
+            .saturating_add(DbWeight::get().reads(1 as Weight))
+            .saturating_add(DbWeight::get().writes(2 as Weight))
+    }
 }

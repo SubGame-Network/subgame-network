@@ -118,7 +118,7 @@ decl_module! {
             let owner = T::OwnerAddress::get();
             let default_limit: BalanceOf<T> = 10u32.into();
             let bridge_min_limit = Self::bridge_min_limit();
-            ensure!(bridge_min_limit == None && amount >= default_limit || bridge_min_limit != None && amount >=  bridge_min_limit.unwrap(), Error::<T>::SwapAmountLessThenLimit);
+            ensure!(amount >= default_limit && bridge_min_limit != None && amount >=  bridge_min_limit.unwrap(), Error::<T>::SwapAmountLessThenLimit);
             ensure!(chain_type == CHAIN_ETH || chain_type == CHAIN_HECO, Error::<T>::ChainTypeNotFound);
             ensure!(coin_type == COIN_SGB, Error::<T>::CoinTypeNotFound);
 

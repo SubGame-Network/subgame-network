@@ -939,6 +939,56 @@ impl pallet_stake::Config for Runtime {
 }
 /*** Pallet Stake ***/
 
+
+/*** Pallet Asset ***/
+// parameter_types! {
+//     pub const AssetDepositGeneral: Balance = 100 * DOLLARS; // 1 UNIT deposit to create asset
+//     pub const ApprovalDepositGeneral: Balance = 100 * DOLLARS;
+//     pub const StringLimitGeneral: u32 = 50;
+//     pub const MetadataDepositBaseGeneral: Balance = 100 * DOLLARS;
+//     pub const MetadataDepositPerByteGeneral: Balance = 100 * DOLLARS;
+// }
+
+// // impl pallet_randomness_collective_flip::Config for Runtime {}
+
+// impl pallet_assets::Config for Runtime {
+//     type Event = Event;
+//     type Balance = Balance;
+//     type AssetId = u32;
+//     type Currency = Balances;
+//     type ForceOrigin = EnsureRoot<AccountId>; // allow council later
+//     type AssetDepositBase = AssetDepositGeneral;
+//     type MetadataDepositBase = MetadataDepositBaseGeneral;
+//     type MetadataDepositPerByte = MetadataDepositPerByteGeneral;
+//     type ApprovalDeposit = ApprovalDepositGeneral;
+//     type StringLimit = StringLimitGeneral;
+//     type Freezer = ();
+//     type Extra = ();
+//     type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
+// }
+parameter_types! {
+	pub const AssetDepositBase: Balance = 100 * DOLLARS;
+	pub const AssetDepositPerZombie: Balance = 1 * DOLLARS;
+	pub const StringLimit: u32 = 50;
+	pub const MetadataDepositBase: Balance = 10 * DOLLARS;
+	pub const MetadataDepositPerByte: Balance = 1 * DOLLARS;
+}
+/// Configure the pallet_assets
+impl pallet_assets::Config for Runtime {
+	type Event = Event;
+	type Balance = u64;
+	type AssetId = u32;
+	type Currency = Balances;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type AssetDepositBase = AssetDepositBase;
+	type AssetDepositPerZombie = AssetDepositPerZombie;
+	type StringLimit = StringLimit;
+	type MetadataDepositBase = MetadataDepositBase;
+	type MetadataDepositPerByte = MetadataDepositPerByte;
+	type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
+}
+/*** Pallet Asset ***/
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -983,6 +1033,7 @@ construct_runtime!(
         GameGuessHashModule: pallet_gametemplates_guess_hash::{Module, Call, Storage, Event<T>},
         Bridge: pallet_bridge::{Module, Call, Storage, Event<T>},
         Stake: pallet_stake::{Module, Call, Storage, Event<T>},
+        Assets: pallet_assets::{Module, Call, Storage, Event<T>},
     }
 );
 

@@ -33,7 +33,7 @@ pallet-gametemplates-guess-hash = { path = '../pallets/gametemplates-guess-hash'
 pallet-chips = { path = '../pallets/chips', default-features = false, version = '3.0.0' }
 pallet-bridge = { path = '../pallets/bridge', default-features = false, version = '3.0.0' }
 pallet-stake = { path = '../pallets/stake', default-features = false, version = '3.0.0' }
-
+pallet-assets = { path = "../pallets/assets", default-features = false, version = '3.0.0'  }
 
 # Substrate dependencies
 frame-benchmarking = { default-features = false, optional = true, version = '3.0.0' }
@@ -151,4 +151,5 @@ std = [
     'pallet-contracts-primitives/std',
     'pallet-contracts-rpc-runtime-api/std',
     'pallet-scheduler/std',
+	'pallet-assets/std',
 ]

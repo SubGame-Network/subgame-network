@@ -35,6 +35,11 @@ pallet-bridge = { path = '../pallets/bridge', default-features = false, version 
 pallet-stake = { path = '../pallets/stake', default-features = false, version = '3.0.0' }
 pallet-assets = { path = "../pallets/assets", default-features = false, version = '3.0.0'  }
 
+orml-currencies = {default-features = false, version = '0.4.0'}
+orml-tokens = { default-features = false, version = '0.4.0' }
+orml-traits = { default-features = false, version = '0.4.0' }
+pendulum-common = { version = "0.1.0", default-features = false, path = "../common/" }
+
 # Substrate dependencies
 frame-benchmarking = { default-features = false, optional = true, version = '3.0.0' }
 frame-executive = { default-features = false, version = '3.0.0' }
@@ -151,5 +156,12 @@ std = [
     'pallet-contracts-primitives/std',
     'pallet-contracts-rpc-runtime-api/std',
     'pallet-scheduler/std',
+
+
+	"orml-tokens/std",
+    "orml-traits/std",
+    "pendulum-common/std",
+    "orml-currencies/std",
+    
 	'pallet-assets/std',
 ]

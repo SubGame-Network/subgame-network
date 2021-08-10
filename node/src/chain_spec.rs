@@ -17,6 +17,7 @@ use subgame_runtime::{
 	SessionConfig, StakingConfig, ImOnlineConfig,
     SystemConfig, WASM_BINARY,
 	IndicesConfig, CouncilConfig, TechnicalCommitteeConfig,
+    TokensConfig, CurrencyId,
 };
 
 fn session_keys(
@@ -402,6 +403,12 @@ fn testnet_genesis(
             },
         }),
         /*** Pallet Contracts ***/
+        orml_tokens: Some(TokensConfig {
+            endowed_accounts: endowed_accounts
+                .iter()
+                .flat_map(|x| vec![(x.0.clone(), CurrencyId::create_from_slice("USDC"), 10u128.pow(12))])
+                .collect(),
+        }),
     }
 }
 
@@ -483,5 +490,11 @@ fn mainnet_genesis(
             },
         }),
         /*** Pallet Contracts ***/
+        orml_tokens: Some(TokensConfig {
+            endowed_accounts: endowed_accounts
+                .iter()
+                .flat_map(|x| vec![(x.0.clone(), CurrencyId::create_from_slice("USDC"), 10u128.pow(12))])
+                .collect(),
+        }),
     }
 }

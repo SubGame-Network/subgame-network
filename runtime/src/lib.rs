@@ -11,7 +11,6 @@ use pallet_grandpa::{AuthorityId as GrandpaId, AuthorityList as GrandpaAuthority
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::traits::{
-    Zero,
     AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, OpaqueKeys, NumberFor, Verify,
 };
 use sp_runtime::{
@@ -48,7 +47,7 @@ use static_assertions::const_assert;
 use pallet_transaction_payment::CurrencyAdapter;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
-pub use sp_runtime::{Percent, Perbill, Permill};
+pub use sp_runtime::{Percent, Perbill, Permill, RuntimeDebug};
 
 /*** Pallet Contracts ***/
 use pallet_contracts::weights::WeightInfo;
@@ -56,11 +55,6 @@ use pallet_contracts::weights::WeightInfo;
 use pallet_session::historical as session_historical;
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 
-use orml_traits::parameter_type_with_key;
-
-pub use pendulum_common::currency::CurrencyId;
-
-use orml_currencies::BasicCurrencyAdapter;
 
 pub type Amount = i128;
 
@@ -875,6 +869,7 @@ impl pallet_bridge::Config for Runtime {
     type Balances = pallet_balances::Module<Runtime>;
     type OwnerAddress = BridgeOwner;
     type WeightInfo = ();
+    type Assets = Assets;
 }
 /*** Pallet Chips ***/
 
@@ -996,36 +991,68 @@ impl pallet_assets::Config for Runtime {
 	type MetadataDepositPerByte = MetadataDepositPerByte;
 	type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
 }
-/*** Pallet Asset ***/
 
 
-impl orml_tokens::Config for Runtime {
+/*** Pallet Swaps ***/
+/// Configure the pallet_assets
+impl pallet_swaps::Config for Runtime {
+	type Event = Event;
+    type SwapId = u32;
+	type Currency = Balances;
+}
+
+
+/*** Pallet Swaps ***/
+
+/*** Pallet fungible ***/
+/// Configure the pallet_assets
+impl pallet_fungible::Config for Runtime {
     type Event = Event;
-    type Balance = Balance;
-    type Amount = Amount;
-    type CurrencyId = CurrencyId;
-    type WeightInfo = ();
-    type ExistentialDeposits = ExistentialDeposits;
-    type OnDust = ();
+    type TokenBalance = u32;
+    type TokenId = u32;
 }
 
-parameter_type_with_key! {
-    pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
-        Zero::zero()
-    };
-}
 
-parameter_types! {
-    pub const GetNativeCurrencyId: CurrencyId = CurrencyId::Native;
-}
+/*** Pallet fungible ***/
 
-impl orml_currencies::Config for Runtime {
-    type Event = Event;
-    type MultiCurrency = Tokens;
-    type NativeCurrency = BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
-    type GetNativeCurrencyId = GetNativeCurrencyId;
-    type WeightInfo = ();
-}
+// #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
+// #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+// pub enum CurrencyId {
+// 	Native,
+// 	USDT,
+// 	DOT,
+// 	KSM,
+// 	BTC,
+// }
+
+// parameter_type_with_key! {
+//     pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
+//         Zero::zero()
+//     };
+// }
+
+
+// impl orml_tokens::Config for Runtime {
+//     type Event = Event;
+//     type Balance = Balance;
+//     type Amount = Amount;
+//     type CurrencyId = CurrencyId;
+//     type WeightInfo = ();
+//     type ExistentialDeposits = ExistentialDeposits;
+//     type OnDust = ();
+// }
+
+// parameter_types! {
+//     pub const GetNativeCurrencyId: CurrencyId = CurrencyId::Native;
+// }
+
+// impl orml_currencies::Config for Runtime {
+//     type Event = Event;
+//     type MultiCurrency = Tokens;
+//     type NativeCurrency = BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
+//     type GetNativeCurrencyId = GetNativeCurrencyId;
+//     type WeightInfo = ();
+// }
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -1071,8 +1098,10 @@ construct_runtime!(
         Bridge: pallet_bridge::{Module, Call, Storage, Event<T>},
         Stake: pallet_stake::{Module, Call, Storage, Event<T>},
         Assets: pallet_assets::{Module, Call, Storage, Event<T>},
-        Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
-        Currencies: orml_currencies::{Module, Call, Event<T>},
+        Swaps: pallet_swaps::{Module, Call, Storage, Event},
+        Fungible: pallet_fungible::{Module, Call, Storage, Event<T>},
+        // Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
+        // Currencies: orml_currencies::{Module, Call, Event<T>},
     }
 );
 

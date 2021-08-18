@@ -6,8 +6,13 @@ use codec::{Decode, Encode};
 use frame_support::{
     decl_error, decl_event, decl_module, decl_storage, dispatch, ensure,
     traits::{Currency, ExistenceRequirement, Get},
-    weights::{Weight, Pays, DispatchClass}
+    weights::{Weight, Pays, DispatchClass},
+    debug,
+
 };
+use sp_std::convert::TryInto;
+
+use pallet_assets::{AssetsTrait, AssetsTransfer};
 use frame_system::ensure_signed;
 // use sp_runtime::{{
 //     traits::{CheckedAdd, CheckedSub}
@@ -38,7 +43,10 @@ pub const CHAIN_HECO: u8 = 3;
 /// Define the coin type
 /// sgb
 pub const COIN_SGB: u8 = 1;
+/// usdt
+pub const COIN_USDT: u8 = 2;
 
+pub const SGB_BALANCE_UNIT: u64 = 10000000000 ;
 
 
 pub trait Config: frame_system::Config {
@@ -47,6 +55,8 @@ pub trait Config: frame_system::Config {
     /// The address where funds are temporarily deposited
     type OwnerAddress: Get<Self::AccountId>;
     type WeightInfo: WeightInfo;
+
+    type Assets: AssetsTrait + AssetsTransfer<Self::AccountId, u32>;
 }
 
 pub type BalanceOf<T> =
@@ -82,6 +92,7 @@ decl_error! {
         MoneyNotEnough,
         CoinTypeNotFound,
         ChainTypeNotFound,
+        AssetAmountDenied,
         NeverBoughtChips,
         PermissionDenied,
         BridgeNotEnoughMinLimt,
@@ -100,10 +111,20 @@ decl_module! {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();
             ensure!(owner == sender, Error::<T>::PermissionDenied);
+            debug::info!("mint log：{:?}", amount);
            
-            ensure!(coin_type == COIN_SGB, Error::<T>::CoinTypeNotFound);
-        
-            T::Balances::transfer(&owner, &to_address, amount, ExistenceRequirement::KeepAlive).map_err(|_| Error::<T>::MoneyNotEnough)?;
+            ensure!(coin_type == COIN_SGB || coin_type == COIN_USDT, Error::<T>::CoinTypeNotFound);
+
+            if coin_type == COIN_SGB {
+                T::Balances::transfer(&owner, &to_address, amount, ExistenceRequirement::KeepAlive).map_err(|_| Error::<T>::MoneyNotEnough)?;
+            }else{
+                let asset_amount = TryInto::<u64>::try_into(amount).ok();
+                // 確認是否成功轉換
+                ensure!(asset_amount != None, Error::<T>::AssetAmountDenied);
+
+                let result = T::Assets::mint(owner.clone(), coin_type.into(), to_address.clone(), asset_amount.unwrap() / SGB_BALANCE_UNIT)?;
+                debug::info!("mint log：{:?}", result);
+            }
 
             // Send event notification
             Self::deposit_event(RawEvent::Send(to_address, amount, hash));
@@ -117,12 +138,25 @@ decl_module! {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();
             let default_limit: BalanceOf<T> = 10u32.into();
-            let bridge_min_limit = Self::bridge_min_limit();
-            ensure!(amount >= default_limit && bridge_min_limit != None && amount >=  bridge_min_limit.unwrap(), Error::<T>::SwapAmountLessThenLimit);
+            // let bridge_min_limit = Self::bridge_min_limit();
+            
+            ensure!(amount >= default_limit, Error::<T>::SwapAmountLessThenLimit);
+            
+           
             ensure!(chain_type == CHAIN_ETH || chain_type == CHAIN_HECO, Error::<T>::ChainTypeNotFound);
-            ensure!(coin_type == COIN_SGB, Error::<T>::CoinTypeNotFound);
+            ensure!(coin_type == COIN_SGB || coin_type == COIN_USDT, Error::<T>::CoinTypeNotFound);
 
-            T::Balances::transfer(&sender, &owner, amount, ExistenceRequirement::KeepAlive).map_err(|_| Error::<T>::MoneyNotEnough)?;
+            if coin_type == COIN_SGB {
+                T::Balances::transfer(&sender, &owner, amount, ExistenceRequirement::KeepAlive).map_err(|_| Error::<T>::MoneyNotEnough)?;
+            }else{
+                let asset_amount = TryInto::<u64>::try_into(amount).ok();
+                // 確認是否成功轉換
+                ensure!(asset_amount != None, Error::<T>::AssetAmountDenied);
+                
+                debug::info!("mint log：{:?}", asset_amount);
+                let result = T::Assets::burn(owner.clone(), coin_type.into(), sender.clone(), asset_amount.unwrap() / SGB_BALANCE_UNIT)?;
+                debug::info!("burn log：{:?}", result);
+            }
 
             // Send event notification
             Self::deposit_event(RawEvent::ReceiveBridge(sender, to_address, chain_type, coin_type, amount));
@@ -138,5 +172,23 @@ decl_module! {
             <BridgeMinLimit<T>>::put(amount);
             Ok(())
         }
+
+        // /// test token deposit
+        // #[weight = T::WeightInfo::receive_bridge()]
+        // pub fn test_toke_deposit(origin, asset_id: u32, to_address: T::AccountId , amount: BalanceOf<T>) -> dispatch::DispatchResult {
+        //     let sender = ensure_signed(origin)?;
+        //     let result = T::Assets::mint(sender, asset_id, to_address.clone(), amount.try_into().ok())?;
+        //     debug::info!("{:?}", result);
+        //     Ok(())
+        // }
+
+        // /// test token withdraw
+        // #[weight = T::WeightInfo::receive_bridge()]
+        // pub fn test_toke_withdraw(origin, asset_id: u32, to_address: T::AccountId , amount: BalanceOf<T>) -> dispatch::DispatchResult {
+        //     let sender = ensure_signed(origin)?;
+        //     let result = T::Assets::burn(sender, asset_id, to_address.clone(), amount.try_into().ok())?;
+        //     debug::info!("{:?}", result);
+        //     Ok(())
+        // }
     }
 }

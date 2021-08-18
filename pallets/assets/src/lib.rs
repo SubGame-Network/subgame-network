@@ -128,6 +128,10 @@ pub use weights::WeightInfo;
 
 type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
+use sp_std::convert::TryInto;
+use frame_support::{
+    debug,
+};
 /// The module configuration trait.
 pub trait Config: frame_system::Config {
 	/// The overarching event type.
@@ -167,7 +171,7 @@ pub trait Config: frame_system::Config {
 }
 
 #[derive(Clone, Encode, Decode, Eq, PartialEq, RuntimeDebug)]
-pub struct AssetDetails<
+pub struct SubGameAssetDetails<
 	Balance: Encode + Decode + Clone + Debug + Eq + PartialEq,
 	AccountId: Encode + Decode + Clone + Debug + Eq + PartialEq,
 	DepositBalance: Encode + Decode + Clone + Debug + Eq + PartialEq,
@@ -200,7 +204,7 @@ pub struct AssetDetails<
 }
 
 #[derive(Clone, Encode, Decode, Eq, PartialEq, RuntimeDebug, Default)]
-pub struct AssetBalance<
+pub struct SusGameAssetBalance<
 	Balance: Encode + Decode + Clone + Debug + Eq + PartialEq,
 > {
 	/// The balance.
@@ -212,7 +216,7 @@ pub struct AssetBalance<
 }
 
 #[derive(Clone, Encode, Decode, Eq, PartialEq, RuntimeDebug, Default)]
-pub struct AssetMetadata<DepositBalance> {
+pub struct SubGameAssetMetadata<DepositBalance> {
 	/// The balance deposited for this metadata.
 	///
 	/// This pays for the data stored in this struct.
@@ -228,7 +232,7 @@ pub struct AssetMetadata<DepositBalance> {
 decl_storage! {
 	trait Store for Module<T: Config> as Assets {
 		/// Details of an asset.
-		Asset: map hasher(blake2_128_concat) T::AssetId => Option<AssetDetails<
+		Asset: map hasher(blake2_128_concat) T::AssetId => Option<SubGameAssetDetails<
 			T::Balance,
 			T::AccountId,
 			BalanceOf<T>,
@@ -238,10 +242,10 @@ decl_storage! {
 		Account: double_map
 			hasher(blake2_128_concat) T::AssetId,
 			hasher(blake2_128_concat) T::AccountId
-			=> AssetBalance<T::Balance>;
+			=> SusGameAssetBalance<T::Balance>;
 
 		/// Metadata of an asset.
-		Metadata: map hasher(blake2_128_concat) T::AssetId => AssetMetadata<BalanceOf<T>>;
+		Metadata: map hasher(blake2_128_concat) T::AssetId => SubGameAssetMetadata<BalanceOf<T>>;
 	}
 }
 
@@ -364,7 +368,7 @@ decl_module! {
 			 	.saturating_add(T::AssetDepositBase::get());
 			T::Currency::reserve(&owner, deposit)?;
 
-			Asset::<T>::insert(id, AssetDetails {
+			Asset::<T>::insert(id, SubGameAssetDetails {
 				owner: owner.clone(),
 				issuer: admin.clone(),
 				admin: admin.clone(),
@@ -414,7 +418,7 @@ decl_module! {
 			ensure!(!Asset::<T>::contains_key(id), Error::<T>::InUse);
 			ensure!(!min_balance.is_zero(), Error::<T>::MinBalanceZero);
 
-			Asset::<T>::insert(id, AssetDetails {
+			Asset::<T>::insert(id, SubGameAssetDetails {
 				owner: owner.clone(),
 				issuer: owner.clone(),
 				admin: owner.clone(),
@@ -1002,7 +1006,7 @@ decl_module! {
 						T::Currency::unreserve(&origin, old_deposit - new_deposit);
 					}
 
-					*metadata = Some(AssetMetadata {
+					*metadata = Some(SubGameAssetMetadata {
 						deposit: new_deposit,
 						name: name.clone(),
 						symbol: symbol.clone(),
@@ -1038,7 +1042,7 @@ impl<T: Config> Module<T> {
 
 	fn new_account(
 		who: &T::AccountId,
-		d: &mut AssetDetails<T::Balance, T::AccountId, BalanceOf<T>>,
+		d: &mut SubGameAssetDetails<T::Balance, T::AccountId, BalanceOf<T>>,
 	) -> Result<bool, DispatchError> {
 		let accounts = d.accounts.checked_add(1).ok_or(Error::<T>::Overflow)?;
 		let r = Ok(if frame_system::Module::<T>::account_exists(who) {
@@ -1056,7 +1060,7 @@ impl<T: Config> Module<T> {
 	/// If `who`` exists in system and it's a zombie, dezombify it.
 	fn dezombify(
 		who: &T::AccountId,
-		d: &mut AssetDetails<T::Balance, T::AccountId, BalanceOf<T>>,
+		d: &mut SubGameAssetDetails<T::Balance, T::AccountId, BalanceOf<T>>,
 		is_zombie: &mut bool,
 	) {
 		if *is_zombie && frame_system::Module::<T>::account_exists(who) {
@@ -1070,7 +1074,7 @@ impl<T: Config> Module<T> {
 
 	fn dead_account(
 		who: &T::AccountId,
-		d: &mut AssetDetails<T::Balance, T::AccountId, BalanceOf<T>>,
+		d: &mut SubGameAssetDetails<T::Balance, T::AccountId, BalanceOf<T>>,
 		is_zombie: bool,
 	) {
 		if is_zombie {
@@ -1080,8 +1084,120 @@ impl<T: Config> Module<T> {
 		}
 		d.accounts = d.accounts.saturating_sub(1);
 	}
+
+	fn _mint(
+		sender: T::AccountId,
+		id: T::AssetId,
+		beneficiary: T::AccountId,
+		amount: T::Balance
+	) -> DispatchResult {
+		Asset::<T>::try_mutate(id, |maybe_details| {
+			let details = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
+
+			ensure!(&sender == &details.issuer, Error::<T>::NoPermission);
+			details.supply = details.supply.checked_add(&amount).ok_or(Error::<T>::Overflow)?;
+
+			Account::<T>::try_mutate(id, &beneficiary, |t| -> DispatchResult {
+				let new_balance = t.balance.saturating_add(amount);
+				ensure!(new_balance >= details.min_balance, Error::<T>::BalanceLow);
+				if t.balance.is_zero() {
+					t.is_zombie = Self::new_account(&beneficiary, details)?;
+				}
+				t.balance = new_balance;
+				Ok(())
+			})?;
+			Self::deposit_event(RawEvent::Issued(id, beneficiary, amount));
+			Ok(())
+		})
+	}
+	fn _burn(
+		sender: T::AccountId,
+		id: T::AssetId,
+		who: T::AccountId,
+		amount: T::Balance
+	) -> DispatchResult {
+		Asset::<T>::try_mutate(id, |maybe_details| {
+			let d = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
+			ensure!(&sender == &d.admin, Error::<T>::NoPermission);
+
+			let burned = Account::<T>::try_mutate_exists(
+				id,
+				&who,
+				|maybe_account| -> Result<T::Balance, DispatchError> {
+					let mut account = maybe_account.take().ok_or(Error::<T>::BalanceZero)?;
+					let mut burned = amount.min(account.balance);
+					account.balance -= burned;
+					*maybe_account = if account.balance < d.min_balance {
+						burned += account.balance;
+						Self::dead_account(&who, d, account.is_zombie);
+						None
+					} else {
+						Some(account)
+					};
+					Ok(burned)
+				}
+			)?;
+
+			d.supply = d.supply.saturating_sub(burned);
+
+			Self::deposit_event(RawEvent::Burned(id, who, burned));
+			Ok(())
+		})
+	}
 }
 
+
+pub trait AssetsTrait {
+    // type SusGameAssetBalance: Member + Parameter + AtLeast32BitUnsigned + Default + Copy;
+}
+pub trait AssetsTransfer<AccountId, AssetId>: AssetsTrait {
+    fn mint(
+		sender: AccountId,
+		id: AssetId,
+		beneficiary: AccountId,
+		amount: u64
+	) -> DispatchResult;
+    fn burn(
+		sender: AccountId,
+		id: AssetId,
+		who: AccountId,
+		amount: u64
+	) -> DispatchResult;
+}
+
+impl<T: Config> AssetsTrait for Module<T> {
+    // type SusGameAssetBalance = T::SusGameAssetBalance;
+}
+
+impl<T: Config> AssetsTransfer<T::AccountId, T::AssetId> for Module<T> {
+	fn mint(
+		sender: T::AccountId,
+		id: T::AssetId,
+		beneficiary: T::AccountId,
+		amount: u64
+	) -> DispatchResult {
+		debug::info!("mint log id：{:?}", id);
+		debug::info!("mint log amount：{:?}", amount);
+		let balance: Option<T::Balance> = amount.try_into().ok();
+		debug::info!("mint log balance{:?}", balance);
+		Self::_mint(sender, id, beneficiary, balance.unwrap())?;
+        Ok(())
+	}
+
+	fn burn(
+		sender: T::AccountId,
+		id: T::AssetId,
+		who: T::AccountId,
+		amount: u64
+	) -> DispatchResult {
+		debug::info!("burn log id：{:?}", id);
+		debug::info!("burn log amount：{:?}", amount);
+		let balance: Option<T::Balance> = amount.try_into().ok();
+		debug::info!("burn log balance{:?}", balance);
+		Self::_burn(sender, id, who, balance.unwrap())?;
+        Ok(())
+	}
+}
 #[cfg(test)]
 mod tests {
 	use super::*;

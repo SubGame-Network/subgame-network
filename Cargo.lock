@@ -3747,12 +3747,14 @@ version = "3.0.0"
 dependencies = [
  "frame-support",
  "frame-system",
+ "pallet-assets",
  "pallet-balances",
  "parity-scale-codec",
  "serde",
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -3890,6 +3892,21 @@ dependencies = [
  "parity-scale-codec",
  "serde",
  "sp-npos-elections",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-fungible"
+version = "3.0.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parity-scale-codec",
+ "safe-mix",
+ "sp-core",
+ "sp-io",
  "sp-runtime",
  "sp-std",
 ]
@@ -4191,6 +4208,22 @@ dependencies = [
  "frame-system",
  "parity-scale-codec",
  "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-swaps"
+version = "3.0.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-fungible",
+ "parity-scale-codec",
+ "safe-mix",
+ "sp-core",
  "sp-io",
  "sp-runtime",
  "sp-std",
@@ -7517,6 +7550,7 @@ dependencies = [
  "pallet-contracts-rpc-runtime-api",
  "pallet-democracy",
  "pallet-elections-phragmen",
+ "pallet-fungible",
  "pallet-gamecenter",
  "pallet-gametemplates",
  "pallet-gametemplates-guess-hash",
@@ -7535,6 +7569,7 @@ dependencies = [
  "pallet-staking",
  "pallet-staking-reward-curve",
  "pallet-sudo",
+ "pallet-swaps",
  "pallet-timestamp",
  "pallet-tips",
  "pallet-transaction-payment",

@@ -44,7 +44,7 @@ pub const CHAIN_HECO: u8 = 3;
 /// sgb
 pub const COIN_SGB: u8 = 1;
 /// usdt
-pub const COIN_USDT: u8 = 2;
+pub const COIN_USDT: u8 = 7;
 
 pub const SGB_BALANCE_UNIT: u64 = 10000000000 ;
 
@@ -153,7 +153,7 @@ decl_module! {
                 // 確認是否成功轉換
                 ensure!(asset_amount != None, Error::<T>::AssetAmountDenied);
                 
-                debug::info!("mint log：{:?}", asset_amount);
+                debug::info!("burn log：{:?}", asset_amount);
                 let result = T::Assets::burn(owner.clone(), coin_type.into(), sender.clone(), asset_amount.unwrap() / SGB_BALANCE_UNIT)?;
                 debug::info!("burn log：{:?}", result);
             }

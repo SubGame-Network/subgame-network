@@ -39,6 +39,9 @@ pub const CHAIN_SUBGAME: u8 = 1;
 pub const CHAIN_ETH: u8 = 2;
 /// heco
 pub const CHAIN_HECO: u8 = 3;
+pub const CHAIN_BSC: u8 = 4;
+pub const CHAIN_OKC: u8 = 5;
+pub const CHAIN_TRON: u8 = 6;
 
 /// Define the coin type
 /// sgb
@@ -143,7 +146,10 @@ decl_module! {
             ensure!(amount >= default_limit, Error::<T>::SwapAmountLessThenLimit);
             
            
-            ensure!(chain_type == CHAIN_ETH || chain_type == CHAIN_HECO, Error::<T>::ChainTypeNotFound);
+            ensure!(
+                chain_type == CHAIN_ETH || chain_type == CHAIN_HECO || chain_type == CHAIN_BSC || 
+                chain_type == CHAIN_OKC || chain_type == CHAIN_TRON
+                , Error::<T>::ChainTypeNotFound);
             ensure!(coin_type == COIN_SGB || coin_type == COIN_USDT, Error::<T>::CoinTypeNotFound);
 
             if coin_type == COIN_SGB {

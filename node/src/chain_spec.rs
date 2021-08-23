@@ -9,7 +9,7 @@ use sp_finality_grandpa::AuthorityId as GrandpaId;
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_runtime::traits::{IdentifyAccount, Verify};
-use subgame_runtime::ContractsConfig;
+// use subgame_runtime::ContractsConfig;
 use subgame_runtime::{
     opaque::SessionKeys,
     AccountId, BabeConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
@@ -395,12 +395,12 @@ fn testnet_genesis(
         pallet_elections_phragmen: Some(Default::default()),
 		pallet_treasury: Some(Default::default()),
         /*** Pallet Contracts ***/
-        pallet_contracts: Some(ContractsConfig {
-            current_schedule: pallet_contracts::Schedule {
-                enable_println,
-                ..Default::default()
-            },
-        }),
+        // pallet_contracts: Some(ContractsConfig {
+        //     current_schedule: pallet_contracts::Schedule {
+        //         enable_println,
+        //         ..Default::default()
+        //     },
+        // }),
         /*** Pallet Contracts ***/
     }
 }
@@ -476,12 +476,12 @@ fn mainnet_genesis(
         pallet_elections_phragmen: Some(Default::default()),
 		pallet_treasury: Some(Default::default()),
         /*** Pallet Contracts ***/
-        pallet_contracts: Some(ContractsConfig {
-            current_schedule: pallet_contracts::Schedule {
-                enable_println,
-                ..Default::default()
-            },
-        }),
+        // pallet_contracts: Some(ContractsConfig {
+        //     current_schedule: pallet_contracts::Schedule {
+        //         enable_println,
+        //         ..Default::default()
+        //     },
+        // }),
         /*** Pallet Contracts ***/
     }
 }

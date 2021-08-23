@@ -1276,7 +1276,7 @@ mod tests {
 	impl Config for Test {
 		type Currency = Balances;
 		type Event = Event;
-		type Balance = u64;
+		type SGAssetBalance = u64;
 		type AssetId = u32;
 		type ForceOrigin = frame_system::EnsureRoot<u64>;
 		type AssetDepositBase = AssetDepositBase;

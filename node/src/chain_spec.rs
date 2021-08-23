@@ -104,7 +104,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
                     (get_account_id_from_seed::<sr25519::Public>("Alice//stash"), 5000000000000000000),
                     (get_account_id_from_seed::<sr25519::Public>("Bob//stash"), 5000000000000000000),
                 ],
-                true,
+                // true,
             )
         },
         // Bootnodes
@@ -173,7 +173,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                     // 5EyJyiFeYtDxdzXbk62wTZSnHyn3Rwhbc56oELNzJVTG2rRY	
                     (hex!["8097750cd4845d1e9b5ad167845dfceb43511271ea3ac966f082e7ba003aa87c"].into(), 1000000000000),    // 100
                 ],
-                true,
+                // true,
             )
         },
         // Bootnodes
@@ -306,7 +306,7 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                     // 5E1VUev4ym8QBDVE9Wp2oReWuYCfkJJBLnrFxdytqHc7yH5q
                     (hex!["56050eb15aa425e8a502477d7cc0e4bd4b5e55b67a0b340ea27e437ed4595302"].into(), 1000000000000), // 100
                 ],
-                true,
+                // true,
             )
         },
         // Bootnodes
@@ -330,7 +330,7 @@ fn testnet_genesis(
     initial_authorities: Vec<(AccountId, AccountId, BabeId, GrandpaId, ImOnlineId, AuthorityDiscoveryId)>,
     root_key: AccountId,
     endowed_accounts: Vec<(AccountId, u128)>,
-    enable_println: bool,
+    // enable_println: bool,
 ) -> GenesisConfig {
     GenesisConfig {
         frame_system: Some(SystemConfig {
@@ -411,7 +411,7 @@ fn mainnet_genesis(
     initial_authorities: Vec<(AccountId, AccountId, BabeId, GrandpaId, ImOnlineId, AuthorityDiscoveryId)>,
     root_key: AccountId,
     endowed_accounts: Vec<(AccountId, u128)>,
-    enable_println: bool,
+    // enable_println: bool,
 ) -> GenesisConfig {
     GenesisConfig {
         frame_system: Some(SystemConfig {

@@ -7,14 +7,14 @@
 
 use std::sync::Arc;
 
-// use pallet_contracts_rpc::{Contracts, ContractsApi};
+use pallet_contracts_rpc::{Contracts, ContractsApi};
 pub use sc_rpc_api::DenyUnsafe;
 use sp_api::ProvideRuntimeApi;
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 use sp_transaction_pool::TransactionPool;
 use subgame_runtime::{opaque::Block, AccountId, Balance, 
-    // BlockNumber, 
+    BlockNumber, 
     Index};
 
 /// Full client dependencies.
@@ -38,7 +38,7 @@ where
     C::Api: BlockBuilder<Block>,
     P: TransactionPool + 'static,
     /*** Pallet Contracts ***/
-    // C::Api: pallet_contracts_rpc::ContractsRuntimeApi<Block, AccountId, Balance, BlockNumber>,
+    C::Api: pallet_contracts_rpc::ContractsRuntimeApi<Block, AccountId, Balance, BlockNumber>,
     /*** Pallet Contracts ***/
 {
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
@@ -67,7 +67,7 @@ where
     // `io.extend_with(YourRpcTrait::to_delegate(YourRpcStruct::new(ReferenceToClient, ...)));`
 
     /*** Pallet Contracts ***/
-    // io.extend_with(ContractsApi::to_delegate(Contracts::new(client.clone())));
+    io.extend_with(ContractsApi::to_delegate(Contracts::new(client.clone())));
     /*** Pallet Contracts ***/
 
     io

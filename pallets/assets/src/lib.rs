@@ -138,7 +138,7 @@ pub trait Config: frame_system::Config {
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
 
 	/// The units in which we record balances.
-	type Balance: Member + Parameter + AtLeast32BitUnsigned + Default + Copy;
+	type SGAssetBalance: Member + Parameter + AtLeast32BitUnsigned + Default + Copy;
 
 	/// The arithmetic type of asset identifier.
 	type AssetId: Member + Parameter + Default + Copy + HasCompact;
@@ -233,7 +233,7 @@ decl_storage! {
 	trait Store for Module<T: Config> as Assets {
 		/// Details of an asset.
 		Asset: map hasher(blake2_128_concat) T::AssetId => Option<SubGameAssetDetails<
-			T::Balance,
+			T::SGAssetBalance,
 			T::AccountId,
 			BalanceOf<T>,
 		>>;
@@ -242,7 +242,7 @@ decl_storage! {
 		Account: double_map
 			hasher(blake2_128_concat) T::AssetId,
 			hasher(blake2_128_concat) T::AccountId
-			=> SusGameAssetBalance<T::Balance>;
+			=> SusGameAssetBalance<T::SGAssetBalance>;
 
 		/// Metadata of an asset.
 		Metadata: map hasher(blake2_128_concat) T::AssetId => SubGameAssetMetadata<BalanceOf<T>>;
@@ -252,23 +252,23 @@ decl_storage! {
 decl_event! {
 	pub enum Event<T> where
 		<T as frame_system::Config>::AccountId,
-		<T as Config>::Balance,
+		<T as Config>::SGAssetBalance,
 		<T as Config>::AssetId,
 	{
 		/// Some asset class was created. \[asset_id, creator, owner\]
 		Created(AssetId, AccountId, AccountId),
 		/// Some assets were issued. \[asset_id, owner, total_supply\]
-		Issued(AssetId, AccountId, Balance),
+		Issued(AssetId, AccountId, SGAssetBalance),
 		/// Some assets were transferred. \[asset_id, from, to, amount\]
-		Transferred(AssetId, AccountId, AccountId, Balance),
+		Transferred(AssetId, AccountId, AccountId, SGAssetBalance),
 		/// Some assets were destroyed. \[asset_id, owner, balance\]
-		Burned(AssetId, AccountId, Balance),
+		Burned(AssetId, AccountId, SGAssetBalance),
 		/// The management team changed \[asset_id, issuer, admin, freezer\]
 		TeamChanged(AssetId, AccountId, AccountId, AccountId),
 		/// The owner changed \[asset_id, owner\]
 		OwnerChanged(AssetId, AccountId),
 		/// Some assets was transferred by an admin. \[asset_id, from, to, amount\]
-		ForceTransferred(AssetId, AccountId, AccountId, Balance),
+		ForceTransferred(AssetId, AccountId, AccountId, SGAssetBalance),
 		/// Some account `who` was frozen. \[asset_id, who\]
 		Frozen(AssetId, AccountId),
 		/// Some account `who` was thawed. \[asset_id, who\]
@@ -293,9 +293,9 @@ decl_error! {
 		/// Transfer amount should be non-zero.
 		AmountZero,
 		/// Account balance must be greater than or equal to the transfer amount.
-		BalanceLow,
-		/// Balance should be non-zero.
-		BalanceZero,
+		AssetBalanceLow,
+		/// AssetBalance should be non-zero.
+		AssetBalanceZero,
 		/// The signing account has no permission to do the operation.
 		NoPermission,
 		/// The given asset ID is unknown.
@@ -355,7 +355,7 @@ decl_module! {
 			#[compact] id: T::AssetId,
 			admin: <T::Lookup as StaticLookup>::Source,
 			max_zombies: u32,
-			min_balance: T::Balance,
+			min_balance: T::SGAssetBalance,
 		) {
 			let owner = ensure_signed(origin)?;
 			let admin = T::Lookup::lookup(admin)?;
@@ -410,7 +410,7 @@ decl_module! {
 			#[compact] id: T::AssetId,
 			owner: <T::Lookup as StaticLookup>::Source,
 			#[compact] max_zombies: u32,
-			#[compact] min_balance: T::Balance,
+			#[compact] min_balance: T::SGAssetBalance,
 		) {
 			T::ForceOrigin::ensure_origin(origin)?;
 			let owner = T::Lookup::lookup(owner)?;
@@ -515,7 +515,7 @@ decl_module! {
 		fn mint(origin,
 			#[compact] id: T::AssetId,
 			beneficiary: <T::Lookup as StaticLookup>::Source,
-			#[compact] amount: T::Balance
+			#[compact] amount: T::SGAssetBalance
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
 			let beneficiary = T::Lookup::lookup(beneficiary)?;
@@ -528,7 +528,7 @@ decl_module! {
 
 				Account::<T>::try_mutate(id, &beneficiary, |t| -> DispatchResult {
 					let new_balance = t.balance.saturating_add(amount);
-					ensure!(new_balance >= details.min_balance, Error::<T>::BalanceLow);
+					ensure!(new_balance >= details.min_balance, Error::<T>::AssetBalanceLow);
 					if t.balance.is_zero() {
 						t.is_zombie = Self::new_account(&beneficiary, details)?;
 					}
@@ -559,7 +559,7 @@ decl_module! {
 		fn burn(origin,
 			#[compact] id: T::AssetId,
 			who: <T::Lookup as StaticLookup>::Source,
-			#[compact] amount: T::Balance
+			#[compact] amount: T::SGAssetBalance
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
 			let who = T::Lookup::lookup(who)?;
@@ -571,8 +571,8 @@ decl_module! {
 				let burned = Account::<T>::try_mutate_exists(
 					id,
 					&who,
-					|maybe_account| -> Result<T::Balance, DispatchError> {
-						let mut account = maybe_account.take().ok_or(Error::<T>::BalanceZero)?;
+					|maybe_account| -> Result<T::SGAssetBalance, DispatchError> {
+						let mut account = maybe_account.take().ok_or(Error::<T>::AssetBalanceZero)?;
 						let mut burned = amount.min(account.balance);
 						account.balance -= burned;
 						*maybe_account = if account.balance < d.min_balance {
@@ -615,7 +615,7 @@ decl_module! {
 		fn transfer(origin,
 			#[compact] id: T::AssetId,
 			target: <T::Lookup as StaticLookup>::Source,
-			#[compact] amount: T::Balance
+			#[compact] amount: T::SGAssetBalance
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
 			ensure!(!amount.is_zero(), Error::<T>::AmountZero);
@@ -623,7 +623,7 @@ decl_module! {
 			let mut origin_account = Account::<T>::get(id, &origin);
 			ensure!(!origin_account.is_frozen, Error::<T>::Frozen);
 			origin_account.balance = origin_account.balance.checked_sub(&amount)
-				.ok_or(Error::<T>::BalanceLow)?;
+				.ok_or(Error::<T>::AssetBalanceLow)?;
 
 			let dest = T::Lookup::lookup(target)?;
 			Asset::<T>::try_mutate(id, |maybe_details| {
@@ -642,7 +642,7 @@ decl_module! {
 
 				Account::<T>::try_mutate(id, &dest, |a| -> DispatchResult {
 					let new_balance = a.balance.saturating_add(amount);
-					ensure!(new_balance >= details.min_balance, Error::<T>::BalanceLow);
+					ensure!(new_balance >= details.min_balance, Error::<T>::AssetBalanceLow);
 					if a.balance.is_zero() {
 						a.is_zombie = Self::new_account(&dest, details)?;
 					}
@@ -690,7 +690,7 @@ decl_module! {
 			#[compact] id: T::AssetId,
 			source: <T::Lookup as StaticLookup>::Source,
 			dest: <T::Lookup as StaticLookup>::Source,
-			#[compact] amount: T::Balance,
+			#[compact] amount: T::SGAssetBalance,
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
 
@@ -716,7 +716,7 @@ decl_module! {
 
 				Account::<T>::try_mutate(id, &dest, |a| -> DispatchResult {
 					let new_balance = a.balance.saturating_add(amount);
-					ensure!(new_balance >= details.min_balance, Error::<T>::BalanceLow);
+					ensure!(new_balance >= details.min_balance, Error::<T>::AssetBalanceLow);
 					if a.balance.is_zero() {
 						a.is_zombie = Self::new_account(&dest, details)?;
 					}
@@ -757,7 +757,7 @@ decl_module! {
 			let d = Asset::<T>::get(id).ok_or(Error::<T>::Unknown)?;
 			ensure!(&origin == &d.freezer, Error::<T>::NoPermission);
 			let who = T::Lookup::lookup(who)?;
-			ensure!(Account::<T>::contains_key(id, &who), Error::<T>::BalanceZero);
+			ensure!(Account::<T>::contains_key(id, &who), Error::<T>::AssetBalanceZero);
 
 			Account::<T>::mutate(id, &who, |a| a.is_frozen = true);
 
@@ -781,7 +781,7 @@ decl_module! {
 			let details = Asset::<T>::get(id).ok_or(Error::<T>::Unknown)?;
 			ensure!(&origin == &details.admin, Error::<T>::NoPermission);
 			let who = T::Lookup::lookup(who)?;
-			ensure!(Account::<T>::contains_key(id, &who), Error::<T>::BalanceZero);
+			ensure!(Account::<T>::contains_key(id, &who), Error::<T>::AssetBalanceZero);
 
 			Account::<T>::mutate(id, &who, |a| a.is_frozen = false);
 
@@ -1026,12 +1026,12 @@ impl<T: Config> Module<T> {
 	// Public immutables
 
 	/// Get the asset `id` balance of `who`.
-	pub fn balance(id: T::AssetId, who: T::AccountId) -> T::Balance {
+	pub fn balance(id: T::AssetId, who: T::AccountId) -> T::SGAssetBalance {
 		Account::<T>::get(id, who).balance
 	}
 
 	/// Get the total supply of an asset `id`.
-	pub fn total_supply(id: T::AssetId) -> T::Balance {
+	pub fn total_supply(id: T::AssetId) -> T::SGAssetBalance {
 		Asset::<T>::get(id).map(|x| x.supply).unwrap_or_else(Zero::zero)
 	}
 
@@ -1042,7 +1042,7 @@ impl<T: Config> Module<T> {
 
 	fn new_account(
 		who: &T::AccountId,
-		d: &mut SubGameAssetDetails<T::Balance, T::AccountId, BalanceOf<T>>,
+		d: &mut SubGameAssetDetails<T::SGAssetBalance, T::AccountId, BalanceOf<T>>,
 	) -> Result<bool, DispatchError> {
 		let accounts = d.accounts.checked_add(1).ok_or(Error::<T>::Overflow)?;
 		let r = Ok(if frame_system::Module::<T>::account_exists(who) {
@@ -1060,7 +1060,7 @@ impl<T: Config> Module<T> {
 	/// If `who`` exists in system and it's a zombie, dezombify it.
 	fn dezombify(
 		who: &T::AccountId,
-		d: &mut SubGameAssetDetails<T::Balance, T::AccountId, BalanceOf<T>>,
+		d: &mut SubGameAssetDetails<T::SGAssetBalance, T::AccountId, BalanceOf<T>>,
 		is_zombie: &mut bool,
 	) {
 		if *is_zombie && frame_system::Module::<T>::account_exists(who) {
@@ -1074,7 +1074,7 @@ impl<T: Config> Module<T> {
 
 	fn dead_account(
 		who: &T::AccountId,
-		d: &mut SubGameAssetDetails<T::Balance, T::AccountId, BalanceOf<T>>,
+		d: &mut SubGameAssetDetails<T::SGAssetBalance, T::AccountId, BalanceOf<T>>,
 		is_zombie: bool,
 	) {
 		if is_zombie {
@@ -1089,7 +1089,7 @@ impl<T: Config> Module<T> {
 		sender: T::AccountId,
 		id: T::AssetId,
 		beneficiary: T::AccountId,
-		amount: T::Balance
+		amount: T::SGAssetBalance
 	) -> DispatchResult {
 		Asset::<T>::try_mutate(id, |maybe_details| {
 			let details = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
@@ -1099,7 +1099,7 @@ impl<T: Config> Module<T> {
 
 			Account::<T>::try_mutate(id, &beneficiary, |t| -> DispatchResult {
 				let new_balance = t.balance.saturating_add(amount);
-				ensure!(new_balance >= details.min_balance, Error::<T>::BalanceLow);
+				ensure!(new_balance >= details.min_balance, Error::<T>::AssetBalanceLow);
 				if t.balance.is_zero() {
 					t.is_zombie = Self::new_account(&beneficiary, details)?;
 				}
@@ -1114,7 +1114,7 @@ impl<T: Config> Module<T> {
 		sender: T::AccountId,
 		id: T::AssetId,
 		who: T::AccountId,
-		amount: T::Balance
+		amount: T::SGAssetBalance
 	) -> DispatchResult {
 		Asset::<T>::try_mutate(id, |maybe_details| {
 			let d = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
@@ -1123,8 +1123,8 @@ impl<T: Config> Module<T> {
 			let burned = Account::<T>::try_mutate_exists(
 				id,
 				&who,
-				|maybe_account| -> Result<T::Balance, DispatchError> {
-					let mut account = maybe_account.take().ok_or(Error::<T>::BalanceZero)?;
+				|maybe_account| -> Result<T::SGAssetBalance, DispatchError> {
+					let mut account = maybe_account.take().ok_or(Error::<T>::AssetBalanceZero)?;
 					let mut burned = amount.min(account.balance);
 					account.balance -= burned;
 					*maybe_account = if account.balance < d.min_balance {
@@ -1178,7 +1178,7 @@ impl<T: Config> AssetsTransfer<T::AccountId, T::AssetId> for Module<T> {
 	) -> DispatchResult {
 		debug::info!("mint log id：{:?}", id);
 		debug::info!("mint log amount：{:?}", amount);
-		let balance: Option<T::Balance> = amount.try_into().ok();
+		let balance: Option<T::SGAssetBalance> = amount.try_into().ok();
 		debug::info!("mint log balance{:?}", balance);
 		Self::_mint(sender, id, beneficiary, balance.unwrap())?;
         Ok(())
@@ -1192,7 +1192,7 @@ impl<T: Config> AssetsTransfer<T::AccountId, T::AssetId> for Module<T> {
 	) -> DispatchResult {
 		debug::info!("burn log id：{:?}", id);
 		debug::info!("burn log amount：{:?}", amount);
-		let balance: Option<T::Balance> = amount.try_into().ok();
+		let balance: Option<T::SGAssetBalance> = amount.try_into().ok();
 		debug::info!("burn log balance{:?}", balance);
 		Self::_burn(sender, id, who, balance.unwrap())?;
         Ok(())
@@ -1440,9 +1440,9 @@ mod tests {
 			assert_eq!(Asset::<Test>::get(0).unwrap().accounts, 1);
 
 			// Cannot create a new account with a balance that is below minimum...
-			assert_noop!(Assets::mint(Origin::signed(1), 0, 2, 9), Error::<Test>::BalanceLow);
-			assert_noop!(Assets::transfer(Origin::signed(1), 0, 2, 9), Error::<Test>::BalanceLow);
-			assert_noop!(Assets::force_transfer(Origin::signed(1), 0, 1, 2, 9), Error::<Test>::BalanceLow);
+			assert_noop!(Assets::mint(Origin::signed(1), 0, 2, 9), Error::<Test>::AssetBalanceLow);
+			assert_noop!(Assets::transfer(Origin::signed(1), 0, 2, 9), Error::<Test>::AssetBalanceLow);
+			assert_noop!(Assets::force_transfer(Origin::signed(1), 0, 1, 2, 9), Error::<Test>::AssetBalanceLow);
 
 			// When deducting from an account to below minimum, it should be reaped.
 
@@ -1595,8 +1595,8 @@ mod tests {
 			assert_eq!(Assets::balance(0, 2), 50);
 			assert_ok!(Assets::burn(Origin::signed(1), 0, 1, u64::max_value()));
 			assert_eq!(Assets::balance(0, 1), 0);
-			assert_noop!(Assets::transfer(Origin::signed(1), 0, 1, 50), Error::<Test>::BalanceLow);
-			assert_noop!(Assets::transfer(Origin::signed(2), 0, 1, 51), Error::<Test>::BalanceLow);
+			assert_noop!(Assets::transfer(Origin::signed(1), 0, 1, 50), Error::<Test>::AssetBalanceLow);
+			assert_noop!(Assets::transfer(Origin::signed(2), 0, 1, 51), Error::<Test>::AssetBalanceLow);
 		});
 	}
 
@@ -1616,7 +1616,7 @@ mod tests {
 			assert_ok!(Assets::force_create(Origin::root(), 0, 1, 10, 1));
 			assert_ok!(Assets::mint(Origin::signed(1), 0, 1, 100));
 			assert_eq!(Assets::balance(0, 1), 100);
-			assert_noop!(Assets::transfer(Origin::signed(1), 0, 2, 101), Error::<Test>::BalanceLow);
+			assert_noop!(Assets::transfer(Origin::signed(1), 0, 2, 101), Error::<Test>::AssetBalanceLow);
 		});
 	}
 
@@ -1637,7 +1637,7 @@ mod tests {
 			assert_ok!(Assets::force_create(Origin::root(), 0, 1, 10, 1));
 			assert_ok!(Assets::mint(Origin::signed(1), 0, 1, 100));
 			assert_eq!(Assets::balance(0, 2), 0);
-			assert_noop!(Assets::burn(Origin::signed(1), 0, 2, u64::max_value()), Error::<Test>::BalanceZero);
+			assert_noop!(Assets::burn(Origin::signed(1), 0, 2, u64::max_value()), Error::<Test>::AssetBalanceZero);
 		});
 	}
 

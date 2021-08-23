@@ -140,7 +140,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("subgame"),
     impl_name: create_runtime_str!("subgame"),
     authoring_version: 1,
-    spec_version: 109,
+    spec_version: 112,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -971,16 +971,16 @@ impl pallet_stake::Config for Runtime {
 //     type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
 // }
 parameter_types! {
-	pub const AssetDepositBase: Balance = 100 * DOLLARS;
-	pub const AssetDepositPerZombie: Balance = 1 * DOLLARS;
+	pub const AssetDepositBase: Balance = 100 * MILLICENTS;
+	pub const AssetDepositPerZombie: Balance = 1 * MILLICENTS;
 	pub const StringLimit: u32 = 50;
-	pub const MetadataDepositBase: Balance = 10 * DOLLARS;
-	pub const MetadataDepositPerByte: Balance = 1 * DOLLARS;
+	pub const MetadataDepositBase: Balance = 10 * MILLICENTS;
+	pub const MetadataDepositPerByte: Balance = 1 * MILLICENTS;
 }
 /// Configure the pallet_assets
 impl pallet_assets::Config for Runtime {
 	type Event = Event;
-	type Balance = u64;
+	type SGAssetBalance = u64;
 	type AssetId = u32;
 	type Currency = Balances;
 	type ForceOrigin = EnsureRoot<AccountId>;

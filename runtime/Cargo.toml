@@ -33,7 +33,7 @@ pallet-gametemplates-guess-hash = { path = '../pallets/gametemplates-guess-hash'
 pallet-chips = { path = '../pallets/chips', default-features = false, version = '3.0.0' }
 pallet-bridge = { path = '../pallets/bridge', default-features = false, version = '3.0.0' }
 pallet-stake = { path = '../pallets/stake', default-features = false, version = '3.0.0' }
-pallet-assets = { path = '../pallets/assets', default-features = false, version = '3.0.0'  }
+pallet-subgame-assets = { path = '../pallets/assets', default-features = false, version = '3.0.0'  }
 pallet-swaps = { path = '../pallets/swaps', default-features = false, version = '3.0.0'  }
 pallet-fungible = { path = '../pallets/swaps/fungible', default-features = false, version = '3.0.0'  }
 
@@ -164,7 +164,7 @@ std = [
     # "pendulum-common/std",
     # "orml-currencies/std",
     
-	'pallet-assets/std',
+	'pallet-subgame-assets/std',
     'pallet-swaps/std',
     'pallet-fungible/std',
 ]

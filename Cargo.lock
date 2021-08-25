@@ -3637,22 +3637,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-assets"
-version = "3.0.0"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "pallet-balances",
- "parity-scale-codec",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-authority-discovery"
 version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3747,8 +3731,8 @@ version = "3.0.0"
 dependencies = [
  "frame-support",
  "frame-system",
- "pallet-assets",
  "pallet-balances",
+ "pallet-subgame-assets",
  "parity-scale-codec",
  "serde",
  "sp-core",
@@ -4196,6 +4180,22 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "pallet-subgame-assets"
+version = "3.0.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -7536,7 +7536,6 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "hex-literal",
- "pallet-assets",
  "pallet-authority-discovery",
  "pallet-authorship",
  "pallet-babe",
@@ -7568,6 +7567,7 @@ dependencies = [
  "pallet-stake",
  "pallet-staking",
  "pallet-staking-reward-curve",
+ "pallet-subgame-assets",
  "pallet-sudo",
  "pallet-swaps",
  "pallet-timestamp",

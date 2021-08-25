@@ -194,7 +194,7 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
         WASM_BINARY.ok_or_else(|| "Main net wasm binary not available".to_string())?;
     Ok(ChainSpec::from_genesis(
         // Name
-        "subgame",
+        "SubGame",
         // ID
         "subgame",
         ChainType::Live,

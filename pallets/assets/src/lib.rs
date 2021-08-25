@@ -1201,7 +1201,7 @@ impl<T: Config> AssetsTransfer<T::AccountId, T::AssetId> for Module<T> {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate as pallet_assets;
+	use crate as pallet_subgame_assets;
 
 	use frame_support::{assert_ok, assert_noop, parameter_types};
 	use sp_core::H256;
@@ -1219,7 +1219,7 @@ mod tests {
 		{
 			System: frame_system::{Module, Call, Config, Storage, Event<T>},
 			Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
-			Assets: pallet_assets::{Module, Call, Storage, Event<T>},
+			Assets: pallet_subgame_assets::{Module, Call, Storage, Event<T>},
 		}
 	);
 

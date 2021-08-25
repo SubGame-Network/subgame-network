@@ -869,7 +869,7 @@ impl pallet_bridge::Config for Runtime {
     type Balances = pallet_balances::Module<Runtime>;
     type OwnerAddress = BridgeOwner;
     type WeightInfo = ();
-    type Assets = Assets;
+    type Assets = SubgameAssets;
 }
 /*** Pallet Chips ***/
 
@@ -955,7 +955,7 @@ impl pallet_stake::Config for Runtime {
 
 // // impl pallet_randomness_collective_flip::Config for Runtime {}
 
-// impl pallet_assets::Config for Runtime {
+// impl pallet_subgame_assets::Config for Runtime {
 //     type Event = Event;
 //     type Balance = Balance;
 //     type AssetId = u32;
@@ -968,7 +968,7 @@ impl pallet_stake::Config for Runtime {
 //     type StringLimit = StringLimitGeneral;
 //     type Freezer = ();
 //     type Extra = ();
-//     type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
+//     type WeightInfo = pallet_subgame_assets::weights::SubstrateWeight<Runtime>;
 // }
 parameter_types! {
 	pub const AssetDepositBase: Balance = 100 * MILLICENTS;
@@ -977,8 +977,8 @@ parameter_types! {
 	pub const MetadataDepositBase: Balance = 10 * MILLICENTS;
 	pub const MetadataDepositPerByte: Balance = 1 * MILLICENTS;
 }
-/// Configure the pallet_assets
-impl pallet_assets::Config for Runtime {
+/// Configure the pallet_subgame_assets
+impl pallet_subgame_assets::Config for Runtime {
 	type Event = Event;
 	type SGAssetBalance = u64;
 	type AssetId = u32;
@@ -989,12 +989,12 @@ impl pallet_assets::Config for Runtime {
 	type StringLimit = StringLimit;
 	type MetadataDepositBase = MetadataDepositBase;
 	type MetadataDepositPerByte = MetadataDepositPerByte;
-	type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = pallet_subgame_assets::weights::SubstrateWeight<Runtime>;
 }
 
 
 /*** Pallet Swaps ***/
-/// Configure the pallet_assets
+/// Configure the pallet_subgame_assets
 impl pallet_swaps::Config for Runtime {
 	type Event = Event;
     type SwapId = u32;
@@ -1005,7 +1005,7 @@ impl pallet_swaps::Config for Runtime {
 /*** Pallet Swaps ***/
 
 /*** Pallet fungible ***/
-/// Configure the pallet_assets
+/// Configure the pallet_subgame_assets
 impl pallet_fungible::Config for Runtime {
     type Event = Event;
     type TokenBalance = u32;
@@ -1097,7 +1097,7 @@ construct_runtime!(
         GameGuessHashModule: pallet_gametemplates_guess_hash::{Module, Call, Storage, Event<T>},
         Bridge: pallet_bridge::{Module, Call, Storage, Event<T>},
         Stake: pallet_stake::{Module, Call, Storage, Event<T>},
-        Assets: pallet_assets::{Module, Call, Storage, Event<T>},
+        SubgameAssets: pallet_subgame_assets::{Module, Call, Storage, Event<T>},
         Swaps: pallet_swaps::{Module, Call, Storage, Event},
         Fungible: pallet_fungible::{Module, Call, Storage, Event<T>},
         // Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},

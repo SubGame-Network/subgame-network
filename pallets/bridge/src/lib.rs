@@ -148,7 +148,8 @@ decl_module! {
            
             ensure!(
                 chain_type == CHAIN_ETH || chain_type == CHAIN_HECO || chain_type == CHAIN_BSC || 
-                chain_type == CHAIN_OKC || chain_type == CHAIN_TRON
+                // chain_type == CHAIN_OKC || 
+                chain_type == CHAIN_TRON
                 , Error::<T>::ChainTypeNotFound);
             ensure!(coin_type == COIN_SGB || coin_type == COIN_USDT, Error::<T>::CoinTypeNotFound);
 

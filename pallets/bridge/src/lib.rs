@@ -116,7 +116,8 @@ decl_module! {
             ensure!(owner == sender, Error::<T>::PermissionDenied);
             debug::info!("mint log：{:?}", amount);
            
-            ensure!(coin_type == COIN_SGB || coin_type == COIN_USDT, Error::<T>::CoinTypeNotFound);
+            // ensure!(coin_type == COIN_SGB || coin_type == COIN_USDT, Error::<T>::CoinTypeNotFound);
+            ensure!(coin_type == COIN_SGB, Error::<T>::CoinTypeNotFound);
 
             if coin_type == COIN_SGB {
                 T::Balances::transfer(&owner, &to_address, amount, ExistenceRequirement::KeepAlive).map_err(|_| Error::<T>::MoneyNotEnough)?;
@@ -151,7 +152,8 @@ decl_module! {
                 // chain_type == CHAIN_OKC || 
                 chain_type == CHAIN_TRON
                 , Error::<T>::ChainTypeNotFound);
-            ensure!(coin_type == COIN_SGB || coin_type == COIN_USDT, Error::<T>::CoinTypeNotFound);
+            // ensure!(coin_type == COIN_SGB || coin_type == COIN_USDT, Error::<T>::CoinTypeNotFound);
+            ensure!(coin_type == COIN_SGB, Error::<T>::CoinTypeNotFound);
 
             if coin_type == COIN_SGB {
                 T::Balances::transfer(&sender, &owner, amount, ExistenceRequirement::KeepAlive).map_err(|_| Error::<T>::MoneyNotEnough)?;

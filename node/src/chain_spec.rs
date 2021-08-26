@@ -125,7 +125,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
         WASM_BINARY.ok_or_else(|| "Development wasm binary not available".to_string())?;
     Ok(ChainSpec::from_genesis(
         // Name
-        "Subgame Staging",
+        "SubGame Staging",
         // ID
         "subgame_staging",
         ChainType::Live,

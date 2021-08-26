@@ -125,7 +125,7 @@ decl_module! {
                 // 確認是否成功轉換
                 ensure!(asset_amount != None, Error::<T>::AssetAmountDenied);
 
-                let result = T::Assets::mint(owner.clone(), coin_type.into(), to_address.clone(), asset_amount.unwrap() / SGB_BALANCE_UNIT)?;
+                let result = T::Assets::mint(owner.clone(), coin_type.into(), to_address.clone(), asset_amount.unwrap())?;
                 debug::info!("mint log：{:?}", result);
             }
 
@@ -160,7 +160,7 @@ decl_module! {
                 ensure!(asset_amount != None, Error::<T>::AssetAmountDenied);
                 
                 debug::info!("burn log：{:?}", asset_amount);
-                let result = T::Assets::burn(owner.clone(), coin_type.into(), sender.clone(), asset_amount.unwrap() / SGB_BALANCE_UNIT)?;
+                let result = T::Assets::burn(owner.clone(), coin_type.into(), sender.clone(), asset_amount.unwrap())?;
                 debug::info!("burn log：{:?}", result);
             }
 

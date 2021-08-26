@@ -245,7 +245,7 @@ decl_storage! {
 			=> SusGameAssetBalance<T::SGAssetBalance>;
 
 		/// Metadata of an asset.
-		Metadata: map hasher(blake2_128_concat) T::AssetId => SubGameAssetMetadata<BalanceOf<T>>;
+		pub Metadata get(fn metadata): map hasher(blake2_128_concat)  T::AssetId => SubGameAssetMetadata<BalanceOf<T>>;
 	}
 }
 
@@ -1178,7 +1178,11 @@ impl<T: Config> AssetsTransfer<T::AccountId, T::AssetId> for Module<T> {
 	) -> DispatchResult {
 		debug::info!("mint log id：{:?}", id);
 		debug::info!("mint log amount：{:?}", amount);
-		let balance: Option<T::SGAssetBalance> = amount.try_into().ok();
+		// let metadata = Self::metadata(&id);
+		// let amount_have_decimal = amount / ((10i32.pow(metadata.decimals.into()))as u64 );
+		let amount_have_decimal = amount;
+		debug::info!("mint log amount_have_decimal:{:?}", amount_have_decimal);
+		let balance: Option<T::SGAssetBalance> = amount_have_decimal.try_into().ok();
 		debug::info!("mint log balance{:?}", balance);
 		Self::_mint(sender, id, beneficiary, balance.unwrap())?;
         Ok(())
@@ -1192,7 +1196,10 @@ impl<T: Config> AssetsTransfer<T::AccountId, T::AssetId> for Module<T> {
 	) -> DispatchResult {
 		debug::info!("burn log id：{:?}", id);
 		debug::info!("burn log amount：{:?}", amount);
-		let balance: Option<T::SGAssetBalance> = amount.try_into().ok();
+		// let metadata = Self::metadata(&id);
+		// let amount_have_decimal = amount / ((10i32.pow(metadata.decimals.into()))as u64 );
+		let amount_have_decimal = amount;
+		let balance: Option<T::SGAssetBalance> = amount_have_decimal.try_into().ok();
 		debug::info!("burn log balance{:?}", balance);
 		Self::_burn(sender, id, who, balance.unwrap())?;
         Ok(())

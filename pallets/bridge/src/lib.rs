@@ -59,7 +59,7 @@ pub trait Config: frame_system::Config {
     type OwnerAddress: Get<Self::AccountId>;
     type WeightInfo: WeightInfo;
 
-    type Assets: AssetsTrait + AssetsTransfer<Self::AccountId, u32>;
+    // type Assets: AssetsTrait + AssetsTransfer<Self::AccountId, u32>;
 }
 
 pub type BalanceOf<T> =
@@ -126,8 +126,8 @@ decl_module! {
                 // 確認是否成功轉換
                 ensure!(asset_amount != None, Error::<T>::AssetAmountDenied);
 
-                let result = T::Assets::mint(owner.clone(), coin_type.into(), to_address.clone(), asset_amount.unwrap())?;
-                debug::info!("mint log：{:?}", result);
+                // let result = T::Assets::mint(owner.clone(), coin_type.into(), to_address.clone(), asset_amount.unwrap())?;
+                // debug::info!("mint log：{:?}", result);
             }
 
             // Send event notification
@@ -163,8 +163,8 @@ decl_module! {
                 ensure!(asset_amount != None, Error::<T>::AssetAmountDenied);
                 
                 debug::info!("burn log：{:?}", asset_amount);
-                let result = T::Assets::burn(owner.clone(), coin_type.into(), sender.clone(), asset_amount.unwrap())?;
-                debug::info!("burn log：{:?}", result);
+                // let result = T::Assets::burn(owner.clone(), coin_type.into(), sender.clone(), asset_amount.unwrap())?;
+                // debug::info!("burn log：{:?}", result);
             }
 
             // Send event notification

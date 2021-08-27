@@ -35,7 +35,7 @@ pallet-bridge = { path = '../pallets/bridge', default-features = false, version 
 pallet-stake = { path = '../pallets/stake', default-features = false, version = '3.0.0' }
 pallet-subgame-assets = { path = '../pallets/assets', default-features = false, version = '3.0.0'  }
 pallet-swaps = { path = '../pallets/swaps', default-features = false, version = '3.0.0'  }
-pallet-fungible = { path = '../pallets/swaps/fungible', default-features = false, version = '3.0.0'  }
+# pallet-fungible = { path = '../pallets/swaps/fungible', default-features = false, version = '3.0.0'  }
 
 # orml-currencies = {default-features = false, version = '0.4.0'}
 # orml-tokens = {path = "../pallets/tokens", default-features = false, version = '0.4.0' }
@@ -166,5 +166,5 @@ std = [
     
 	'pallet-subgame-assets/std',
     'pallet-swaps/std',
-    'pallet-fungible/std',
+    # 'pallet-fungible/std',
 ]

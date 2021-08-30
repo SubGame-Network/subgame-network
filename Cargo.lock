@@ -4036,6 +4036,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-nft"
+version = "3.0.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-offences"
 version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7549,7 +7563,6 @@ dependencies = [
  "pallet-contracts-rpc-runtime-api",
  "pallet-democracy",
  "pallet-elections-phragmen",
- "pallet-fungible",
  "pallet-gamecenter",
  "pallet-gametemplates",
  "pallet-gametemplates-guess-hash",
@@ -7558,6 +7571,7 @@ dependencies = [
  "pallet-indices",
  "pallet-membership",
  "pallet-multisig",
+ "pallet-nft",
  "pallet-offences",
  "pallet-proxy",
  "pallet-randomness-collective-flip",

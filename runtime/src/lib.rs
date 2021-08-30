@@ -994,7 +994,7 @@ impl pallet_stake::Config for Runtime {
 
 
 /*** Pallet Swaps ***/
-/// Configure the pallet_subgame_assets
+// Configure the pallet_subgame_assets
 // impl pallet_swaps::Config for Runtime {
 // 	type Event = Event;
 //     type SwapId = u32;
@@ -1042,6 +1042,24 @@ impl pallet_stake::Config for Runtime {
 //     type WeightInfo = ();
 // }
 // Create the runtime by composing the FRAME pallets that were previously configured.
+
+
+parameter_types! {
+    pub const CommodityLimit: u128 =    1000000000000000000000;
+    pub const UserCommodityLimit: u64 = 10000000000000000000;
+}
+impl pallet_nft::Config for Runtime {
+/// The dispatch origin that is able to mint new instances of this type of commodity.
+    type CommodityAdmin = EnsureRoot<AccountId>;
+    /// The data type that is used to describe this type of commodity.
+    type CommodityInfo = Vec<u8>;
+    /// The maximum number of this type of commodity that may exist (minted - burned).
+    type CommodityLimit = CommodityLimit;
+    /// The maximum number of this type of commodity that any single account may own.
+    type UserCommodityLimit = UserCommodityLimit;
+    type Event = Event;
+}
+
 construct_runtime!(
     pub enum Runtime where
         Block = Block,
@@ -1088,6 +1106,7 @@ construct_runtime!(
         // SubgameAssets: pallet_subgame_assets::{Module, Call, Storage, Event<T>},
         // Swaps: pallet_swaps::{Module, Call, Storage, Event},
         // Fungible: pallet_fungible::{Module, Call, Storage, Event<T>},
+        NFT: pallet_nft::{Module, Call, Storage, Event<T>},
         // Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
         // Currencies: orml_currencies::{Module, Call, Event<T>},
     }

@@ -7549,7 +7549,6 @@ dependencies = [
  "pallet-contracts-rpc-runtime-api",
  "pallet-democracy",
  "pallet-elections-phragmen",
- "pallet-fungible",
  "pallet-gamecenter",
  "pallet-gametemplates",
  "pallet-gametemplates-guess-hash",

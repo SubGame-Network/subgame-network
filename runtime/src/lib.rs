@@ -140,7 +140,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("subgame"),
     impl_name: create_runtime_str!("subgame"),
     authoring_version: 1,
-    spec_version: 122,
+    spec_version: 123,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -970,27 +970,27 @@ impl pallet_stake::Config for Runtime {
 //     type Extra = ();
 //     type WeightInfo = pallet_subgame_assets::weights::SubstrateWeight<Runtime>;
 // }
-// parameter_types! {
-// 	pub const AssetDepositBase: Balance = 100 * MILLICENTS;
-// 	pub const AssetDepositPerZombie: Balance = 1 * MILLICENTS;
-// 	pub const StringLimit: u32 = 50;
-// 	pub const MetadataDepositBase: Balance = 10 * MILLICENTS;
-// 	pub const MetadataDepositPerByte: Balance = 1 * MILLICENTS;
-// }
-// /// Configure the pallet_subgame_assets
-// impl pallet_subgame_assets::Config for Runtime {
-// 	type Event = Event;
-// 	type SGAssetBalance = u64;
-// 	type AssetId = u32;
-// 	type Currency = Balances;
-// 	type ForceOrigin = EnsureRoot<AccountId>;
-// 	type AssetDepositBase = AssetDepositBase;
-// 	type AssetDepositPerZombie = AssetDepositPerZombie;
-// 	type StringLimit = StringLimit;
-// 	type MetadataDepositBase = MetadataDepositBase;
-// 	type MetadataDepositPerByte = MetadataDepositPerByte;
-// 	type WeightInfo = pallet_subgame_assets::weights::SubstrateWeight<Runtime>;
-// }
+parameter_types! {
+	pub const AssetDepositBase: Balance = 100 * MILLICENTS;
+	pub const AssetDepositPerZombie: Balance = 1 * MILLICENTS;
+	pub const StringLimit: u32 = 50;
+	pub const MetadataDepositBase: Balance = 10 * MILLICENTS;
+	pub const MetadataDepositPerByte: Balance = 1 * MILLICENTS;
+}
+/// Configure the pallet_subgame_assets
+impl pallet_subgame_assets::Config for Runtime {
+	type Event = Event;
+	type SGAssetBalance = u64;
+	type AssetId = u32;
+	type Currency = Balances;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type AssetDepositBase = AssetDepositBase;
+	type AssetDepositPerZombie = AssetDepositPerZombie;
+	type StringLimit = StringLimit;
+	type MetadataDepositBase = MetadataDepositBase;
+	type MetadataDepositPerByte = MetadataDepositPerByte;
+	type WeightInfo = pallet_subgame_assets::weights::SubstrateWeight<Runtime>;
+}
 
 
 /*** Pallet Swaps ***/
@@ -1085,7 +1085,7 @@ construct_runtime!(
         GameGuessHashModule: pallet_gametemplates_guess_hash::{Module, Call, Storage, Event<T>},
         Bridge: pallet_bridge::{Module, Call, Storage, Event<T>},
         Stake: pallet_stake::{Module, Call, Storage, Event<T>},
-        // SubgameAssets: pallet_subgame_assets::{Module, Call, Storage, Event<T>},
+        SubgameAssets: pallet_subgame_assets::{Module, Call, Storage, Event<T>},
         // Swaps: pallet_swaps::{Module, Call, Storage, Event},
         // Fungible: pallet_fungible::{Module, Call, Storage, Event<T>},
         // Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},

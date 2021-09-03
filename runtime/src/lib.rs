@@ -70,6 +70,8 @@ pub use pallet_gametemplates_guess_hash;
 pub use pallet_bridge;
 // stake
 pub use pallet_stake;
+// swap
+pub use pallet_swap;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -738,7 +740,7 @@ impl pallet_timestamp::Config for Runtime {
 }
 
 parameter_types! {
-    pub const ExistentialDeposit: u128 = 500;
+    pub const ExistentialDeposit: u128 = 1;
     pub const MaxLocks: u32 = 50;
 }
 
@@ -943,33 +945,7 @@ impl pallet_stake::Config for Runtime {
 }
 /*** Pallet Stake ***/
 
-
 /*** Pallet Asset ***/
-// parameter_types! {
-//     pub const AssetDepositGeneral: Balance = 100 * DOLLARS; // 1 UNIT deposit to create asset
-//     pub const ApprovalDepositGeneral: Balance = 100 * DOLLARS;
-//     pub const StringLimitGeneral: u32 = 50;
-//     pub const MetadataDepositBaseGeneral: Balance = 100 * DOLLARS;
-//     pub const MetadataDepositPerByteGeneral: Balance = 100 * DOLLARS;
-// }
-
-// // impl pallet_randomness_collective_flip::Config for Runtime {}
-
-// impl pallet_subgame_assets::Config for Runtime {
-//     type Event = Event;
-//     type Balance = Balance;
-//     type AssetId = u32;
-//     type Currency = Balances;
-//     type ForceOrigin = EnsureRoot<AccountId>; // allow council later
-//     type AssetDepositBase = AssetDepositGeneral;
-//     type MetadataDepositBase = MetadataDepositBaseGeneral;
-//     type MetadataDepositPerByte = MetadataDepositPerByteGeneral;
-//     type ApprovalDeposit = ApprovalDepositGeneral;
-//     type StringLimit = StringLimitGeneral;
-//     type Freezer = ();
-//     type Extra = ();
-//     type WeightInfo = pallet_subgame_assets::weights::SubstrateWeight<Runtime>;
-// }
 parameter_types! {
 	pub const AssetDepositBase: Balance = 100 * MILLICENTS;
 	pub const AssetDepositPerZombie: Balance = 1 * MILLICENTS;
@@ -993,55 +969,14 @@ impl pallet_subgame_assets::Config for Runtime {
 }
 
 
-/*** Pallet Swaps ***/
-/// Configure the pallet_subgame_assets
-// impl pallet_swaps::Config for Runtime {
-// 	type Event = Event;
-//     type SwapId = u32;
-// 	type Currency = Balances;
-// }
+/*** Pallet Swap ***/
+impl pallet_swap::Config for Runtime {
+    type Event = Event;
+    type WeightInfo = ();
+    type SwapId = u32;
+    type Currency = Balances;
+}
 
-
-/*** Pallet Swaps ***/
-// #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
-// #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-// pub enum CurrencyId {
-// 	Native,
-// 	USDT,
-// 	DOT,
-// 	KSM,
-// 	BTC,
-// }
-
-// parameter_type_with_key! {
-//     pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
-//         Zero::zero()
-//     };
-// }
-
-
-// impl orml_tokens::Config for Runtime {
-//     type Event = Event;
-//     type Balance = Balance;
-//     type Amount = Amount;
-//     type CurrencyId = CurrencyId;
-//     type WeightInfo = ();
-//     type ExistentialDeposits = ExistentialDeposits;
-//     type OnDust = ();
-// }
-
-// parameter_types! {
-//     pub const GetNativeCurrencyId: CurrencyId = CurrencyId::Native;
-// }
-
-// impl orml_currencies::Config for Runtime {
-//     type Event = Event;
-//     type MultiCurrency = Tokens;
-//     type NativeCurrency = BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
-//     type GetNativeCurrencyId = GetNativeCurrencyId;
-//     type WeightInfo = ();
-// }
-// Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
         Block = Block,
@@ -1086,10 +1021,7 @@ construct_runtime!(
         Bridge: pallet_bridge::{Module, Call, Storage, Event<T>},
         Stake: pallet_stake::{Module, Call, Storage, Event<T>},
         SubgameAssets: pallet_subgame_assets::{Module, Call, Storage, Event<T>},
-        // Swaps: pallet_swaps::{Module, Call, Storage, Event},
-        // Fungible: pallet_fungible::{Module, Call, Storage, Event<T>},
-        // Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
-        // Currencies: orml_currencies::{Module, Call, Event<T>},
+        Swap: pallet_swap::{Module, Call, Storage, Event<T>},
     }
 );
 

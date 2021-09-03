@@ -141,7 +141,7 @@ pub trait Config: frame_system::Config {
 	type SGAssetBalance: Member + Parameter + AtLeast32BitUnsigned + Default + Copy;
 
 	/// The arithmetic type of asset identifier.
-	type AssetId: Member + Parameter + Default + Copy + HasCompact;
+	type AssetId: Member + Parameter + Default + Copy + HasCompact + AtLeast32BitUnsigned;
 
 	/// The currency mechanism.
 	type Currency: ReservableCurrency<Self::AccountId>;
@@ -220,13 +220,13 @@ pub struct SubGameAssetMetadata<DepositBalance: Encode + Decode + Clone + Debug 
 	/// The balance deposited for this metadata.
 	///
 	/// This pays for the data stored in this struct.
-	deposit: DepositBalance,
+	pub deposit: DepositBalance,
 	/// The user friendly name of this asset. Limited in length by `StringLimit`.
-	name: Vec<u8>,
+	pub name: Vec<u8>,
 	/// The ticker symbol for this asset. Limited in length by `StringLimit`.
-	symbol: Vec<u8>,
+	pub symbol: Vec<u8>,
 	/// The number of decimals this asset uses to represent one unit.
-	decimals: u8,
+	pub decimals: u8,
 }
 
 decl_storage! {
@@ -239,7 +239,7 @@ decl_storage! {
 		>>;
 
 		/// The number of units of assets held by any given account.
-		Account: double_map
+		pub Account get(fn asset_account): double_map
 			hasher(blake2_128_concat) T::AssetId,
 			hasher(blake2_128_concat) T::AccountId
 			=> SusGameAssetBalance<T::SGAssetBalance>;
@@ -721,6 +721,10 @@ impl<T: Config> Module<T> {
 		Asset::<T>::get(id).map(|x| x.max_zombies - x.zombies).unwrap_or_else(Zero::zero)
 	}
 
+	pub fn _get_metadata(id: T::AssetId) -> SubGameAssetMetadata<BalanceOf<T>> {
+		Metadata::<T>::get(id)
+	}
+
 	fn new_account(
 		who: &T::AccountId,
 		d: &mut SubGameAssetDetails<T::SGAssetBalance, T::AccountId, BalanceOf<T>>,
@@ -1192,6 +1196,43 @@ impl<T: Config> Module<T> {
 					T::Currency::unreserve(&origin, old_deposit - new_deposit);
 				}
 
+				*metadata = Some(SubGameAssetMetadata {
+					deposit: new_deposit,
+					name: name.clone(),
+					symbol: symbol.clone(),
+					decimals,
+				})
+			}
+
+			Self::deposit_event(RawEvent::MetadataSet(id, name, symbol, decimals));
+			Ok(())
+		})
+	}
+
+	pub fn _force_set_metadata(
+		origin: T::AccountId,
+		id: T::AssetId,
+		name: Vec<u8>,
+		symbol: Vec<u8>,
+		decimals: u8,
+	) -> DispatchResult {
+		ensure!(name.len() <= T::StringLimit::get() as usize, Error::<T>::BadMetadata);
+		ensure!(symbol.len() <= T::StringLimit::get() as usize, Error::<T>::BadMetadata);
+
+		let d = Asset::<T>::get(id).ok_or(Error::<T>::Unknown)?;
+		ensure!(&origin == &d.owner, Error::<T>::NoPermission);
+
+		Metadata::<T>::try_mutate_exists(id, |metadata| {
+			let bytes_used = name.len() + symbol.len();
+
+			// Metadata is being removed
+			if bytes_used.is_zero() && decimals.is_zero() {
+				*metadata = None;
+			} else {
+				let new_deposit = T::MetadataDepositPerByte::get()
+					.saturating_mul(((name.len() + symbol.len()) as u32).into())
+					.saturating_add(T::MetadataDepositBase::get());
+					
 				*metadata = Some(SubGameAssetMetadata {
 					deposit: new_deposit,
 					name: name.clone(),

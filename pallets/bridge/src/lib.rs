@@ -59,7 +59,7 @@ pub trait Config: frame_system::Config {
     type OwnerAddress: Get<Self::AccountId>;
     type WeightInfo: WeightInfo;
 
-    // type Assets: AssetsTrait + AssetsTransfer<Self::AccountId, u32>;
+    type Assets: AssetsTrait + AssetsTransfer<Self::AccountId, u32>;
 }
 
 pub type BalanceOf<T> =
@@ -116,8 +116,8 @@ decl_module! {
             ensure!(owner == sender, Error::<T>::PermissionDenied);
             debug::info!("mint log：{:?}", amount);
            
-            // ensure!(coin_type == COIN_SGB || coin_type == COIN_USDT, Error::<T>::CoinTypeNotFound);
-            ensure!(coin_type == COIN_SGB, Error::<T>::CoinTypeNotFound);
+            ensure!(coin_type == COIN_SGB || coin_type == COIN_USDT, Error::<T>::CoinTypeNotFound);
+            // ensure!(coin_type == COIN_SGB, Error::<T>::CoinTypeNotFound);
 
             if coin_type == COIN_SGB {
                 T::Balances::transfer(&owner, &to_address, amount, ExistenceRequirement::KeepAlive).map_err(|_| Error::<T>::MoneyNotEnough)?;
@@ -126,8 +126,8 @@ decl_module! {
                 // 確認是否成功轉換
                 ensure!(asset_amount != None, Error::<T>::AssetAmountDenied);
 
-                // let result = T::Assets::mint(owner.clone(), coin_type.into(), to_address.clone(), asset_amount.unwrap())?;
-                // debug::info!("mint log：{:?}", result);
+                let result = T::Assets::mint(owner.clone(), coin_type.into(), to_address.clone(), asset_amount.unwrap())?;
+                debug::info!("mint log：{:?}", result);
             }
 
             // Send event notification
@@ -152,8 +152,8 @@ decl_module! {
                 chain_type == CHAIN_OKC || 
                 chain_type == CHAIN_TRON
                 , Error::<T>::ChainTypeNotFound);
-            // ensure!(coin_type == COIN_SGB || coin_type == COIN_USDT, Error::<T>::CoinTypeNotFound);
-            ensure!(coin_type == COIN_SGB, Error::<T>::CoinTypeNotFound);
+            ensure!(coin_type == COIN_SGB || coin_type == COIN_USDT, Error::<T>::CoinTypeNotFound);
+            // ensure!(coin_type == COIN_SGB, Error::<T>::CoinTypeNotFound);
 
             if coin_type == COIN_SGB {
                 T::Balances::transfer(&sender, &owner, amount, ExistenceRequirement::KeepAlive).map_err(|_| Error::<T>::MoneyNotEnough)?;
@@ -163,8 +163,8 @@ decl_module! {
                 ensure!(asset_amount != None, Error::<T>::AssetAmountDenied);
                 
                 debug::info!("burn log：{:?}", asset_amount);
-                // let result = T::Assets::burn(owner.clone(), coin_type.into(), sender.clone(), asset_amount.unwrap())?;
-                // debug::info!("burn log：{:?}", result);
+                let result = T::Assets::burn(owner.clone(), coin_type.into(), sender.clone(), asset_amount.unwrap())?;
+                debug::info!("burn log：{:?}", result);
             }
 
             // Send event notification

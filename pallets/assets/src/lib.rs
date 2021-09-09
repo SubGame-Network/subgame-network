@@ -116,7 +116,7 @@ pub mod weights;
 
 use sp_std::{fmt::Debug, prelude::*};
 use sp_runtime::{RuntimeDebug, traits::{
-	Member, AtLeast32BitUnsigned, Zero, StaticLookup, Saturating, CheckedSub, CheckedAdd
+	Member, AtLeast32BitUnsigned, Zero, Saturating, CheckedSub, CheckedAdd
 }};
 use codec::{Encode, Decode, HasCompact};
 use frame_support::{Parameter, decl_module, decl_event, decl_storage, decl_error, ensure,
@@ -216,7 +216,7 @@ pub struct SusGameAssetBalance<
 }
 
 #[derive(Clone, Encode, Decode, Eq, PartialEq, RuntimeDebug, Default)]
-pub struct SubGameAssetMetadata<DepositBalance> {
+pub struct SubGameAssetMetadata<DepositBalance: Encode + Decode + Clone + Debug + Eq + PartialEq> {
 	/// The balance deposited for this metadata.
 	///
 	/// This pays for the data stored in this struct.
@@ -352,36 +352,13 @@ decl_module! {
 		/// Weight: `O(1)`
 		#[weight = T::WeightInfo::create()]
 		fn create(origin,
-			#[compact] id: T::AssetId,
-			admin: <T::Lookup as StaticLookup>::Source,
+			id: T::AssetId,
+			admin: T::AccountId,
 			max_zombies: u32,
 			min_balance: T::SGAssetBalance,
-		) {
+		) -> DispatchResult {
 			let owner = ensure_signed(origin)?;
-			let admin = T::Lookup::lookup(admin)?;
-
-			ensure!(!Asset::<T>::contains_key(id), Error::<T>::InUse);
-			ensure!(!min_balance.is_zero(), Error::<T>::MinBalanceZero);
-
-			let deposit = T::AssetDepositPerZombie::get()
-				.saturating_mul(max_zombies.into())
-			 	.saturating_add(T::AssetDepositBase::get());
-			T::Currency::reserve(&owner, deposit)?;
-
-			Asset::<T>::insert(id, SubGameAssetDetails {
-				owner: owner.clone(),
-				issuer: admin.clone(),
-				admin: admin.clone(),
-				freezer: admin.clone(),
-				supply: Zero::zero(),
-				deposit,
-				max_zombies,
-				min_balance,
-				zombies: Zero::zero(),
-				accounts: Zero::zero(),
-				is_frozen: false,
-			});
-			Self::deposit_event(RawEvent::Created(id, owner, admin));
+			Self::_create(owner, id, admin, max_zombies, min_balance)
 		}
 
 		/// Issue a new class of fungible assets from a privileged origin.
@@ -407,31 +384,13 @@ decl_module! {
 		/// Weight: `O(1)`
 		#[weight = T::WeightInfo::force_create()]
 		fn force_create(origin,
-			#[compact] id: T::AssetId,
-			owner: <T::Lookup as StaticLookup>::Source,
-			#[compact] max_zombies: u32,
-			#[compact] min_balance: T::SGAssetBalance,
-		) {
+			id: T::AssetId,
+			owner: T::AccountId,
+			max_zombies: u32,
+			min_balance: T::SGAssetBalance,
+		) -> DispatchResult {
 			T::ForceOrigin::ensure_origin(origin)?;
-			let owner = T::Lookup::lookup(owner)?;
-
-			ensure!(!Asset::<T>::contains_key(id), Error::<T>::InUse);
-			ensure!(!min_balance.is_zero(), Error::<T>::MinBalanceZero);
-
-			Asset::<T>::insert(id, SubGameAssetDetails {
-				owner: owner.clone(),
-				issuer: owner.clone(),
-				admin: owner.clone(),
-				freezer: owner.clone(),
-				supply: Zero::zero(),
-				deposit: Zero::zero(),
-				max_zombies,
-				min_balance,
-				zombies: Zero::zero(),
-				accounts: Zero::zero(),
-				is_frozen: false,
-			});
-			Self::deposit_event(RawEvent::ForceCreated(id, owner));
+			Self::_force_create(id, owner, max_zombies, min_balance)
 		}
 
 		/// Destroy a class of fungible assets owned by the sender.
@@ -446,25 +405,11 @@ decl_module! {
 		/// Weight: `O(z)` where `z` is the number of zombie accounts.
 		#[weight = T::WeightInfo::destroy(*zombies_witness)]
 		fn destroy(origin,
-			#[compact] id: T::AssetId,
-			#[compact] zombies_witness: u32,
+			id: T::AssetId,
+			zombies_witness: u32,
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
-
-			Asset::<T>::try_mutate_exists(id, |maybe_details| {
-				let details = maybe_details.take().ok_or(Error::<T>::Unknown)?;
-				ensure!(details.owner == origin, Error::<T>::NoPermission);
-				ensure!(details.accounts == details.zombies, Error::<T>::RefsLeft);
-				ensure!(details.zombies <= zombies_witness, Error::<T>::BadWitness);
-
-				let metadata = Metadata::<T>::take(&id);
-				T::Currency::unreserve(&details.owner, details.deposit.saturating_add(metadata.deposit));
-
-				*maybe_details = None;
-				Account::<T>::remove_prefix(&id);
-				Self::deposit_event(RawEvent::Destroyed(id));
-				Ok(())
-			})
+			Self::_destroy(origin, id, zombies_witness)
 		}
 
 		/// Destroy a class of fungible assets.
@@ -479,24 +424,11 @@ decl_module! {
 		/// Weight: `O(1)`
 		#[weight = T::WeightInfo::force_destroy(*zombies_witness)]
 		fn force_destroy(origin,
-			#[compact] id: T::AssetId,
-			#[compact] zombies_witness: u32,
+			id: T::AssetId,
+			zombies_witness: u32,
 		) -> DispatchResult {
 			T::ForceOrigin::ensure_origin(origin)?;
-
-			Asset::<T>::try_mutate_exists(id, |maybe_details| {
-				let details = maybe_details.take().ok_or(Error::<T>::Unknown)?;
-				ensure!(details.accounts == details.zombies, Error::<T>::RefsLeft);
-				ensure!(details.zombies <= zombies_witness, Error::<T>::BadWitness);
-
-				let metadata = Metadata::<T>::take(&id);
-				T::Currency::unreserve(&details.owner, details.deposit.saturating_add(metadata.deposit));
-
-				*maybe_details = None;
-				Account::<T>::remove_prefix(&id);
-				Self::deposit_event(RawEvent::Destroyed(id));
-				Ok(())
-			})
+			Self::_force_destroy(id, zombies_witness)
 		}
 
 		/// Mint assets of a particular class.
@@ -513,31 +445,12 @@ decl_module! {
 		/// Modes: Pre-existing balance of `beneficiary`; Account pre-existence of `beneficiary`.
 		#[weight = T::WeightInfo::mint()]
 		fn mint(origin,
-			#[compact] id: T::AssetId,
-			beneficiary: <T::Lookup as StaticLookup>::Source,
-			#[compact] amount: T::SGAssetBalance
+			id: T::AssetId,
+			beneficiary: T::AccountId,
+			amount: T::SGAssetBalance
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
-			let beneficiary = T::Lookup::lookup(beneficiary)?;
-
-			Asset::<T>::try_mutate(id, |maybe_details| {
-				let details = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
-
-				ensure!(&origin == &details.issuer, Error::<T>::NoPermission);
-				details.supply = details.supply.checked_add(&amount).ok_or(Error::<T>::Overflow)?;
-
-				Account::<T>::try_mutate(id, &beneficiary, |t| -> DispatchResult {
-					let new_balance = t.balance.saturating_add(amount);
-					ensure!(new_balance >= details.min_balance, Error::<T>::AssetBalanceLow);
-					if t.balance.is_zero() {
-						t.is_zombie = Self::new_account(&beneficiary, details)?;
-					}
-					t.balance = new_balance;
-					Ok(())
-				})?;
-				Self::deposit_event(RawEvent::Issued(id, beneficiary, amount));
-				Ok(())
-			})
+			Self::_mint(origin, id, beneficiary, amount)
 		}
 
 		/// Reduce the balance of `who` by as much as possible up to `amount` assets of `id`.
@@ -557,40 +470,12 @@ decl_module! {
 		/// Modes: Post-existence of `who`; Pre & post Zombie-status of `who`.
 		#[weight = T::WeightInfo::burn()]
 		fn burn(origin,
-			#[compact] id: T::AssetId,
-			who: <T::Lookup as StaticLookup>::Source,
-			#[compact] amount: T::SGAssetBalance
+			id: T::AssetId,
+			who: T::AccountId,
+			amount: T::SGAssetBalance
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
-			let who = T::Lookup::lookup(who)?;
-
-			Asset::<T>::try_mutate(id, |maybe_details| {
-				let d = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
-				ensure!(&origin == &d.admin, Error::<T>::NoPermission);
-
-				let burned = Account::<T>::try_mutate_exists(
-					id,
-					&who,
-					|maybe_account| -> Result<T::SGAssetBalance, DispatchError> {
-						let mut account = maybe_account.take().ok_or(Error::<T>::AssetBalanceZero)?;
-						let mut burned = amount.min(account.balance);
-						account.balance -= burned;
-						*maybe_account = if account.balance < d.min_balance {
-							burned += account.balance;
-							Self::dead_account(&who, d, account.is_zombie);
-							None
-						} else {
-							Some(account)
-						};
-						Ok(burned)
-					}
-				)?;
-
-				d.supply = d.supply.saturating_sub(burned);
-
-				Self::deposit_event(RawEvent::Burned(id, who, burned));
-				Ok(())
-			})
+			Self::_burn(origin, id, who, amount)
 		}
 
 		/// Move some assets from the sender account to another.
@@ -613,57 +498,12 @@ decl_module! {
 		/// of sender; Account pre-existence of `target`.
 		#[weight = T::WeightInfo::transfer()]
 		fn transfer(origin,
-			#[compact] id: T::AssetId,
-			target: <T::Lookup as StaticLookup>::Source,
-			#[compact] amount: T::SGAssetBalance
+			id: T::AssetId,
+			target: T::AccountId,
+			amount: T::SGAssetBalance
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
-			ensure!(!amount.is_zero(), Error::<T>::AmountZero);
-
-			let mut origin_account = Account::<T>::get(id, &origin);
-			ensure!(!origin_account.is_frozen, Error::<T>::Frozen);
-			origin_account.balance = origin_account.balance.checked_sub(&amount)
-				.ok_or(Error::<T>::AssetBalanceLow)?;
-
-			let dest = T::Lookup::lookup(target)?;
-			Asset::<T>::try_mutate(id, |maybe_details| {
-				let details = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
-				ensure!(!details.is_frozen, Error::<T>::Frozen);
-
-				if dest == origin {
-					return Ok(())
-				}
-
-				let mut amount = amount;
-				if origin_account.balance < details.min_balance {
-					amount += origin_account.balance;
-					origin_account.balance = Zero::zero();
-				}
-
-				Account::<T>::try_mutate(id, &dest, |a| -> DispatchResult {
-					let new_balance = a.balance.saturating_add(amount);
-					ensure!(new_balance >= details.min_balance, Error::<T>::AssetBalanceLow);
-					if a.balance.is_zero() {
-						a.is_zombie = Self::new_account(&dest, details)?;
-					}
-					a.balance = new_balance;
-					Ok(())
-				})?;
-
-				match origin_account.balance.is_zero() {
-					false => {
-						Self::dezombify(&origin, details, &mut origin_account.is_zombie);
-						Account::<T>::insert(id, &origin, &origin_account)
-					}
-					true => {
-						Self::dead_account(&origin, details, origin_account.is_zombie);
-						Account::<T>::remove(id, &origin);
-					}
-				}
-
-				Self::deposit_event(RawEvent::Transferred(id, origin, dest, amount));
-				Ok(())
-			})
+			Self::_transfer(origin, id, target, amount)
 		}
 
 		/// Move some assets from one account to another.
@@ -687,57 +527,13 @@ decl_module! {
 		/// of `source`; Account pre-existence of `dest`.
 		#[weight = T::WeightInfo::force_transfer()]
 		fn force_transfer(origin,
-			#[compact] id: T::AssetId,
-			source: <T::Lookup as StaticLookup>::Source,
-			dest: <T::Lookup as StaticLookup>::Source,
-			#[compact] amount: T::SGAssetBalance,
+			id: T::AssetId,
+			source: T::AccountId,
+			dest: T::AccountId,
+			amount: T::SGAssetBalance,
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
-
-			let source = T::Lookup::lookup(source)?;
-			let mut source_account = Account::<T>::get(id, &source);
-			let mut amount = amount.min(source_account.balance);
-			ensure!(!amount.is_zero(), Error::<T>::AmountZero);
-
-			let dest = T::Lookup::lookup(dest)?;
-			if dest == source {
-				return Ok(())
-			}
-
-			Asset::<T>::try_mutate(id, |maybe_details| {
-				let details = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
-				ensure!(&origin == &details.admin, Error::<T>::NoPermission);
-
-				source_account.balance -= amount;
-				if source_account.balance < details.min_balance {
-					amount += source_account.balance;
-					source_account.balance = Zero::zero();
-				}
-
-				Account::<T>::try_mutate(id, &dest, |a| -> DispatchResult {
-					let new_balance = a.balance.saturating_add(amount);
-					ensure!(new_balance >= details.min_balance, Error::<T>::AssetBalanceLow);
-					if a.balance.is_zero() {
-						a.is_zombie = Self::new_account(&dest, details)?;
-					}
-					a.balance = new_balance;
-					Ok(())
-				})?;
-
-				match source_account.balance.is_zero() {
-					false => {
-						Self::dezombify(&source, details, &mut source_account.is_zombie);
-						Account::<T>::insert(id, &source, &source_account)
-					}
-					true => {
-						Self::dead_account(&source, details, source_account.is_zombie);
-						Account::<T>::remove(id, &source);
-					}
-				}
-
-				Self::deposit_event(RawEvent::ForceTransferred(id, source, dest, amount));
-				Ok(())
-			})
+			Self::_force_transfer(origin, id, source, dest, amount)
 		}
 
 		/// Disallow further unprivileged transfers from an account.
@@ -751,17 +547,12 @@ decl_module! {
 		///
 		/// Weight: `O(1)`
 		#[weight = T::WeightInfo::freeze()]
-		fn freeze(origin, #[compact] id: T::AssetId, who: <T::Lookup as StaticLookup>::Source) {
+		fn freeze(origin, 
+			id: T::AssetId, 
+			who: T::AccountId,
+		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
-
-			let d = Asset::<T>::get(id).ok_or(Error::<T>::Unknown)?;
-			ensure!(&origin == &d.freezer, Error::<T>::NoPermission);
-			let who = T::Lookup::lookup(who)?;
-			ensure!(Account::<T>::contains_key(id, &who), Error::<T>::AssetBalanceZero);
-
-			Account::<T>::mutate(id, &who, |a| a.is_frozen = true);
-
-			Self::deposit_event(Event::<T>::Frozen(id, who));
+			Self::_freeze(origin, id, who)
 		}
 
 		/// Allow unprivileged transfers from an account again.
@@ -775,17 +566,12 @@ decl_module! {
 		///
 		/// Weight: `O(1)`
 		#[weight = T::WeightInfo::thaw()]
-		fn thaw(origin, #[compact] id: T::AssetId, who: <T::Lookup as StaticLookup>::Source) {
+		fn thaw(origin, 
+			id: T::AssetId, 
+			who: T::AccountId,
+		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
-
-			let details = Asset::<T>::get(id).ok_or(Error::<T>::Unknown)?;
-			ensure!(&origin == &details.admin, Error::<T>::NoPermission);
-			let who = T::Lookup::lookup(who)?;
-			ensure!(Account::<T>::contains_key(id, &who), Error::<T>::AssetBalanceZero);
-
-			Account::<T>::mutate(id, &who, |a| a.is_frozen = false);
-
-			Self::deposit_event(Event::<T>::Thawed(id, who));
+			Self::_thaw(origin, id, who)
 		}
 
 		/// Disallow further unprivileged transfers for the asset class.
@@ -798,18 +584,9 @@ decl_module! {
 		///
 		/// Weight: `O(1)`
 		#[weight = T::WeightInfo::freeze_asset()]
-		fn freeze_asset(origin, #[compact] id: T::AssetId) -> DispatchResult {
+		fn freeze_asset(origin, id: T::AssetId) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
-
-			Asset::<T>::try_mutate(id, |maybe_details| {
-				let d = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
-				ensure!(&origin == &d.freezer, Error::<T>::NoPermission);
-
-				d.is_frozen = true;
-
-				Self::deposit_event(Event::<T>::AssetFrozen(id));
-				Ok(())
-			})
+			Self::_freeze_asset(origin, id)
 		}
 
 		/// Allow unprivileged transfers for the asset again.
@@ -822,18 +599,9 @@ decl_module! {
 		///
 		/// Weight: `O(1)`
 		#[weight = T::WeightInfo::thaw_asset()]
-		fn thaw_asset(origin, #[compact] id: T::AssetId) -> DispatchResult {
+		fn thaw_asset(origin, id: T::AssetId) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
-
-			Asset::<T>::try_mutate(id, |maybe_details| {
-				let d = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
-				ensure!(&origin == &d.admin, Error::<T>::NoPermission);
-
-				d.is_frozen = false;
-
-				Self::deposit_event(Event::<T>::AssetThawed(id));
-				Ok(())
-			})
+			Self::_thaw_asset(origin, id)
 		}
 
 		/// Change the Owner of an asset.
@@ -848,25 +616,11 @@ decl_module! {
 		/// Weight: `O(1)`
 		#[weight = T::WeightInfo::transfer_ownership()]
 		fn transfer_ownership(origin,
-			#[compact] id: T::AssetId,
-			owner: <T::Lookup as StaticLookup>::Source,
+			id: T::AssetId,
+			owner: T::AccountId,
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
-			let owner = T::Lookup::lookup(owner)?;
-
-			Asset::<T>::try_mutate(id, |maybe_details| {
-				let details = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
-				ensure!(&origin == &details.owner, Error::<T>::NoPermission);
-				if details.owner == owner { return Ok(()) }
-
-				// Move the deposit to the new owner.
-				T::Currency::repatriate_reserved(&details.owner, &owner, details.deposit, Reserved)?;
-
-				details.owner = owner.clone();
-
-				Self::deposit_event(RawEvent::OwnerChanged(id, owner));
-				Ok(())
-			})
+			Self::_transfer_ownership(origin, id, owner)
 		}
 
 		/// Change the Issuer, Admin and Freezer of an asset.
@@ -883,27 +637,13 @@ decl_module! {
 		/// Weight: `O(1)`
 		#[weight = T::WeightInfo::set_team()]
 		fn set_team(origin,
-			#[compact] id: T::AssetId,
-			issuer: <T::Lookup as StaticLookup>::Source,
-			admin: <T::Lookup as StaticLookup>::Source,
-			freezer: <T::Lookup as StaticLookup>::Source,
+			id: T::AssetId,
+			issuer: T::AccountId,
+			admin: T::AccountId,
+			freezer: T::AccountId,
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
-			let issuer = T::Lookup::lookup(issuer)?;
-			let admin = T::Lookup::lookup(admin)?;
-			let freezer = T::Lookup::lookup(freezer)?;
-
-			Asset::<T>::try_mutate(id, |maybe_details| {
-				let details = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
-				ensure!(&origin == &details.owner, Error::<T>::NoPermission);
-
-				details.issuer = issuer.clone();
-				details.admin = admin.clone();
-				details.freezer = freezer.clone();
-
-				Self::deposit_event(RawEvent::TeamChanged(id, issuer, admin, freezer));
-				Ok(())
-			})
+			Self::_set_team(origin, id, issuer, admin, freezer)
 		}
 
 		/// Set the maximum number of zombie accounts for an asset.
@@ -922,31 +662,11 @@ decl_module! {
 		/// Weight: `O(1)`
 		#[weight = T::WeightInfo::set_max_zombies()]
 		fn set_max_zombies(origin,
-			#[compact] id: T::AssetId,
-			#[compact] max_zombies: u32,
+			id: T::AssetId,
+			max_zombies: u32,
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
-
-			Asset::<T>::try_mutate(id, |maybe_details| {
-				let details = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
-				ensure!(&origin == &details.owner, Error::<T>::NoPermission);
-				ensure!(max_zombies >= details.zombies, Error::<T>::TooManyZombies);
-
-				let new_deposit = T::AssetDepositPerZombie::get()
-					.saturating_mul(max_zombies.into())
-					.saturating_add(T::AssetDepositBase::get());
-
-				if new_deposit > details.deposit {
-					T::Currency::reserve(&origin, new_deposit - details.deposit)?;
-				} else {
-					T::Currency::unreserve(&origin, details.deposit - new_deposit);
-				}
-
-				details.max_zombies = max_zombies;
-
-				Self::deposit_event(RawEvent::MaxZombiesChanged(id, max_zombies));
-				Ok(())
-			})
+			Self::_set_max_zombies(origin, id, max_zombies)
 		}
 
 		/// Set the metadata for an asset.
@@ -971,52 +691,13 @@ decl_module! {
 		/// Weight: `O(1)`
 		#[weight = T::WeightInfo::set_metadata(name.len() as u32, symbol.len() as u32)]
 		fn set_metadata(origin,
-			#[compact] id: T::AssetId,
+			id: T::AssetId,
 			name: Vec<u8>,
 			symbol: Vec<u8>,
 			decimals: u8,
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
-
-			ensure!(name.len() <= T::StringLimit::get() as usize, Error::<T>::BadMetadata);
-			ensure!(symbol.len() <= T::StringLimit::get() as usize, Error::<T>::BadMetadata);
-
-			let d = Asset::<T>::get(id).ok_or(Error::<T>::Unknown)?;
-			ensure!(&origin == &d.owner, Error::<T>::NoPermission);
-
-			Metadata::<T>::try_mutate_exists(id, |metadata| {
-				let bytes_used = name.len() + symbol.len();
-				let old_deposit = match metadata {
-					Some(m) => m.deposit,
-					None => Default::default()
-				};
-
-				// Metadata is being removed
-				if bytes_used.is_zero() && decimals.is_zero() {
-					T::Currency::unreserve(&origin, old_deposit);
-					*metadata = None;
-				} else {
-					let new_deposit = T::MetadataDepositPerByte::get()
-						.saturating_mul(((name.len() + symbol.len()) as u32).into())
-						.saturating_add(T::MetadataDepositBase::get());
-
-					if new_deposit > old_deposit {
-						T::Currency::reserve(&origin, new_deposit - old_deposit)?;
-					} else {
-						T::Currency::unreserve(&origin, old_deposit - new_deposit);
-					}
-
-					*metadata = Some(SubGameAssetMetadata {
-						deposit: new_deposit,
-						name: name.clone(),
-						symbol: symbol.clone(),
-						decimals,
-					})
-				}
-
-				Self::deposit_event(RawEvent::MetadataSet(id, name, symbol, decimals));
-				Ok(())
-			})
+			Self::_set_metadata(origin, id, name, symbol, decimals)
 		}
 	}
 }
@@ -1085,8 +766,106 @@ impl<T: Config> Module<T> {
 		d.accounts = d.accounts.saturating_sub(1);
 	}
 
+	fn _create(
+		owner: T::AccountId,
+		id: T::AssetId,
+		admin: T::AccountId,
+		max_zombies: u32,
+		min_balance: T::SGAssetBalance,
+	) -> DispatchResult {
+		ensure!(!Asset::<T>::contains_key(id), Error::<T>::InUse);
+		ensure!(!min_balance.is_zero(), Error::<T>::MinBalanceZero);
+
+		let deposit = T::AssetDepositPerZombie::get()
+			.saturating_mul(max_zombies.into())
+			 .saturating_add(T::AssetDepositBase::get());
+		T::Currency::reserve(&owner, deposit)?;
+
+		Asset::<T>::insert(id, SubGameAssetDetails {
+			owner: owner.clone(),
+			issuer: admin.clone(),
+			admin: admin.clone(),
+			freezer: admin.clone(),
+			supply: Zero::zero(),
+			deposit,
+			max_zombies,
+			min_balance,
+			zombies: Zero::zero(),
+			accounts: Zero::zero(),
+			is_frozen: false,
+		});
+		Self::deposit_event(RawEvent::Created(id, owner, admin));
+		Ok(())
+	}
+
+	fn _force_create(
+		id: T::AssetId,
+		owner: T::AccountId,
+		max_zombies: u32,
+		min_balance: T::SGAssetBalance,
+	) -> DispatchResult {
+		ensure!(!Asset::<T>::contains_key(id), Error::<T>::InUse);
+		ensure!(!min_balance.is_zero(), Error::<T>::MinBalanceZero);
+
+		Asset::<T>::insert(id, SubGameAssetDetails {
+			owner: owner.clone(),
+			issuer: owner.clone(),
+			admin: owner.clone(),
+			freezer: owner.clone(),
+			supply: Zero::zero(),
+			deposit: Zero::zero(),
+			max_zombies,
+			min_balance,
+			zombies: Zero::zero(),
+			accounts: Zero::zero(),
+			is_frozen: false,
+		});
+		Self::deposit_event(RawEvent::ForceCreated(id, owner));
+		Ok(())
+	}
+
+	fn _destroy(
+		origin: T::AccountId,
+		id: T::AssetId,
+		zombies_witness: u32,
+	) -> DispatchResult {
+		Asset::<T>::try_mutate_exists(id, |maybe_details| {
+			let details = maybe_details.take().ok_or(Error::<T>::Unknown)?;
+			ensure!(details.owner == origin, Error::<T>::NoPermission);
+			ensure!(details.accounts == details.zombies, Error::<T>::RefsLeft);
+			ensure!(details.zombies <= zombies_witness, Error::<T>::BadWitness);
+
+			let metadata = Metadata::<T>::take(&id);
+			T::Currency::unreserve(&details.owner, details.deposit.saturating_add(metadata.deposit));
+
+			*maybe_details = None;
+			Account::<T>::remove_prefix(&id);
+			Self::deposit_event(RawEvent::Destroyed(id));
+			Ok(())
+		})
+	}
+
+	fn _force_destroy(
+		id: T::AssetId,
+		zombies_witness: u32,
+	) -> DispatchResult {
+		Asset::<T>::try_mutate_exists(id, |maybe_details| {
+			let details = maybe_details.take().ok_or(Error::<T>::Unknown)?;
+			ensure!(details.accounts == details.zombies, Error::<T>::RefsLeft);
+			ensure!(details.zombies <= zombies_witness, Error::<T>::BadWitness);
+
+			let metadata = Metadata::<T>::take(&id);
+			T::Currency::unreserve(&details.owner, details.deposit.saturating_add(metadata.deposit));
+
+			*maybe_details = None;
+			Account::<T>::remove_prefix(&id);
+			Self::deposit_event(RawEvent::Destroyed(id));
+			Ok(())
+		})
+	}
+
 	fn _mint(
-		sender: T::AccountId,
+		origin: T::AccountId,
 		id: T::AssetId,
 		beneficiary: T::AccountId,
 		amount: T::SGAssetBalance
@@ -1094,7 +873,7 @@ impl<T: Config> Module<T> {
 		Asset::<T>::try_mutate(id, |maybe_details| {
 			let details = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
 
-			ensure!(&sender == &details.issuer, Error::<T>::NoPermission);
+			ensure!(&origin == &details.issuer, Error::<T>::NoPermission);
 			details.supply = details.supply.checked_add(&amount).ok_or(Error::<T>::Overflow)?;
 
 			Account::<T>::try_mutate(id, &beneficiary, |t| -> DispatchResult {
@@ -1110,15 +889,16 @@ impl<T: Config> Module<T> {
 			Ok(())
 		})
 	}
+
 	fn _burn(
-		sender: T::AccountId,
+		origin: T::AccountId,
 		id: T::AssetId,
 		who: T::AccountId,
 		amount: T::SGAssetBalance
 	) -> DispatchResult {
 		Asset::<T>::try_mutate(id, |maybe_details| {
 			let d = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
-			ensure!(&sender == &d.admin, Error::<T>::NoPermission);
+			ensure!(&origin == &d.admin, Error::<T>::NoPermission);
 
 			let burned = Account::<T>::try_mutate_exists(
 				id,
@@ -1141,6 +921,286 @@ impl<T: Config> Module<T> {
 			d.supply = d.supply.saturating_sub(burned);
 
 			Self::deposit_event(RawEvent::Burned(id, who, burned));
+			Ok(())
+		})
+	}
+
+	fn _transfer(
+		origin: T::AccountId,
+		id: T::AssetId,
+		target: T::AccountId,
+		amount: T::SGAssetBalance
+	) -> DispatchResult {
+		ensure!(!amount.is_zero(), Error::<T>::AmountZero);
+
+		let mut origin_account = Account::<T>::get(id, &origin);
+		ensure!(!origin_account.is_frozen, Error::<T>::Frozen);
+		origin_account.balance = origin_account.balance.checked_sub(&amount)
+			.ok_or(Error::<T>::AssetBalanceLow)?;
+
+		let dest = target.clone();
+		Asset::<T>::try_mutate(id, |maybe_details| {
+			let details = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
+			ensure!(!details.is_frozen, Error::<T>::Frozen);
+
+			if dest == origin {
+				return Ok(())
+			}
+
+			let mut amount = amount;
+			if origin_account.balance < details.min_balance {
+				amount += origin_account.balance;
+				origin_account.balance = Zero::zero();
+			}
+
+			Account::<T>::try_mutate(id, &dest, |a| -> DispatchResult {
+				let new_balance = a.balance.saturating_add(amount);
+				ensure!(new_balance >= details.min_balance, Error::<T>::AssetBalanceLow);
+				if a.balance.is_zero() {
+					a.is_zombie = Self::new_account(&dest, details)?;
+				}
+				a.balance = new_balance;
+				Ok(())
+			})?;
+
+			match origin_account.balance.is_zero() {
+				false => {
+					Self::dezombify(&origin, details, &mut origin_account.is_zombie);
+					Account::<T>::insert(id, &origin, &origin_account)
+				}
+				true => {
+					Self::dead_account(&origin, details, origin_account.is_zombie);
+					Account::<T>::remove(id, &origin);
+				}
+			}
+
+			Self::deposit_event(RawEvent::Transferred(id, origin, dest, amount));
+			Ok(())
+		})
+	}
+
+	fn _force_transfer(
+		origin: T::AccountId,
+		id: T::AssetId,
+		source: T::AccountId,
+		dest: T::AccountId,
+		amount: T::SGAssetBalance,
+	) -> DispatchResult {
+		let mut source_account = Account::<T>::get(id, &source);
+		let mut amount = amount.min(source_account.balance);
+		ensure!(!amount.is_zero(), Error::<T>::AmountZero);
+
+		if dest == source {
+			return Ok(())
+		}
+
+		Asset::<T>::try_mutate(id, |maybe_details| {
+			let details = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
+			ensure!(&origin == &details.admin, Error::<T>::NoPermission);
+
+			source_account.balance -= amount;
+			if source_account.balance < details.min_balance {
+				amount += source_account.balance;
+				source_account.balance = Zero::zero();
+			}
+
+			Account::<T>::try_mutate(id, &dest, |a| -> DispatchResult {
+				let new_balance = a.balance.saturating_add(amount);
+				ensure!(new_balance >= details.min_balance, Error::<T>::AssetBalanceLow);
+				if a.balance.is_zero() {
+					a.is_zombie = Self::new_account(&dest, details)?;
+				}
+				a.balance = new_balance;
+				Ok(())
+			})?;
+
+			match source_account.balance.is_zero() {
+				false => {
+					Self::dezombify(&source, details, &mut source_account.is_zombie);
+					Account::<T>::insert(id, &source, &source_account)
+				}
+				true => {
+					Self::dead_account(&source, details, source_account.is_zombie);
+					Account::<T>::remove(id, &source);
+				}
+			}
+
+			Self::deposit_event(RawEvent::ForceTransferred(id, source, dest, amount));
+			Ok(())
+		})
+	}
+
+	fn _freeze(
+		origin: T::AccountId, 
+		id: T::AssetId, 
+		who: T::AccountId,
+	) -> DispatchResult {
+		let d = Asset::<T>::get(id).ok_or(Error::<T>::Unknown)?;
+		ensure!(&origin == &d.freezer, Error::<T>::NoPermission);
+		ensure!(Account::<T>::contains_key(id, &who), Error::<T>::AssetBalanceZero);
+
+		Account::<T>::mutate(id, &who, |a| a.is_frozen = true);
+
+		Self::deposit_event(Event::<T>::Frozen(id, who));
+		Ok(())
+	}
+
+	fn _thaw(
+		origin: T::AccountId, 
+		id: T::AssetId, 
+		who: T::AccountId,
+	) -> DispatchResult {
+		let details = Asset::<T>::get(id).ok_or(Error::<T>::Unknown)?;
+		ensure!(&origin == &details.admin, Error::<T>::NoPermission);
+		ensure!(Account::<T>::contains_key(id, &who), Error::<T>::AssetBalanceZero);
+
+		Account::<T>::mutate(id, &who, |a| a.is_frozen = false);
+
+		Self::deposit_event(Event::<T>::Thawed(id, who));
+		Ok(())
+	}
+
+	fn _freeze_asset(
+		origin: T::AccountId, 
+		id: T::AssetId,
+	) -> DispatchResult {
+		Asset::<T>::try_mutate(id, |maybe_details| {
+			let d = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
+			ensure!(&origin == &d.freezer, Error::<T>::NoPermission);
+
+			d.is_frozen = true;
+
+			Self::deposit_event(Event::<T>::AssetFrozen(id));
+			Ok(())
+		})
+	}
+
+	fn _thaw_asset(
+		origin: T::AccountId, 
+		id: T::AssetId,
+	) -> DispatchResult {
+		Asset::<T>::try_mutate(id, |maybe_details| {
+			let d = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
+			ensure!(&origin == &d.admin, Error::<T>::NoPermission);
+
+			d.is_frozen = false;
+
+			Self::deposit_event(Event::<T>::AssetThawed(id));
+			Ok(())
+		})
+	}
+
+	fn _transfer_ownership(
+		origin: T::AccountId,
+		id: T::AssetId,
+		owner: T::AccountId,
+	) -> DispatchResult {
+		Asset::<T>::try_mutate(id, |maybe_details| {
+			let details = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
+			ensure!(&origin == &details.owner, Error::<T>::NoPermission);
+			if details.owner == owner { return Ok(()) }
+
+			// Move the deposit to the new owner.
+			T::Currency::repatriate_reserved(&details.owner, &owner, details.deposit, Reserved)?;
+
+			details.owner = owner.clone();
+
+			Self::deposit_event(RawEvent::OwnerChanged(id, owner));
+			Ok(())
+		})
+	}
+
+	fn _set_team(
+		origin: T::AccountId,
+		id: T::AssetId,
+		issuer: T::AccountId,
+		admin: T::AccountId,
+		freezer: T::AccountId,
+	) -> DispatchResult {
+		Asset::<T>::try_mutate(id, |maybe_details| {
+			let details = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
+			ensure!(&origin == &details.owner, Error::<T>::NoPermission);
+
+			details.issuer = issuer.clone();
+			details.admin = admin.clone();
+			details.freezer = freezer.clone();
+
+			Self::deposit_event(RawEvent::TeamChanged(id, issuer, admin, freezer));
+			Ok(())
+		})
+	}
+
+	fn _set_max_zombies(
+		origin: T::AccountId,
+		id: T::AssetId,
+		max_zombies: u32,
+	) -> DispatchResult {
+		Asset::<T>::try_mutate(id, |maybe_details| {
+			let details = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
+			ensure!(&origin == &details.owner, Error::<T>::NoPermission);
+			ensure!(max_zombies >= details.zombies, Error::<T>::TooManyZombies);
+
+			let new_deposit = T::AssetDepositPerZombie::get()
+				.saturating_mul(max_zombies.into())
+				.saturating_add(T::AssetDepositBase::get());
+
+			if new_deposit > details.deposit {
+				T::Currency::reserve(&origin, new_deposit - details.deposit)?;
+			} else {
+				T::Currency::unreserve(&origin, details.deposit - new_deposit);
+			}
+
+			details.max_zombies = max_zombies;
+
+			Self::deposit_event(RawEvent::MaxZombiesChanged(id, max_zombies));
+			Ok(())
+		})
+	}
+
+	fn _set_metadata(
+		origin: T::AccountId,
+		id: T::AssetId,
+		name: Vec<u8>,
+		symbol: Vec<u8>,
+		decimals: u8,
+	) -> DispatchResult {
+		ensure!(name.len() <= T::StringLimit::get() as usize, Error::<T>::BadMetadata);
+		ensure!(symbol.len() <= T::StringLimit::get() as usize, Error::<T>::BadMetadata);
+
+		let d = Asset::<T>::get(id).ok_or(Error::<T>::Unknown)?;
+		ensure!(&origin == &d.owner, Error::<T>::NoPermission);
+
+		Metadata::<T>::try_mutate_exists(id, |metadata| {
+			let bytes_used = name.len() + symbol.len();
+			let old_deposit = match metadata {
+				Some(m) => m.deposit,
+				None => Default::default()
+			};
+
+			// Metadata is being removed
+			if bytes_used.is_zero() && decimals.is_zero() {
+				T::Currency::unreserve(&origin, old_deposit);
+				*metadata = None;
+			} else {
+				let new_deposit = T::MetadataDepositPerByte::get()
+					.saturating_mul(((name.len() + symbol.len()) as u32).into())
+					.saturating_add(T::MetadataDepositBase::get());
+
+				if new_deposit > old_deposit {
+					T::Currency::reserve(&origin, new_deposit - old_deposit)?;
+				} else {
+					T::Currency::unreserve(&origin, old_deposit - new_deposit);
+				}
+
+				*metadata = Some(SubGameAssetMetadata {
+					deposit: new_deposit,
+					name: name.clone(),
+					symbol: symbol.clone(),
+					decimals,
+				})
+			}
+
+			Self::deposit_event(RawEvent::MetadataSet(id, name, symbol, decimals));
 			Ok(())
 		})
 	}

@@ -1,12 +1,12 @@
 [package]
 name = "pallet-subgame-assets"
 version = "3.0.0"
-authors = ["Parity Technologies <admin@parity.io>"]
+authors = ["SubGame"]
 edition = "2018"
 license = "Apache-2.0"
-homepage = "https://substrate.dev"
-repository = "https://github.com/paritytech/substrate/"
-description = "FRAME asset management pallet"
+homepage = "https://www.subgame.org"
+repository = "https://github.com/SubGame-Network/"
+description = "SubGame Assets pallet"
 readme = "README.md"
 
 [package.metadata.docs.rs]

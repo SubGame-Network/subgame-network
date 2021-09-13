@@ -766,7 +766,7 @@ impl<T: Config> Module<T> {
 		d.accounts = d.accounts.saturating_sub(1);
 	}
 
-	fn _create(
+	pub fn _create(
 		owner: T::AccountId,
 		id: T::AssetId,
 		admin: T::AccountId,
@@ -798,7 +798,7 @@ impl<T: Config> Module<T> {
 		Ok(())
 	}
 
-	fn _force_create(
+	pub fn _force_create(
 		id: T::AssetId,
 		owner: T::AccountId,
 		max_zombies: u32,
@@ -824,7 +824,7 @@ impl<T: Config> Module<T> {
 		Ok(())
 	}
 
-	fn _destroy(
+	pub fn _destroy(
 		origin: T::AccountId,
 		id: T::AssetId,
 		zombies_witness: u32,
@@ -845,7 +845,7 @@ impl<T: Config> Module<T> {
 		})
 	}
 
-	fn _force_destroy(
+	pub fn _force_destroy(
 		id: T::AssetId,
 		zombies_witness: u32,
 	) -> DispatchResult {
@@ -864,7 +864,7 @@ impl<T: Config> Module<T> {
 		})
 	}
 
-	fn _mint(
+	pub fn _mint(
 		origin: T::AccountId,
 		id: T::AssetId,
 		beneficiary: T::AccountId,
@@ -890,7 +890,7 @@ impl<T: Config> Module<T> {
 		})
 	}
 
-	fn _burn(
+	pub fn _burn(
 		origin: T::AccountId,
 		id: T::AssetId,
 		who: T::AccountId,
@@ -925,7 +925,7 @@ impl<T: Config> Module<T> {
 		})
 	}
 
-	fn _transfer(
+	pub fn _transfer(
 		origin: T::AccountId,
 		id: T::AssetId,
 		target: T::AccountId,
@@ -979,7 +979,7 @@ impl<T: Config> Module<T> {
 		})
 	}
 
-	fn _force_transfer(
+	pub fn _force_transfer(
 		origin: T::AccountId,
 		id: T::AssetId,
 		source: T::AccountId,
@@ -1030,7 +1030,7 @@ impl<T: Config> Module<T> {
 		})
 	}
 
-	fn _freeze(
+	pub fn _freeze(
 		origin: T::AccountId, 
 		id: T::AssetId, 
 		who: T::AccountId,
@@ -1045,7 +1045,7 @@ impl<T: Config> Module<T> {
 		Ok(())
 	}
 
-	fn _thaw(
+	pub fn _thaw(
 		origin: T::AccountId, 
 		id: T::AssetId, 
 		who: T::AccountId,
@@ -1060,7 +1060,7 @@ impl<T: Config> Module<T> {
 		Ok(())
 	}
 
-	fn _freeze_asset(
+	pub fn _freeze_asset(
 		origin: T::AccountId, 
 		id: T::AssetId,
 	) -> DispatchResult {
@@ -1075,7 +1075,7 @@ impl<T: Config> Module<T> {
 		})
 	}
 
-	fn _thaw_asset(
+	pub fn _thaw_asset(
 		origin: T::AccountId, 
 		id: T::AssetId,
 	) -> DispatchResult {
@@ -1090,7 +1090,7 @@ impl<T: Config> Module<T> {
 		})
 	}
 
-	fn _transfer_ownership(
+	pub fn _transfer_ownership(
 		origin: T::AccountId,
 		id: T::AssetId,
 		owner: T::AccountId,
@@ -1110,7 +1110,7 @@ impl<T: Config> Module<T> {
 		})
 	}
 
-	fn _set_team(
+	pub fn _set_team(
 		origin: T::AccountId,
 		id: T::AssetId,
 		issuer: T::AccountId,
@@ -1130,7 +1130,7 @@ impl<T: Config> Module<T> {
 		})
 	}
 
-	fn _set_max_zombies(
+	pub fn _set_max_zombies(
 		origin: T::AccountId,
 		id: T::AssetId,
 		max_zombies: u32,
@@ -1157,7 +1157,7 @@ impl<T: Config> Module<T> {
 		})
 	}
 
-	fn _set_metadata(
+	pub fn _set_metadata(
 		origin: T::AccountId,
 		id: T::AssetId,
 		name: Vec<u8>,

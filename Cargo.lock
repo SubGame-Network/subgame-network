@@ -3893,21 +3893,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-fungible"
-version = "3.0.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "pallet-balances",
- "parity-scale-codec",
- "safe-mix",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-gamecenter"
 version = "3.0.0"
 dependencies = [
@@ -4239,22 +4224,6 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
-]
-
-[[package]]
-name = "pallet-swaps"
-version = "3.0.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "pallet-balances",
- "pallet-fungible",
- "parity-scale-codec",
- "safe-mix",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]

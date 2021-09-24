@@ -53,7 +53,7 @@ pub struct SwapPoolDetails<SwapId, AccountId, AssetId> {
 	// asset LP Token
 	asset_lp: AssetId,
 	// k
-	k: u64
+	swap_k: u128
 }
 
 /// There is a 0.3% fee for swapping tokens.
@@ -80,15 +80,19 @@ decl_storage! {
 decl_event!(
 	pub enum Event<T>
 	where
-		AccountId = <T as frame_system::Config>::AccountId,
-		AssetId = <T as SubGameAssets::Config>::AssetId,
+		SwapSender = <T as frame_system::Config>::AccountId,
+		SwapPoolOwner = <T as frame_system::Config>::AccountId,
+		SwapAssetX = <T as SubGameAssets::Config>::AssetId,
+		SwapAssetY = <T as SubGameAssets::Config>::AssetId,
 		SwapId = <T as Config>::SwapId,
-		SGAssetBalance = <T as SubGameAssets::Config>::SGAssetBalance
+		SwapAmountX = <T as SubGameAssets::Config>::SGAssetBalance,
+		SwapAmountY = <T as SubGameAssets::Config>::SGAssetBalance,
+		SwapAmountLP = <T as SubGameAssets::Config>::SGAssetBalance,
 	{
-		CreatePool(AccountId, SwapId, AssetId, SGAssetBalance, AssetId, SGAssetBalance, AccountId),
-		LiquidityAdded(SwapId, AccountId, SGAssetBalance, SGAssetBalance),
-		LiquidityRemoved(SwapId, AccountId, SGAssetBalance, SGAssetBalance, SGAssetBalance),
-		Swap(SwapId, AccountId, AssetId, SGAssetBalance, AssetId, SGAssetBalance),
+		CreatePool(SwapSender, SwapId, SwapAssetX, SwapAmountX, SwapAssetY, SwapAmountY, SwapPoolOwner),
+		LiquidityAdded(SwapId, SwapSender, SwapAmountX, SwapAmountY),
+		LiquidityRemoved(SwapId, SwapSender, SwapAmountLP, SwapAmountX, SwapAmountY),
+		Swap(SwapId, SwapSender, SwapAssetX, SwapAmountX, SwapAssetY, SwapAmountY),
 	}
 );
 
@@ -176,9 +180,10 @@ decl_module! {
 
 			// SwapPair
 			SwapPair::<T>::insert((asset_x, asset_y), new_pool_id);
+			SwapPair::<T>::insert((asset_y, asset_x), new_pool_id);
 
 			// LP token balance
-			let lp_balance: u64 = ((x.saturated_into::<u64>() as f64 + y.saturated_into::<u64>() as f64) / 2f64).round() as u64;
+			let lp_balance: u64 = ((x.saturated_into::<u64>() as f64 + y.saturated_into::<u64>() as f64) / 2f64).floor() as u64;
 			
 			// LP asset id
 			let lp_asset_id: T::AssetId = frame_system::Module::<T>::block_number().saturated_into::<u32>().into();
@@ -190,7 +195,7 @@ decl_module! {
 				asset_x: asset_x,
 				asset_y: asset_y,
 				asset_lp: lp_asset_id,
-				k: (x.saturated_into::<u64>() * y.saturated_into::<u64>())
+				swap_k: (x.saturated_into::<u128>() * y.saturated_into::<u128>())
 			};
 			SwapPool::<T>::insert(new_pool_id, pool_details);
 			
@@ -272,9 +277,15 @@ decl_module! {
 			
 			let total_liquidity = x + y;
 			if total_liquidity > Zero::zero() {
-				let _old_k = x as f64 / y as f64;
-				let _new_k = dx.saturated_into::<u64>() as f64 / dy.saturated_into::<u64>() as f64;
-				ensure!(_old_k == _new_k, Error::<T>::LiquidityKError);
+				// LP total supply
+				let lp_total_supply = SubGameAssets::Module::<T>::total_supply(swap_pool.asset_lp);
+
+				// mint LP token
+				let new_lp_balance: u64 = (dx.saturated_into::<u64>() as f64 / x as f64 * lp_total_supply.saturated_into::<u64>() as f64).floor() as u64;
+
+				// Check dy
+				let want_dy: u64 = (new_lp_balance as f64 / lp_total_supply.saturated_into::<u64>() as f64 * y as f64).floor() as u64;
+				ensure!(want_dy == dy.saturated_into::<u64>(), Error::<T>::LiquidityKError);
 
 				// transfer x
 				if swap_pool.asset_x == origin_coin {
@@ -292,12 +303,8 @@ decl_module! {
 					SubGameAssets::Module::<T>::_transfer(sender.clone(), swap_pool.asset_y, swap_pool.account.clone(), dy)?;
 				}
 
-				// LP total supply
-				let lp_total_supply = SubGameAssets::Module::<T>::total_supply(swap_pool.asset_lp);
-
 				// mint LP token
-				let new_lp_balance = dx / x.saturated_into() * lp_total_supply;
-				SubGameAssets::Module::<T>::_mint(swap_pool.account.clone(), swap_pool.asset_lp, sender.clone(), new_lp_balance)?;
+				SubGameAssets::Module::<T>::_mint(swap_pool.account.clone(), swap_pool.asset_lp, sender.clone(), new_lp_balance.saturated_into())?;
 			} else {
 				// transfer x
 				if swap_pool.asset_x == origin_coin {
@@ -357,8 +364,8 @@ decl_module! {
 			// LP total supply
 			let lp_total_supply = SubGameAssets::Module::<T>::total_supply(swap_pool.asset_lp).saturated_into::<u64>();
 
-			let dx: T::SGAssetBalance = ((lp_amount.saturated_into::<u64>() as f64 / lp_total_supply as f64 * x as f64).round() as u64).saturated_into();
-			let dy: T::SGAssetBalance = ((lp_amount.saturated_into::<u64>() as f64 / lp_total_supply as f64 * y as f64).round() as u64).saturated_into();
+			let dx: T::SGAssetBalance = ((lp_amount.saturated_into::<u64>() as f64 / lp_total_supply as f64 * x as f64).floor() as u64).saturated_into();
+			let dy: T::SGAssetBalance = ((lp_amount.saturated_into::<u64>() as f64 / lp_total_supply as f64 * y as f64).floor() as u64).saturated_into();
 			ensure!(!dx.is_zero() && !dy.is_zero(), Error::<T>::ZeroBalance);
 			
 			// transfer x
@@ -423,13 +430,16 @@ decl_module! {
 				output_balance = <T as Config>::Currency::free_balance(&swap_pool.account.clone()).saturated_into::<u64>();
 			}
 
-			// dy = y - (k / (x + (dx * (1 - 0.003))))
-			let k: f64 = swap_pool.k as f64;
+			// $r = 1 - 0.003
+			// $a = $dx / $x
+			// $dy = ($a * $r) / (1 + ($a * $r)) * $y
 			let x: f64 = input_balance as f64;
 			let y: f64 = output_balance as f64;
 			let dx: f64 = input_amount.saturated_into::<u64>() as f64;
-			let dy: f64 = y - (k / (x + (dx * (1f64 - FEE))));
-			let output_amount: u64 = (dy.round() as u64).saturated_into();
+			let r: f64 = 1.0 - FEE;
+			let a: f64 = dx / x;
+			let dy: f64 = (a * r) / (1.0 + (a * r)) * y;
+			let output_amount: u64 = (dy.floor() as u64).saturated_into();
 			ensure!(output_amount > 0u64.into(), Error::<T>::NotEnoughLiquidity);
 
 			// slipage

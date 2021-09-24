@@ -119,7 +119,6 @@ fn add_liquidity() {
         let asset_y: u32 = 0;
         let y: u64 = 11 * SGB_DECIMALS;
         assert_ok!(Swap::create_pool(Origin::signed(user.clone()), asset_x, x, asset_y, y));
-        let swap_pool = Swap::swap_pool(1);
 
         // Should return zero balance error
         let user = 1;
@@ -142,10 +141,31 @@ fn add_liquidity() {
         assert_ok!(Swap::add_liquidity(Origin::signed(user.clone()), swap_id, dx, dy));
 
         // Check LP token balance
+        let swap_pool = Swap::swap_pool(1);
         let got_lp_balance = SubGameAssets::Module::<Test>::total_supply(swap_pool.asset_lp);
         let _lp_total_supply = (x + y) / 2;
         let want_lp_balance = dx / x * _lp_total_supply + _lp_total_supply;
         assert_eq!(want_lp_balance, got_lp_balance);
+    });
+}
+
+#[test]
+fn add_liquidity2() {
+    new_test_ext().execute_with(|| {
+        init_asset();
+
+        let user = 1;
+        let asset_x: u32 = 0;
+        let x: u64 = 10000 * SGB_DECIMALS;
+        let asset_y: u32 = 7;
+        let y: u64 = 10000 * USDT_DECIMALS;
+        assert_ok!(Swap::create_pool(Origin::signed(user.clone()), asset_x, x, asset_y, y));
+
+        let user = 1;
+        let swap_id = 1;
+        let dx: u64 = 1 * SGB_DECIMALS;
+        let dy: u64 = 1 * USDT_DECIMALS;
+        assert_ok!(Swap::add_liquidity(Origin::signed(user.clone()), swap_id, dx, dy));
     });
 }
 

@@ -1,9 +1,9 @@
 [package]
-description = 'A unique asset (NFT) interface and a Substrate FRAME implementation optimized for commodity assets.'
+description = 'A list of leasable modules is defined in pallet-lease, and users can obtain module usage rights by staking nft tokens.'
 edition = '2018'
 homepage = 'https://www.subgame.org'
-license = 'UnLicense'
-name = 'pallet-nft'
+license = 'Apache-2.0 License'
+name = 'pallet-lease'
 repository = 'https://github.com/SubGame-Network/subgame-network'
 version = '3.0.0'
 
@@ -19,7 +19,14 @@ frame-support = { default-features = false, version = '3.0.0' }
 frame-system = { default-features = false, version = '3.0.0' }
 sp-runtime = { default-features = false, version = '3.0.0' }
 sp-std = { default-features = false, version = '3.0.0' }
-pallet-timestamp = { default-features = false, version = '3.0.0' }
+
+# time
+chrono = { version = "0.4", default-features = false }
+
+pallet-nft = { path = '../nft', default-features = false, version = '3.0.0' }
+
+# use unit test
+balances = { package = 'pallet-balances', version = '3.0.0', default-features = false }
 
 [dev-dependencies]
 sp-core = { default-features = false, version = '3.0.0' }
@@ -34,4 +41,9 @@ std = [
     'frame-system/std',
     'sp-runtime/std',
     'sp-std/std',
+    'pallet-nft/std',
+    'chrono/std',
+    
+    # use unit test
+    'balances/std',
 ]

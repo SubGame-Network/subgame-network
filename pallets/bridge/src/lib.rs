@@ -12,7 +12,6 @@ use frame_support::{
 };
 use sp_std::convert::TryInto;
 
-use pallet_subgame_assets::{AssetsTrait, AssetsTransfer};
 use frame_system::ensure_signed;
 // use sp_runtime::{{
 //     traits::{CheckedAdd, CheckedSub}

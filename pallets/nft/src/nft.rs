@@ -11,20 +11,26 @@
 //!
 //! This abstraction is implemented by [pallet_commodities::Module](../struct.Module.html).
 
+use codec::{Encode, Decode};
+use frame_support::dispatch::fmt::Debug;
+use sp_runtime::traits::{Member};
+
+use codec::FullCodec;
 use frame_support::{
     dispatch::{result::Result, DispatchError, DispatchResult},
     traits::Get,
+    Hashable,
 };
 use sp_std::vec::Vec;
-
+use core::hash::Hash;
 /// An interface over a set of unique assets.
 /// Assets with equivalent attributes (as defined by the AssetInfo type) **must** have an equal ID
 /// and assets with different IDs **must not** have equivalent attributes.
 pub trait UniqueAssets<AccountId> {
     /// The type used to identify unique assets.
-    type AssetId;
+    type AssetId: Encode + Decode + Clone + Debug + Eq + Hash + FullCodec + Default;
     /// The attributes that distinguish unique assets.
-    type AssetInfo;
+    type AssetInfo:  Hashable + Member + Debug + Default + FullCodec + Ord;
     /// The maximum number of this type of asset that may exist (minted - burned).
     type AssetLimit: Get<u128>;
     /// The maximum number of this type of asset that any single account may own.
@@ -48,7 +54,7 @@ pub trait UniqueAssets<AccountId> {
     /// - The total asset limit has already been reached.
     fn mint(
         owner_account: &AccountId,
-        asset_info: Self::AssetInfo,
+        info: Vec<u8>,
     ) -> Result<Self::AssetId, DispatchError>;
     /// Destroy an asset.
     /// This method **must** return an error in the following case:

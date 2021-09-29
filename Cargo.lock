@@ -4005,6 +4005,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-lease"
+version = "3.0.0"
+dependencies = [
+ "chrono",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-nft",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-membership"
 version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4041,6 +4058,7 @@ version = "3.0.0"
 dependencies = [
  "frame-support",
  "frame-system",
+ "pallet-timestamp",
  "parity-scale-codec",
  "serde",
  "sp-core",
@@ -4161,6 +4179,25 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+]
+
+[[package]]
+name = "pallet-stake-nft"
+version = "3.0.0"
+dependencies = [
+ "chrono",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-lease",
+ "pallet-nft",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -7569,6 +7606,7 @@ dependencies = [
  "pallet-grandpa",
  "pallet-im-online",
  "pallet-indices",
+ "pallet-lease",
  "pallet-membership",
  "pallet-multisig",
  "pallet-nft",
@@ -7579,6 +7617,7 @@ dependencies = [
  "pallet-scheduler",
  "pallet-session",
  "pallet-stake",
+ "pallet-stake-nft",
  "pallet-staking",
  "pallet-staking-reward-curve",
  "pallet-subgame-assets",

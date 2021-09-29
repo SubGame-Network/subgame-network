@@ -74,7 +74,6 @@ parameter_types! {
 impl Config for Test {
     type Event = ();
     type CommodityAdmin = frame_system::EnsureRoot<Self::AccountId>;
-    type CommodityInfo = Vec<u8>;
     type CommodityLimit = MaxCommodities;
     type UserCommodityLimit = MaxCommoditiesPerUser;
 }

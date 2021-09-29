@@ -280,12 +280,21 @@ decl_module! {
 				// LP total supply
 				let lp_total_supply = SubGameAssets::Module::<T>::total_supply(swap_pool.asset_lp);
 
-				// mint LP token
-				let new_lp_balance: u64 = (dx.saturated_into::<u64>() as f64 / x as f64 * lp_total_supply.saturated_into::<u64>() as f64).floor() as u64;
+				// mint LP token y
+				let new_lp_balance_x: u64 = (dx.saturated_into::<u64>() as f64 / x as f64 * lp_total_supply.saturated_into::<u64>() as f64).floor() as u64;
+				let want_dy: u64 = (new_lp_balance_x as f64 / lp_total_supply.saturated_into::<u64>() as f64 * y as f64).floor() as u64;
 
-				// Check dy
-				let want_dy: u64 = (new_lp_balance as f64 / lp_total_supply.saturated_into::<u64>() as f64 * y as f64).floor() as u64;
-				ensure!(want_dy == dy.saturated_into::<u64>(), Error::<T>::LiquidityKError);
+				// mint LP token x
+				let new_lp_balance_y: u64 = (dy.saturated_into::<u64>() as f64 / y as f64 * lp_total_supply.saturated_into::<u64>() as f64).floor() as u64;
+				let want_dx: u64 = (new_lp_balance_y as f64 / lp_total_supply.saturated_into::<u64>() as f64 * x as f64).floor() as u64;
+
+				// Check K
+				ensure!(want_dy == dy.saturated_into::<u64>() || want_dx == dx.saturated_into::<u64>(), Error::<T>::LiquidityKError);
+				
+				let mut new_lp_balance = new_lp_balance_x;
+				if want_dx == dx.saturated_into::<u64>() {
+					new_lp_balance = new_lp_balance_y;
+				}
 
 				// transfer x
 				if swap_pool.asset_x == origin_coin {

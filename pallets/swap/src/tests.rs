@@ -170,6 +170,32 @@ fn add_liquidity2() {
 }
 
 #[test]
+fn add_liquidity3() {
+    new_test_ext().execute_with(|| {
+        init_asset();
+
+        let user = 1;
+        let asset_x: u32 = 0;
+        let x: u64 = 338520327881663;
+        let asset_y: u32 = 7;
+        let y: u64 = 25170352201;
+        assert_ok!(Swap::create_pool(Origin::signed(user.clone()), asset_x, x, asset_y, y));
+
+        let swap_id = 1;
+        let new_lp_balance = 145856159058418;
+        let swap_pool = Swap::swap_pool(swap_id);
+        let old_lp_balance = SubGameAssets::Module::<Test>::total_supply(swap_pool.asset_lp);
+        assert_ok!(SubGameAssets::Module::<Test>::_burn(swap_pool.account, swap_pool.asset_lp, user, old_lp_balance));
+        assert_ok!(SubGameAssets::Module::<Test>::_mint(swap_pool.account, swap_pool.asset_lp, user, new_lp_balance));
+        
+        let user = 1;
+        let dx: u64 = 13449169291;
+        let dy: u64 = 1000000;
+        assert_ok!(Swap::add_liquidity(Origin::signed(user.clone()), swap_id, dx, dy));
+    });
+}
+
+#[test]
 fn remove_liquidity() {
     new_test_ext().execute_with(|| {
         init_asset();

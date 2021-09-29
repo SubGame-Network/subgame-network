@@ -62,6 +62,9 @@ const FEE: f64 = 0.003;
 /// The swap's module id, used for deriving sovereign account IDs.
 const MODULE_ID: ModuleId = ModuleId(*b"mtg/swap");
 
+/// LP token decimals
+pub const LP_DECIMALS: u64 = 1_000_000;
+
 pub trait Config: frame_system::Config + SubGameAssets::Config {
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
 	type WeightInfo: WeightInfo;
@@ -183,7 +186,7 @@ decl_module! {
 			SwapPair::<T>::insert((asset_y, asset_x), new_pool_id);
 
 			// LP token balance
-			let lp_balance: u64 = ((x.saturated_into::<u64>() as f64 + y.saturated_into::<u64>() as f64) / 2f64).floor() as u64;
+			let lp_balance: u64 = ((x.saturated_into::<u64>() as f64 + y.saturated_into::<u64>() as f64) / 2f64 / LP_DECIMALS as f64).floor() as u64;
 			
 			// LP asset id
 			let lp_asset_id: T::AssetId = frame_system::Module::<T>::block_number().saturated_into::<u32>().into();
@@ -380,7 +383,7 @@ decl_module! {
 			// transfer x
 			if swap_pool.asset_x == origin_coin {
 				let _balance: u64 = dx.saturated_into::<u64>();
-				<T as Config>::Currency::transfer(&swap_pool.account.clone(), &sender, _balance.saturated_into(), ExistenceRequirement::KeepAlive)?;
+				<T as Config>::Currency::transfer(&swap_pool.account.clone(), &sender, _balance.saturated_into(), ExistenceRequirement::AllowDeath)?;
 			} else {
 				SubGameAssets::Module::<T>::_transfer(swap_pool.account.clone(), swap_pool.asset_x, sender.clone(), dx)?;
 			}
@@ -388,7 +391,7 @@ decl_module! {
 			// transfer y
 			if swap_pool.asset_y == origin_coin {
 				let _balance: u64 = dy.saturated_into::<u64>();
-				<T as Config>::Currency::transfer(&swap_pool.account.clone(), &sender, _balance.saturated_into(), ExistenceRequirement::KeepAlive)?;
+				<T as Config>::Currency::transfer(&swap_pool.account.clone(), &sender, _balance.saturated_into(), ExistenceRequirement::AllowDeath)?;
 			} else {
 				SubGameAssets::Module::<T>::_transfer(swap_pool.account.clone(), swap_pool.asset_y, sender.clone(), dy)?;
 			}

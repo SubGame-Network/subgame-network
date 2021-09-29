@@ -143,7 +143,7 @@ fn add_liquidity() {
         // Check LP token balance
         let swap_pool = Swap::swap_pool(1);
         let got_lp_balance = SubGameAssets::Module::<Test>::total_supply(swap_pool.asset_lp);
-        let _lp_total_supply = (x + y) / 2;
+        let _lp_total_supply = (x + y) / 2 / LP_DECIMALS;
         let want_lp_balance = dx / x * _lp_total_supply + _lp_total_supply;
         assert_eq!(want_lp_balance, got_lp_balance);
     });
@@ -164,7 +164,7 @@ fn add_liquidity2() {
         let user = 1;
         let swap_id = 1;
         let dx: u64 = 1 * SGB_DECIMALS;
-        let dy: u64 = 1 * USDT_DECIMALS;
+        let dy: u64 = 999900;
         assert_ok!(Swap::add_liquidity(Origin::signed(user.clone()), swap_id, dx, dy));
     });
 }
@@ -211,12 +211,12 @@ fn remove_liquidity() {
         // Should return not enough LP token error
         let user = 2;
         let swap_id = 1;
-        let lp_balance: u64 = 1 * LP_DECIMALS;
+        let lp_balance: u64 = 7;
         assert_noop!(Swap::remove_liquidity(Origin::signed(user.clone()), swap_id, lp_balance), Error::<Test>::NotEnoughLPToken);
 
         let user = 1;
         let swap_id = 1;
-        let lp_balance: u64 = 6 * LP_DECIMALS;
+        let lp_balance: u64 = 6;
         assert_ok!(Swap::remove_liquidity(Origin::signed(user.clone()), swap_id, lp_balance));
 
         // Check LP token balance

@@ -143,8 +143,8 @@ fn add_liquidity() {
         // Check LP token balance
         let swap_pool = Swap::swap_pool(1);
         let got_lp_balance = SubGameAssets::Module::<Test>::total_supply(swap_pool.asset_lp);
-        let _lp_total_supply = ((x / GOGO_DECIMALS) + (y / SGB_DECIMALS)) / 2 * LP_DECIMALS;
-        let want_lp_balance = dx / x * _lp_total_supply + _lp_total_supply;
+        let _lp_total_supply = (((x as f64 / GOGO_DECIMALS as f64) as f64 * (y as f64 / SGB_DECIMALS as f64)).sqrt() * LP_DECIMALS as f64).floor() as u64;
+        let want_lp_balance = ((dx as f64 / x as f64) * _lp_total_supply as f64).floor() as u64 + _lp_total_supply;
         assert_eq!(want_lp_balance, got_lp_balance);
     });
 }
@@ -216,7 +216,7 @@ fn remove_liquidity() {
 
         let user = 1;
         let swap_id = 1;
-        let lp_balance: u64 = 6 * LP_DECIMALS;
+        let lp_balance: u64 = 3316624;
         assert_ok!(Swap::remove_liquidity(Origin::signed(user.clone()), swap_id, lp_balance));
 
         // Check LP token balance

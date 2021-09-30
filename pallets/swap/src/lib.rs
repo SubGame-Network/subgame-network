@@ -20,6 +20,8 @@ use pallet_subgame_assets::{self as SubGameAssets};
 
 #[allow(unused_imports)]
 use num_traits::float::FloatCore;
+#[allow(unused_imports)]
+use micromath::F32Ext;
 
 #[cfg(test)]
 mod mock;
@@ -196,7 +198,7 @@ decl_module! {
 			SwapPair::<T>::insert((asset_y, asset_x), new_pool_id);
 			
 			// LP token balance
-			let lp_balance: u64 = ((_no_decimal_x + _no_decimal_y) / 2f64 * LP_DECIMALS as f64).floor() as u64;
+			let lp_balance: u64 = ((_no_decimal_x as f32 * _no_decimal_y as f32).sqrt() as f64 * LP_DECIMALS as f64).floor() as u64;
 			
 			// LP asset id
 			let lp_asset_id: T::AssetId = frame_system::Module::<T>::block_number().saturated_into::<u32>().into();
@@ -213,7 +215,7 @@ decl_module! {
 			SwapPool::<T>::insert(new_pool_id, pool_details);
 			
 			// Create LP Token
-			let max_zombies: u32 = 0;
+			let max_zombies: u32 = 999999999;
         	let min_balance: u32 = 1;
 			SubGameAssets::Module::<T>::_force_create(lp_asset_id, pool_account.clone(), max_zombies, min_balance.into())?;
 			let mut symbol_x = "SGB";

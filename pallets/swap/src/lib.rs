@@ -191,13 +191,6 @@ decl_module! {
 				let base_decimal: i64 = 10;
 				_no_decimal_y = y.saturated_into::<u64>() as f64 / base_decimal.pow(metadata_y.decimals.saturated_into::<u32>()) as f64;
 			}
-
-			// SwapPoolCount
-			SwapPoolCount::<T>::put(new_pool_id);
-
-			// SwapPair
-			SwapPair::<T>::insert((asset_x, asset_y), new_pool_id);
-			SwapPair::<T>::insert((asset_y, asset_x), new_pool_id);
 			
 			// LP token balance
 			let lp_balance: u64 = ((_no_decimal_x as f32 * _no_decimal_y as f32).sqrt() as f64 * LP_DECIMALS as f64).floor() as u64;
@@ -205,7 +198,7 @@ decl_module! {
 			// LP asset id
 			let lp_asset_id: T::AssetId = frame_system::Module::<T>::block_number().saturated_into::<u32>().into();
 
-			// SwapPool
+			// SwapPool struct
 			let pool_details = SwapPoolDetails{
 				swap_id: new_pool_id,
 				account: pool_account.clone(),
@@ -214,7 +207,6 @@ decl_module! {
 				asset_lp: lp_asset_id,
 				swap_k: (x.saturated_into::<u128>() * y.saturated_into::<u128>())
 			};
-			SwapPool::<T>::insert(new_pool_id, pool_details);
 			
 			// Create LP Token
 			let max_zombies: u32 = 999999999;
@@ -249,6 +241,16 @@ decl_module! {
 			} else {
 				SubGameAssets::Module::<T>::_transfer(sender.clone(), asset_y, pool_account.clone(), y)?;
 			}
+
+			// SwapPoolCount
+			SwapPoolCount::<T>::put(new_pool_id);
+
+			// SwapPair
+			SwapPair::<T>::insert((asset_x, asset_y), new_pool_id);
+			SwapPair::<T>::insert((asset_y, asset_x), new_pool_id);
+
+			// SwapPool
+			SwapPool::<T>::insert(new_pool_id, pool_details);
 
 			Self::deposit_event(RawEvent::CreatePool(sender, new_pool_id, asset_x, x, asset_y, y, pool_account));
 			Ok(())

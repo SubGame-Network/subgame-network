@@ -131,6 +131,8 @@ decl_error! {
 		Slipage,
 		/// expected swap output amount can not be zero.
 		ZeroExpectedAmount,
+		/// Too many LP token.
+		TooManyLPToken
 	}
 }
 
@@ -387,6 +389,10 @@ decl_module! {
 
 			// LP total supply
 			let lp_total_supply = SubGameAssets::Module::<T>::total_supply(swap_pool.asset_lp).saturated_into::<u64>();
+
+			// Check LP token limit
+			let limit_lp: f64 = lp_amount.saturated_into::<u64>() as f64 / lp_total_supply as f64;
+			ensure!(limit_lp < 1.0f64, Error::<T>::TooManyLPToken);
 
 			let dx: T::SGAssetBalance = ((lp_amount.saturated_into::<u64>() as f64 / lp_total_supply as f64 * x as f64).floor() as u64).saturated_into();
 			let dy: T::SGAssetBalance = ((lp_amount.saturated_into::<u64>() as f64 / lp_total_supply as f64 * y as f64).floor() as u64).saturated_into();

@@ -206,50 +206,33 @@ fn remove_liquidity() {
         let asset_y: u32 = 7;
         let y: u64 = 11 * USDT_DECIMALS; 
         assert_ok!(Swap::create_pool(Origin::signed(user.clone()), asset_x, x, asset_y, y));
-        let swap_pool = Swap::swap_pool(1);
 
         // Should return not enough LP token error
         let user = 2;
         let swap_id = 1;
         let lp_balance: u64 = 7;
         assert_noop!(Swap::remove_liquidity(Origin::signed(user.clone()), swap_id, lp_balance), Error::<Test>::NotEnoughLPToken);
+    });
+}
+
+#[test]
+fn remove_liquidity_too_many() {
+    new_test_ext().execute_with(|| {
+        init_asset();
+
+        let user = 1;
+        let asset_x: u32 = 0;
+        let x: u64 = 1 * SGB_DECIMALS;
+        let asset_y: u32 = 7;
+        let y: u64 = 11 * USDT_DECIMALS; 
+        assert_ok!(Swap::create_pool(Origin::signed(user.clone()), asset_x, x, asset_y, y));
 
         let user = 1;
         let swap_id = 1;
         let lp_balance: u64 = 3316624;
-        assert_ok!(Swap::remove_liquidity(Origin::signed(user.clone()), swap_id, lp_balance));
-
-        // Check LP token balance
-        let got_user_lp_balance: u64 = SubGameAssets::Module::<Test>::balance(swap_pool.asset_lp, user);
-        let want_user_lp_balance: u64 = 0;
-        assert_eq!(want_user_lp_balance, got_user_lp_balance);
+        assert_noop!(Swap::remove_liquidity(Origin::signed(user.clone()), swap_id, lp_balance), Error::<Test>::TooManyLPToken);
     });
 }
-
-// #[test]
-// fn remove_liquidity2() {
-//     new_test_ext().execute_with(|| {
-//         init_asset();
-
-//         let user = 1;
-//         let asset_x: u32 = 0;
-//         let x: u64 = 1 * SGB_DECIMALS;
-//         let asset_y: u32 = 7;
-//         let y: u64 = 11 * USDT_DECIMALS; 
-//         assert_ok!(Swap::create_pool(Origin::signed(user.clone()), asset_x, x, asset_y, y));
-//         let swap_pool = Swap::swap_pool(1);
-
-//         let user = 1;
-//         let swap_id = 1;
-//         let lp_balance: u64 = 6 * LP_DECIMALS;
-//         assert_ok!(Swap::remove_liquidity(Origin::signed(user.clone()), swap_id, lp_balance));
-
-//         // Check LP token balance
-//         let got_user_lp_balance: u64 = SubGameAssets::Module::<Test>::balance(swap_pool.asset_lp, user);
-//         let want_user_lp_balance: u64 = 0;
-//         assert_eq!(want_user_lp_balance, got_user_lp_balance);
-//     });
-// }
 
 #[test]
 fn swap() {

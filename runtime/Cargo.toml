@@ -35,15 +35,9 @@ pallet-bridge = { path = '../pallets/bridge', default-features = false, version 
 pallet-stake = { path = '../pallets/stake', default-features = false, version = '3.0.0' }
 pallet-subgame-assets = { path = '../pallets/assets', default-features = false, version = '3.0.0'  }
 pallet-nft = { path = '../pallets/nft', default-features = false, version = '3.0.0'  }
-pallet-swaps = { path = '../pallets/swaps', default-features = false, version = '3.0.0'  }
 pallet-stake-nft = { path = '../pallets/stake-nft', default-features = false, version = '3.0.0'  }
 pallet-lease = { path = '../pallets/lease', default-features = false, version = '3.0.0'  }
-# pallet-fungible = { path = '../pallets/swaps/fungible', default-features = false, version = '3.0.0'  }
-
-# orml-currencies = {default-features = false, version = '0.4.0'}
-# orml-tokens = {path = "../pallets/tokens", default-features = false, version = '0.4.0' }
-# orml-traits = { default-features = false, version = '0.4.0' }
-# pendulum-common = { version = "0.1.0", default-features = false, path = "../common/" }
+pallet-swap = { path = '../pallets/swap', default-features = false, version = '3.0.0'  }
 
 # Substrate dependencies
 frame-benchmarking = { default-features = false, optional = true, version = '3.0.0' }
@@ -142,7 +136,6 @@ std = [
     'pallet-timestamp/std',
     'pallet-transaction-payment/std',
     'pallet-transaction-payment-rpc-runtime-api/std',
-    
     'sp-api/std',
     'sp-block-builder/std',
     'sp-consensus-babe/std',
@@ -161,16 +154,10 @@ std = [
     'pallet-contracts-rpc-runtime-api/std',
     'pallet-scheduler/std',
 
-
-	# "orml-tokens/std",
-    # "orml-traits/std",
-    # "pendulum-common/std",
-    # "orml-currencies/std",
-    
 	'pallet-nft/std',
 	'pallet-subgame-assets/std',
-    'pallet-swaps/std',
-    # 'pallet-fungible/std',
     'pallet-stake-nft/std',
     'pallet-lease/std',
+	'pallet-subgame-assets/std',
+    'pallet-swap/std',
 ]

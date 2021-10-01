@@ -70,6 +70,8 @@ pub use pallet_gametemplates_guess_hash;
 pub use pallet_bridge;
 // stake
 pub use pallet_stake;
+// swap
+pub use pallet_swap;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -140,7 +142,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("subgame"),
     impl_name: create_runtime_str!("subgame"),
     authoring_version: 1,
-    spec_version: 121,
+    spec_version: 126,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -738,7 +740,7 @@ impl pallet_timestamp::Config for Runtime {
 }
 
 parameter_types! {
-    pub const ExistentialDeposit: u128 = 500;
+    pub const ExistentialDeposit: u128 = 1;
     pub const MaxLocks: u32 = 50;
 }
 
@@ -869,7 +871,7 @@ impl pallet_bridge::Config for Runtime {
     type Balances = pallet_balances::Module<Runtime>;
     type OwnerAddress = BridgeOwner;
     type WeightInfo = ();
-    // type Assets = SubgameAssets;
+    type Assets = SubgameAssets;
 }
 /*** Pallet Chips ***/
 
@@ -943,106 +945,7 @@ impl pallet_stake::Config for Runtime {
 }
 /*** Pallet Stake ***/
 
-
 /*** Pallet Asset ***/
-// parameter_types! {
-//     pub const AssetDepositGeneral: Balance = 100 * DOLLARS; // 1 UNIT deposit to create asset
-//     pub const ApprovalDepositGeneral: Balance = 100 * DOLLARS;
-//     pub const StringLimitGeneral: u32 = 50;
-//     pub const MetadataDepositBaseGeneral: Balance = 100 * DOLLARS;
-//     pub const MetadataDepositPerByteGeneral: Balance = 100 * DOLLARS;
-// }
-
-// // impl pallet_randomness_collective_flip::Config for Runtime {}
-
-// impl pallet_subgame_assets::Config for Runtime {
-//     type Event = Event;
-//     type Balance = Balance;
-//     type AssetId = u32;
-//     type Currency = Balances;
-//     type ForceOrigin = EnsureRoot<AccountId>; // allow council later
-//     type AssetDepositBase = AssetDepositGeneral;
-//     type MetadataDepositBase = MetadataDepositBaseGeneral;
-//     type MetadataDepositPerByte = MetadataDepositPerByteGeneral;
-//     type ApprovalDeposit = ApprovalDepositGeneral;
-//     type StringLimit = StringLimitGeneral;
-//     type Freezer = ();
-//     type Extra = ();
-//     type WeightInfo = pallet_subgame_assets::weights::SubstrateWeight<Runtime>;
-// }
-// parameter_types! {
-// 	pub const AssetDepositBase: Balance = 100 * MILLICENTS;
-// 	pub const AssetDepositPerZombie: Balance = 1 * MILLICENTS;
-// 	pub const StringLimit: u32 = 50;
-// 	pub const MetadataDepositBase: Balance = 10 * MILLICENTS;
-// 	pub const MetadataDepositPerByte: Balance = 1 * MILLICENTS;
-// }
-// /// Configure the pallet_subgame_assets
-// impl pallet_subgame_assets::Config for Runtime {
-// 	type Event = Event;
-// 	type SGAssetBalance = u64;
-// 	type AssetId = u32;
-// 	type Currency = Balances;
-// 	type ForceOrigin = EnsureRoot<AccountId>;
-// 	type AssetDepositBase = AssetDepositBase;
-// 	type AssetDepositPerZombie = AssetDepositPerZombie;
-// 	type StringLimit = StringLimit;
-// 	type MetadataDepositBase = MetadataDepositBase;
-// 	type MetadataDepositPerByte = MetadataDepositPerByte;
-// 	type WeightInfo = pallet_subgame_assets::weights::SubstrateWeight<Runtime>;
-// }
-
-
-/*** Pallet Swaps ***/
-// Configure the pallet_subgame_assets
-// impl pallet_swaps::Config for Runtime {
-// 	type Event = Event;
-//     type SwapId = u32;
-// 	type Currency = Balances;
-// }
-
-
-/*** Pallet Swaps ***/
-// #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
-// #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-// pub enum CurrencyId {
-// 	Native,
-// 	USDT,
-// 	DOT,
-// 	KSM,
-// 	BTC,
-// }
-
-// parameter_type_with_key! {
-//     pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
-//         Zero::zero()
-//     };
-// }
-
-
-// impl orml_tokens::Config for Runtime {
-//     type Event = Event;
-//     type Balance = Balance;
-//     type Amount = Amount;
-//     type CurrencyId = CurrencyId;
-//     type WeightInfo = ();
-//     type ExistentialDeposits = ExistentialDeposits;
-//     type OnDust = ();
-// }
-
-// parameter_types! {
-//     pub const GetNativeCurrencyId: CurrencyId = CurrencyId::Native;
-// }
-
-// impl orml_currencies::Config for Runtime {
-//     type Event = Event;
-//     type MultiCurrency = Tokens;
-//     type NativeCurrency = BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
-//     type GetNativeCurrencyId = GetNativeCurrencyId;
-//     type WeightInfo = ();
-// }
-// Create the runtime by composing the FRAME pallets that were previously configured.
-
 
 parameter_types! {
     pub const CommodityLimit: u128 =    1000000000000000000000;
@@ -1079,6 +982,35 @@ impl pallet_lease::Config for Runtime {
     type UniqueAssets = SubgameNFT;
     type OwnerAddress = ModuleOwner;
     type Event = Event;
+parameter_types! {
+	pub const AssetDepositBase: Balance = 100 * MILLICENTS;
+	pub const AssetDepositPerZombie: Balance = 1 * MILLICENTS;
+	pub const StringLimit: u32 = 50;
+	pub const MetadataDepositBase: Balance = 10 * MILLICENTS;
+	pub const MetadataDepositPerByte: Balance = 1 * MILLICENTS;
+}
+/// Configure the pallet_subgame_assets
+impl pallet_subgame_assets::Config for Runtime {
+	type Event = Event;
+	type SGAssetBalance = u64;
+	type AssetId = u32;
+	type Currency = Balances;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type AssetDepositBase = AssetDepositBase;
+	type AssetDepositPerZombie = AssetDepositPerZombie;
+	type StringLimit = StringLimit;
+	type MetadataDepositBase = MetadataDepositBase;
+	type MetadataDepositPerByte = MetadataDepositPerByte;
+	type WeightInfo = pallet_subgame_assets::weights::SubstrateWeight<Runtime>;
+}
+
+
+/*** Pallet Swap ***/
+impl pallet_swap::Config for Runtime {
+    type Event = Event;
+    type WeightInfo = ();
+    type SwapId = u32;
+    type Currency = Balances;
 }
 
 construct_runtime!(
@@ -1124,14 +1056,11 @@ construct_runtime!(
         GameGuessHashModule: pallet_gametemplates_guess_hash::{Module, Call, Storage, Event<T>},
         Bridge: pallet_bridge::{Module, Call, Storage, Event<T>},
         Stake: pallet_stake::{Module, Call, Storage, Event<T>},
-        // SubgameAssets: pallet_subgame_assets::{Module, Call, Storage, Event<T>},
-        // Swaps: pallet_swaps::{Module, Call, Storage, Event},
-        // Fungible: pallet_fungible::{Module, Call, Storage, Event<T>},
         SubgameNFT: pallet_nft::{Module, Call, Storage, Event<T>},
         SubgameStakeNft: pallet_stake_nft::{Module, Call, Storage, Event<T>},
         Lease: pallet_lease::{Module, Call, Storage, Event<T>},
-        // Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
-        // Currencies: orml_currencies::{Module, Call, Event<T>},
+        SubgameAssets: pallet_subgame_assets::{Module, Call, Storage, Event<T>},
+        Swap: pallet_swap::{Module, Call, Storage, Event<T>},
     }
 );
 

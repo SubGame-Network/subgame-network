@@ -142,7 +142,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("subgame"),
     impl_name: create_runtime_str!("subgame"),
     authoring_version: 1,
-    spec_version: 126,
+    spec_version: 127,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -982,6 +982,7 @@ impl pallet_lease::Config for Runtime {
     type UniqueAssets = SubgameNFT;
     type OwnerAddress = ModuleOwner;
     type Event = Event;
+}
 parameter_types! {
 	pub const AssetDepositBase: Balance = 100 * MILLICENTS;
 	pub const AssetDepositPerZombie: Balance = 1 * MILLICENTS;

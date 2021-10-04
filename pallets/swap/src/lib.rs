@@ -350,9 +350,23 @@ decl_module! {
 					SubGameAssets::Module::<T>::_transfer(sender.clone(), swap_pool.asset_y, swap_pool.account.clone(), dy)?;
 				}
 
+				let mut _no_decimal_x: f64 = dx.saturated_into::<u64>() as f64 / SGB_DECIMALS as f64;
+				let metadata_x = SubGameAssets::Metadata::<T>::get(swap_pool.asset_x);
+				if swap_pool.asset_x != origin_coin {					
+					let base_decimal: i64 = 10;
+					_no_decimal_x = dx.saturated_into::<u64>() as f64 / base_decimal.pow(metadata_x.decimals.saturated_into::<u32>()) as f64;
+				}
+
+				let mut _no_decimal_y: f64 = dy.saturated_into::<u64>() as f64 / SGB_DECIMALS as f64;
+				let metadata_y = SubGameAssets::Metadata::<T>::get(swap_pool.asset_y);
+				if swap_pool.asset_y != origin_coin {
+					let base_decimal: i64 = 10;
+					_no_decimal_y = dy.saturated_into::<u64>() as f64 / base_decimal.pow(metadata_y.decimals.saturated_into::<u32>()) as f64;
+				}
+
 				// mint LP token
-				let new_lp_balance = (dx + dy) / 2u32.into();
-				SubGameAssets::Module::<T>::_mint(swap_pool.account.clone(), swap_pool.asset_lp, sender.clone(), new_lp_balance)?;
+				let new_lp_balance: u64 = ((_no_decimal_x as f32 * _no_decimal_y as f32).sqrt() as f64 * LP_DECIMALS as f64).floor() as u64;
+				SubGameAssets::Module::<T>::_mint(swap_pool.account.clone(), swap_pool.asset_lp, sender.clone(), new_lp_balance.saturated_into())?;
 			}
 
 			Self::deposit_event(RawEvent::LiquidityAdded(swap_id, sender.clone(), dx, dy));

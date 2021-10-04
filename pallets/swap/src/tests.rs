@@ -109,11 +109,10 @@ fn create_pool2() {
 }
 
 #[test]
-fn create_pool_asset() {
+fn create_pool_LP_check() {
     new_test_ext().execute_with(|| {
         init_asset();
 
-        // Should return not enough balance error
         let user = 1;
         let asset_x: u32 = 8;
         let x: u64 = 1000 * GOGO_DECIMALS;

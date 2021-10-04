@@ -20,6 +20,8 @@ use pallet_subgame_assets::{self as SubGameAssets};
 
 #[allow(unused_imports)]
 use num_traits::float::FloatCore;
+#[allow(unused_imports)]
+use micromath::F32Ext;
 
 #[cfg(test)]
 mod mock;
@@ -62,6 +64,8 @@ const FEE: f64 = 0.003;
 /// The swap's module id, used for deriving sovereign account IDs.
 const MODULE_ID: ModuleId = ModuleId(*b"mtg/swap");
 
+/// LP token decimals
+pub const SGB_DECIMALS: u64 = 10_000_000_000;
 /// LP token decimals
 pub const LP_DECIMALS: u64 = 1_000_000;
 
@@ -127,6 +131,8 @@ decl_error! {
 		Slipage,
 		/// expected swap output amount can not be zero.
 		ZeroExpectedAmount,
+		/// Too many LP token.
+		TooManyLPToken
 	}
 }
 
@@ -168,30 +174,31 @@ decl_module! {
 			let new_pool_id = SwapPoolCount::<T>::get().checked_add(&1u32.into()).ok_or(Error::<T>::PoolCountError)?;
 			let pool_account: T::AccountId = MODULE_ID.into_sub_account(new_pool_id);
 			
+			let mut _no_decimal_x: f64 = x.saturated_into::<u64>() as f64 / SGB_DECIMALS as f64;
 			let metadata_x = SubGameAssets::Metadata::<T>::get(asset_x);
 			if asset_x != origin_coin {
 				ensure!(metadata_x.decimals > 0, Error::<T>::AssetNotFound);
+				
+				let base_decimal: i64 = 10;
+				_no_decimal_x = x.saturated_into::<u64>() as f64 / base_decimal.pow(metadata_x.decimals.saturated_into::<u32>()) as f64;
 			}
 
+			let mut _no_decimal_y: f64 = y.saturated_into::<u64>() as f64 / SGB_DECIMALS as f64;
 			let metadata_y = SubGameAssets::Metadata::<T>::get(asset_y);
 			if asset_y != origin_coin {
 				ensure!(metadata_y.decimals > 0, Error::<T>::AssetNotFound);
+
+				let base_decimal: i64 = 10;
+				_no_decimal_y = y.saturated_into::<u64>() as f64 / base_decimal.pow(metadata_y.decimals.saturated_into::<u32>()) as f64;
 			}
-
-			// SwapPoolCount
-			SwapPoolCount::<T>::put(new_pool_id);
-
-			// SwapPair
-			SwapPair::<T>::insert((asset_x, asset_y), new_pool_id);
-			SwapPair::<T>::insert((asset_y, asset_x), new_pool_id);
-
+			
 			// LP token balance
-			let lp_balance: u64 = ((x.saturated_into::<u64>() as f64 + y.saturated_into::<u64>() as f64) / 2f64 / LP_DECIMALS as f64).floor() as u64;
+			let lp_balance: u64 = ((_no_decimal_x as f32 * _no_decimal_y as f32).sqrt() as f64 * LP_DECIMALS as f64).floor() as u64;
 			
 			// LP asset id
 			let lp_asset_id: T::AssetId = frame_system::Module::<T>::block_number().saturated_into::<u32>().into();
 
-			// SwapPool
+			// SwapPool struct
 			let pool_details = SwapPoolDetails{
 				swap_id: new_pool_id,
 				account: pool_account.clone(),
@@ -200,10 +207,9 @@ decl_module! {
 				asset_lp: lp_asset_id,
 				swap_k: (x.saturated_into::<u128>() * y.saturated_into::<u128>())
 			};
-			SwapPool::<T>::insert(new_pool_id, pool_details);
 			
 			// Create LP Token
-			let max_zombies: u32 = 0;
+			let max_zombies: u32 = 999999999;
         	let min_balance: u32 = 1;
 			SubGameAssets::Module::<T>::_force_create(lp_asset_id, pool_account.clone(), max_zombies, min_balance.into())?;
 			let mut symbol_x = "SGB";
@@ -235,6 +241,16 @@ decl_module! {
 			} else {
 				SubGameAssets::Module::<T>::_transfer(sender.clone(), asset_y, pool_account.clone(), y)?;
 			}
+
+			// SwapPoolCount
+			SwapPoolCount::<T>::put(new_pool_id);
+
+			// SwapPair
+			SwapPair::<T>::insert((asset_x, asset_y), new_pool_id);
+			SwapPair::<T>::insert((asset_y, asset_x), new_pool_id);
+
+			// SwapPool
+			SwapPool::<T>::insert(new_pool_id, pool_details);
 
 			Self::deposit_event(RawEvent::CreatePool(sender, new_pool_id, asset_x, x, asset_y, y, pool_account));
 			Ok(())
@@ -376,6 +392,10 @@ decl_module! {
 			// LP total supply
 			let lp_total_supply = SubGameAssets::Module::<T>::total_supply(swap_pool.asset_lp).saturated_into::<u64>();
 
+			// Check LP token limit
+			let limit_lp: f64 = lp_amount.saturated_into::<u64>() as f64 / lp_total_supply as f64;
+			ensure!(limit_lp < 1.0f64, Error::<T>::TooManyLPToken);
+
 			let dx: T::SGAssetBalance = ((lp_amount.saturated_into::<u64>() as f64 / lp_total_supply as f64 * x as f64).floor() as u64).saturated_into();
 			let dy: T::SGAssetBalance = ((lp_amount.saturated_into::<u64>() as f64 / lp_total_supply as f64 * y as f64).floor() as u64).saturated_into();
 			ensure!(!dx.is_zero() && !dy.is_zero(), Error::<T>::ZeroBalance);
@@ -464,14 +484,14 @@ decl_module! {
 			// transfer input
 			if input_asset == origin_coin {
 				let _balance: u64 = input_amount.saturated_into::<u64>();
-				<T as Config>::Currency::transfer(&sender, &swap_pool.account.clone(), _balance.saturated_into(), ExistenceRequirement::KeepAlive)?;
+				<T as Config>::Currency::transfer(&sender, &swap_pool.account.clone(), _balance.saturated_into(), ExistenceRequirement::AllowDeath)?;
 			} else {
 				SubGameAssets::Module::<T>::_transfer(sender.clone(), input_asset, swap_pool.account.clone(), input_amount)?;
 			}
 
 			// transfer output
 			if output_asset == origin_coin {
-				<T as Config>::Currency::transfer(&swap_pool.account.clone(), &sender, output_amount.saturated_into(), ExistenceRequirement::KeepAlive)?;
+				<T as Config>::Currency::transfer(&swap_pool.account.clone(), &sender, output_amount.saturated_into(), ExistenceRequirement::AllowDeath)?;
 			} else {
 				SubGameAssets::Module::<T>::_transfer(swap_pool.account.clone(), output_asset, sender.clone(), output_amount.saturated_into())?;
 			}

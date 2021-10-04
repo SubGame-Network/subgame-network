@@ -25,6 +25,7 @@ sp-runtime = { default-features = false, version = '3.0.0' }
 balances = { package = 'pallet-balances', version = '3.0.0', default-features = false }
 pallet-subgame-assets = { path = '../assets', default-features = false, version = '3.0.0' }
 num-traits = { default-features = false, version = '0.2' }
+micromath = { default-features = false, version = '0.3.1' }
 
 [dev-dependencies]
 serde = { version = "1.0.119" }

@@ -143,8 +143,8 @@ fn add_liquidity() {
         // Check LP token balance
         let swap_pool = Swap::swap_pool(1);
         let got_lp_balance = SubGameAssets::Module::<Test>::total_supply(swap_pool.asset_lp);
-        let _lp_total_supply = (x + y) / 2 / LP_DECIMALS;
-        let want_lp_balance = dx / x * _lp_total_supply + _lp_total_supply;
+        let _lp_total_supply = (((x as f64 / GOGO_DECIMALS as f64) as f64 * (y as f64 / SGB_DECIMALS as f64)).sqrt() * LP_DECIMALS as f64).floor() as u64;
+        let want_lp_balance = ((dx as f64 / x as f64) * _lp_total_supply as f64).floor() as u64 + _lp_total_supply;
         assert_eq!(want_lp_balance, got_lp_balance);
     });
 }
@@ -156,15 +156,15 @@ fn add_liquidity2() {
 
         let user = 1;
         let asset_x: u32 = 0;
-        let x: u64 = 10000 * SGB_DECIMALS;
+        let x: u64 = 350000000000000;
         let asset_y: u32 = 7;
-        let y: u64 = 10000 * USDT_DECIMALS;
+        let y: u64 = 35000000000;
         assert_ok!(Swap::create_pool(Origin::signed(user.clone()), asset_x, x, asset_y, y));
 
         let user = 1;
         let swap_id = 1;
-        let dx: u64 = 1 * SGB_DECIMALS;
-        let dy: u64 = 999900;
+        let dx: u64 = 50000000000000;
+        let dy: u64 = 5000000000;
         assert_ok!(Swap::add_liquidity(Origin::signed(user.clone()), swap_id, dx, dy));
     });
 }
@@ -206,23 +206,31 @@ fn remove_liquidity() {
         let asset_y: u32 = 7;
         let y: u64 = 11 * USDT_DECIMALS; 
         assert_ok!(Swap::create_pool(Origin::signed(user.clone()), asset_x, x, asset_y, y));
-        let swap_pool = Swap::swap_pool(1);
 
         // Should return not enough LP token error
         let user = 2;
         let swap_id = 1;
         let lp_balance: u64 = 7;
         assert_noop!(Swap::remove_liquidity(Origin::signed(user.clone()), swap_id, lp_balance), Error::<Test>::NotEnoughLPToken);
+    });
+}
+
+#[test]
+fn remove_liquidity_too_many() {
+    new_test_ext().execute_with(|| {
+        init_asset();
+
+        let user = 1;
+        let asset_x: u32 = 0;
+        let x: u64 = 1 * SGB_DECIMALS;
+        let asset_y: u32 = 7;
+        let y: u64 = 11 * USDT_DECIMALS; 
+        assert_ok!(Swap::create_pool(Origin::signed(user.clone()), asset_x, x, asset_y, y));
 
         let user = 1;
         let swap_id = 1;
-        let lp_balance: u64 = 6;
-        assert_ok!(Swap::remove_liquidity(Origin::signed(user.clone()), swap_id, lp_balance));
-
-        // Check LP token balance
-        let got_user_lp_balance: u64 = SubGameAssets::Module::<Test>::balance(swap_pool.asset_lp, user);
-        let want_user_lp_balance: u64 = 0;
-        assert_eq!(want_user_lp_balance, got_user_lp_balance);
+        let lp_balance: u64 = 3316624;
+        assert_noop!(Swap::remove_liquidity(Origin::signed(user.clone()), swap_id, lp_balance), Error::<Test>::TooManyLPToken);
     });
 }
 

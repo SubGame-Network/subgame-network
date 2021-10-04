@@ -3,6 +3,20 @@
 ## description
 This module is a special pallet, and you need to use `stake-nft` to obtain access rights (this is a simulated pallet)
 
+#### demo()
+If you have permission, call `demo` function will make `CallSuccess` + 1
+
+```rust
+demo(origin) -> dispatch::DispatchResult
+```
+
+## storage
+#### CallSuccess
+The number of successful call functions is recorded here
+
+```rust
+ pub CallSuccess get(fn call_success): map hasher(blake2_128_concat) T::AccountId=> u64 = 0;
+```
 
 ## Getting Started
 

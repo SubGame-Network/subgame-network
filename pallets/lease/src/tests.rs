@@ -1,9 +1,8 @@
 // Tests to be written here
-use crate::mock::{new_test_ext, SubgameNFT, Lease, Origin, System};
+use crate::mock::{new_test_ext, SubgameNFT, Lease, Origin};
 use crate::mock::*;
 use crate::*;
 use frame_support::{assert_err, assert_ok, Hashable};
-use sp_core::H256;
 
 #[test]
 fn set_authority() {

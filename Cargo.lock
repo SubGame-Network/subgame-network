@@ -3878,6 +3878,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-demogame"
+version = "3.0.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "pallet-balances",
+ "pallet-lease",
+ "pallet-nft",
+ "pallet-stake-nft",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-elections-phragmen"
 version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7597,6 +7617,7 @@ dependencies = [
  "pallet-contracts-primitives",
  "pallet-contracts-rpc-runtime-api",
  "pallet-democracy",
+ "pallet-demogame",
  "pallet-elections-phragmen",
  "pallet-gamecenter",
  "pallet-gametemplates",

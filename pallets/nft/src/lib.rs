@@ -40,7 +40,7 @@ use frame_support::{
     decl_error, decl_event, decl_module, decl_storage, dispatch, ensure,
     traits::{EnsureOrigin, Get},
 };
-use codec::{alloc::string::{ToString, String}};
+use codec::{alloc::string::{ToString}};
 // use alloc::string::{String, ToString};
 use frame_system::ensure_signed;
 use sp_runtime::traits::{Hash};
@@ -87,19 +87,19 @@ decl_storage! {
         AccountForCommodity get(fn account_for_commodity): map hasher(identity) CommodityId<T> => T::AccountId;
     }
 
-    add_extra_genesis {
-        config(balances): Vec<(T::AccountId, Vec<Vec<u8>>)>;
-        build(|config: &GenesisConfig<T>| {
-            for (who, assets) in config.balances.iter() {
-                for asset in assets {
-                    match <Module::<T> as UniqueAssets::<T::AccountId>>::mint(who, asset.clone()) {
-                        Ok(_) => {}
-                        Err(err) => { std::panic::panic_any(err) },
-                    }
-                }
-            }
-        });
-    }
+    // add_extra_genesis {
+    //     config(balances): Vec<(T::AccountId, Vec<Vec<u8>>)>;
+    //     build(|config: &GenesisConfig<T>| {
+    //         for (who, assets) in config.balances.iter() {
+    //             for asset in assets {
+    //                 match <Module::<T> as UniqueAssets::<T::AccountId>>::mint(who, asset.clone()) {
+    //                     Ok(_) => {}
+    //                     Err(err) => { std::panic::panic_any(err) },
+    //                 }
+    //             }
+    //         }
+    //     });
+    // }
 }
 
 decl_event!(

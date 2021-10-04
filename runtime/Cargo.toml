@@ -37,6 +37,7 @@ pallet-subgame-assets = { path = '../pallets/assets', default-features = false, 
 pallet-nft = { path = '../pallets/nft', default-features = false, version = '3.0.0'  }
 pallet-stake-nft = { path = '../pallets/stake-nft', default-features = false, version = '3.0.0'  }
 pallet-lease = { path = '../pallets/lease', default-features = false, version = '3.0.0'  }
+pallet-demogame = { path = '../pallets/demogame', default-features = false, version = '3.0.0'  }
 pallet-swap = { path = '../pallets/swap', default-features = false, version = '3.0.0'  }
 
 # Substrate dependencies
@@ -158,6 +159,6 @@ std = [
 	'pallet-subgame-assets/std',
     'pallet-stake-nft/std',
     'pallet-lease/std',
-	'pallet-subgame-assets/std',
+    'pallet-demogame/std',
     'pallet-swap/std',
 ]

@@ -1,25 +1,20 @@
-// Creating mock runtime here
-use crate as pallet_stake_nft;
-use pallet_timestamp;
+use crate as pallet_demogame;
 use balances;
 use frame_support::parameter_types;
 use frame_system as system;
-use pallet_nft;
+use pallet_stake_nft;
+use pallet_lease;
 use sp_core::H256;
 use sp_runtime::{
     testing::Header,
     traits::{BlakeTwo256, IdentityLookup},
 };
 
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
-type Block = frame_system::mocking::MockBlock<Test>;
-
-
 pub const MILLISECS_PER_BLOCK: u64 = 12000;
 pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
-// impl_outer_origin! {
-//     pub enum Origin for Test where system = frame_system {}
-// }
+
+type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
+type Block = frame_system::mocking::MockBlock<Test>;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -29,28 +24,15 @@ frame_support::construct_runtime!(
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
         System: frame_system::{Module, Call, Config, Storage, Event<T>},
+        Balances: balances::{Module, Call, Storage, Config<T>, Event<T>},
         SubgameNFT: pallet_nft::{Module, Call, Storage, Event<T>},
         SubgameStakeNft: pallet_stake_nft::{Module, Call, Storage, Event<T>},
         Lease: pallet_lease::{Module, Call, Storage, Event<T>},
-        Balances: balances::{Module, Call, Storage, Config<T>, Event<T>},
+        DemoGame: pallet_demogame::{Module, Call, Storage, Event<T>},
         Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent},
     }
 );
 
-
-parameter_types! {
-    pub const ExistentialDeposit: u64 = 500;
-    pub const MaxLocks: u32 = 50;
-}
-impl balances::Config for Test {
-    type MaxLocks = ();
-    type Balance = u64;
-    type Event = Event;
-    type DustRemoval = ();
-    type ExistentialDeposit = ExistentialDeposit;
-    type AccountStore = System;
-    type WeightInfo = ();
-}
 parameter_types! {
     pub const BlockHashCount: u64 = 250;
 }
@@ -81,7 +63,21 @@ impl system::Config for Test {
 }
 
 parameter_types! {
-    pub const BridgeOwner: u32 = 3;
+    pub const ExistentialDeposit: u64 = 500;
+    pub const MaxLocks: u32 = 50;
+}
+impl balances::Config for Test {
+    type MaxLocks = ();
+    type Balance = u64;
+    type Event = Event;
+    type DustRemoval = ();
+    type ExistentialDeposit = ExistentialDeposit;
+    type AccountStore = System;
+    type WeightInfo = ();
+}
+
+parameter_types! {
+    pub const ModuleOwner: u32 = 3;
 }
 
 // For testing the pallet, we construct most of a mock runtime. This means
@@ -105,7 +101,7 @@ impl pallet_lease::Config for Test {
     type Event = Event;
     type PalletId = u64;
     type UniqueAssets = SubgameNFT;
-    type OwnerAddress = BridgeOwner;
+    type OwnerAddress = ModuleOwner;
 }
 
 impl pallet_stake_nft::Config for Test {
@@ -114,10 +110,20 @@ impl pallet_stake_nft::Config for Test {
     type Balances = Balances;
     type UniqueAssets = SubgameNFT;
     type Lease = Lease;
-    type OwnerAddress = BridgeOwner;
+    type OwnerAddress = ModuleOwner;
     type Event = Event;
 }
 
+parameter_types! {
+    pub const PalletIdPalletDemogame: u64 =    1;
+}
+
+impl pallet_demogame::Config for Test {
+    type PalletId = PalletIdPalletDemogame;
+    type UniqueAssets = SubgameNFT;
+    type Lease = Lease;
+    type Event = Event;
+}
 
 
 parameter_types! {
@@ -138,7 +144,6 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
     let mut t = system::GenesisConfig::default()
         .build_storage::<Test>()
         .unwrap();
-    // Initial allocation of money
     balances::GenesisConfig::<Test> {
         // Provide some initial balances
         balances: vec![

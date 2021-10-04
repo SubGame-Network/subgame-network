@@ -56,8 +56,8 @@ impl<PalletId: Eq> PartialEq for PalletInfo<PalletId> {
 #[derive(Encode, Decode, Debug, Default, Copy, Clone, Eq)]
 /// Record lease information.
 pub struct LeaseInfo<PalletId, NftId> {
-    pallet_id: PalletId,
-    nft_id: NftId,
+    pub pallet_id: PalletId,
+    pub nft_id: NftId,
 }
 
 impl<PalletId: Ord, NftId: Eq> Ord for LeaseInfo<PalletId, NftId> {

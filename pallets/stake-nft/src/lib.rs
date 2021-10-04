@@ -143,6 +143,7 @@ decl_error! {
         NotFoundProgram,
         AlreadyPallet,
         NotFoundPallet,
+        AlreadyStake,
         MoneyNotEnough,
         PermissionDenied
     }
@@ -200,12 +201,18 @@ decl_module! {
         pub fn stake(origin, program_id: T::ProgramId, pallet_id: PalletId<T>) -> dispatch::DispatchResult {
             let from_address = ensure_signed(origin)?;
 
-            // Todo: check program exist
+            // check program exist
             let mut _programs_list = Programs::<T>::get();
             let _program = _programs_list.iter().find(|&&probe| probe.program_id == program_id);
             ensure!(_program != None, Error::<T>::NotFoundProgram);
 
-            let commodity_id = T::UniqueAssets::mint(&from_address, Vec::new())?;
+            // check stake exist
+            let stake_list = StakeInfos::<T>::get(from_address.clone());
+            let _stake = stake_list.iter().find(|&probe| probe.program_id == program_id && probe.pallet_id == pallet_id);
+            ensure!(_stake == None, Error::<T>::AlreadyStake);
+
+
+            let commodity_id = T::UniqueAssets::mint(&from_address.clone(), Vec::new())?;
             let owner = T::OwnerAddress::get();
             T::Balances::transfer(&from_address, &owner, _program.unwrap().stake_amount, ExistenceRequirement::KeepAlive).map_err(|_| Error::<T>::MoneyNotEnough)?;
 
@@ -241,7 +248,7 @@ decl_module! {
 
             StakeInfos::<T>::mutate(from_address.clone(), |stake_nft_data| {
                 match stake_nft_data.binary_search(&new_stake_nft) {
-                    Ok(_pos) => {} // should never happen
+                    Ok(_pos) => {},
                     Err(pos) => stake_nft_data.insert(pos, new_stake_nft),
                 }
             });

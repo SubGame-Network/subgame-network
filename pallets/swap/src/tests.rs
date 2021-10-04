@@ -109,21 +109,21 @@ fn create_pool2() {
 }
 
 #[test]
-fn create_pool_LP_check() {
+fn create_pool_lp_check() {
     new_test_ext().execute_with(|| {
         init_asset();
 
         let user = 1;
         let asset_x: u32 = 8;
-        let x: u64 = 1000 * GOGO_DECIMALS;
+        let x: u64 = 1000000000;
         let asset_y: u32 = 7;
-        let y: u64 = 1000 * USDT_DECIMALS;
+        let y: u64 = 200000000;
         assert_ok!(Swap::create_pool(Origin::signed(user.clone()), asset_x, x, asset_y, y));
 
         // Check LP token balance
         let swap_pool = Swap::swap_pool(1);
         let got_lp_balance = SubGameAssets::Module::<Test>::total_supply(swap_pool.asset_lp);
-        let want_lp_balance = (((x as f64 / GOGO_DECIMALS as f64) as f64 * (y as f64 / USDT_DECIMALS as f64)).sqrt() * LP_DECIMALS as f64).floor() as u64;
+        let want_lp_balance = (((x as f64 / GOGO_DECIMALS as f64) as f32 * (y as f64 / USDT_DECIMALS as f64) as f32).sqrt() as f64 * LP_DECIMALS as f64).floor() as u64;
         println!("===");
         println!("got_lp_balance = {:?}, want_lp_balance = {:?}", got_lp_balance, want_lp_balance);
         println!("===");

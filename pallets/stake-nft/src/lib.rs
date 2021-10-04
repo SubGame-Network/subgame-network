@@ -206,6 +206,8 @@ decl_module! {
             let _program = _programs_list.iter().find(|&&probe| probe.program_id == program_id);
             ensure!(_program != None, Error::<T>::NotFoundProgram);
 
+            ensure!(T::Balances::free_balance(&from_address) >= _program.unwrap().stake_amount.into(), Error::<T>::MoneyNotEnough);
+            
             // check stake exist
             let stake_list = StakeInfos::<T>::get(from_address.clone());
             let _stake = stake_list.iter().find(|&probe| probe.program_id == program_id && probe.pallet_id == pallet_id);
@@ -214,7 +216,6 @@ decl_module! {
 
             let commodity_id = T::UniqueAssets::mint(&from_address.clone(), Vec::new())?;
             let owner = T::OwnerAddress::get();
-            T::Balances::transfer(&from_address, &owner, _program.unwrap().stake_amount, ExistenceRequirement::KeepAlive).map_err(|_| Error::<T>::MoneyNotEnough)?;
 
 
             // now time
@@ -246,13 +247,14 @@ decl_module! {
                 nft_id: commodity_id.clone(),
             };
 
+            T::Lease::set_authority(commodity_id.clone(), pallet_id, from_address.clone())?;
+            T::Balances::transfer(&from_address, &owner, _program.unwrap().stake_amount, ExistenceRequirement::KeepAlive).map_err(|_| Error::<T>::MoneyNotEnough)?;
             StakeInfos::<T>::mutate(from_address.clone(), |stake_nft_data| {
                 match stake_nft_data.binary_search(&new_stake_nft) {
                     Ok(_pos) => {},
                     Err(pos) => stake_nft_data.insert(pos, new_stake_nft),
                 }
             });
-            T::Lease::set_authority(commodity_id.clone(), pallet_id, from_address.clone())?;
             
             let mut users = StakeUsers::<T>::get();
             match users.binary_search(&from_address) {

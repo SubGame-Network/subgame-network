@@ -305,7 +305,7 @@ decl_error! {
 		/// The asset ID is already taken.
 		InUse,
 		/// Too many zombie accounts in use.
-		TooManyZombies,
+		// TooManyZombies,
 		/// Attempt to destroy an asset class when non-zombie, reference-bearing accounts exist.
 		RefsLeft,
 		/// Invalid witness data given.
@@ -734,7 +734,7 @@ impl<T: Config> Module<T> {
 			frame_system::Module::<T>::inc_consumers(who).map_err(|_| Error::<T>::BadState)?;
 			false
 		} else {
-			ensure!(d.zombies < d.max_zombies, Error::<T>::TooManyZombies);
+			// ensure!(d.zombies < d.max_zombies, Error::<T>::TooManyZombies);
 			d.zombies += 1;
 			true
 		});
@@ -1142,7 +1142,7 @@ impl<T: Config> Module<T> {
 		Asset::<T>::try_mutate(id, |maybe_details| {
 			let details = maybe_details.as_mut().ok_or(Error::<T>::Unknown)?;
 			ensure!(&origin == &details.owner, Error::<T>::NoPermission);
-			ensure!(max_zombies >= details.zombies, Error::<T>::TooManyZombies);
+			// ensure!(max_zombies >= details.zombies, Error::<T>::TooManyZombies);
 
 			let new_deposit = T::AssetDepositPerZombie::get()
 				.saturating_mul(max_zombies.into())
@@ -1486,9 +1486,9 @@ mod tests {
 			assert_ok!(Assets::mint(Origin::signed(1), 0, 1, 100));
 
 			assert_eq!(Assets::zombie_allowance(0), 0);
-			assert_noop!(Assets::mint(Origin::signed(1), 0, 2, 100), Error::<Test>::TooManyZombies);
-			assert_noop!(Assets::transfer(Origin::signed(1), 0, 2, 50), Error::<Test>::TooManyZombies);
-			assert_noop!(Assets::force_transfer(Origin::signed(1), 0, 1, 2, 50), Error::<Test>::TooManyZombies);
+			// assert_noop!(Assets::mint(Origin::signed(1), 0, 2, 100), Error::<Test>::TooManyZombies);
+			// assert_noop!(Assets::transfer(Origin::signed(1), 0, 2, 50), Error::<Test>::TooManyZombies);
+			// assert_noop!(Assets::force_transfer(Origin::signed(1), 0, 1, 2, 50), Error::<Test>::TooManyZombies);
 
 			Balances::make_free_balance_be(&3, 100);
 			assert_ok!(Assets::mint(Origin::signed(1), 0, 3, 100));
@@ -1510,7 +1510,7 @@ mod tests {
 
 			assert_eq!(Assets::zombie_allowance(0), 0);
 
-			assert_noop!(Assets::set_max_zombies(Origin::signed(1), 0, 1), Error::<Test>::TooManyZombies);
+			// assert_noop!(Assets::set_max_zombies(Origin::signed(1), 0, 1), Error::<Test>::TooManyZombies);
 
 			assert_ok!(Assets::set_max_zombies(Origin::signed(1), 0, 3));
 			assert_eq!(Assets::zombie_allowance(0), 1);

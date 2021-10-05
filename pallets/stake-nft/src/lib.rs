@@ -20,14 +20,11 @@ use frame_support::{
     debug,
 };
 
-use frame_support::sp_std::convert::{TryInto};
+use frame_support::sp_std::convert::{TryInto, TryFrom};
 
 pub mod stake_nft;
 pub use crate::stake_nft::StakeNft;
 
-use chrono::prelude::*;
-
-use chrono::{TimeZone, Utc};
 
 #[cfg(test)]
 mod mock;
@@ -39,7 +36,7 @@ mod tests;
 pub struct Program<ProgramId, Balance> {
     program_id: ProgramId,
     stake_amount: Balance,
-    valid_month_count: u64,
+    valid_day_count: u64,
 }
 
 impl<ProgramId: Ord, Balance: Eq> Ord for Program<ProgramId, Balance> {
@@ -155,7 +152,7 @@ decl_module! {
         fn deposit_event() = default;
         
         #[weight = 10_000]
-        pub fn add_program(origin, program_id: T::ProgramId, stake_amount: BalanceOf<T>, month: u64) -> dispatch::DispatchResult {            
+        pub fn add_program(origin, program_id: T::ProgramId, stake_amount: BalanceOf<T>, day: u64) -> dispatch::DispatchResult {            
             let sender = ensure_signed(origin)?;
             let admin = T::OwnerAddress::get();
             ensure!(admin == sender, Error::<T>::PermissionDenied);
@@ -165,7 +162,7 @@ decl_module! {
             let new_program = Program { 
                 program_id: program_id, 
                 stake_amount: stake_amount, 
-                valid_month_count: month 
+                valid_day_count: day 
             };
             
             match _programs_list.binary_search(&new_program) {
@@ -173,7 +170,7 @@ decl_module! {
                 Err(index) => {
                     _programs_list.insert(index, new_program.clone());
                     Programs::<T>::put(_programs_list);
-                    Self::deposit_event(RawEvent::ProgramAdded(program_id, stake_amount, month));
+                    Self::deposit_event(RawEvent::ProgramAdded(program_id, stake_amount, day));
                     Ok(())
                 }
             }
@@ -207,7 +204,7 @@ decl_module! {
             ensure!(_program != None, Error::<T>::NotFoundProgram);
 
             ensure!(T::Balances::free_balance(&from_address) >= _program.unwrap().stake_amount.into(), Error::<T>::MoneyNotEnough);
-            
+
             // check stake exist
             let stake_list = StakeInfos::<T>::get(from_address.clone());
             let _stake = stake_list.iter().find(|&probe| probe.program_id == program_id && probe.pallet_id == pallet_id);
@@ -222,28 +219,19 @@ decl_module! {
             let now = pallet_timestamp::Pallet::<T>::get();
             let now_ms = TryInto::<u64>::try_into(now).ok().unwrap(); // convert to u64
 
+            // add N day
+            let n_day = _program.unwrap().valid_day_count as i64;
+            let n_day_ms = u64::try_from(chrono::Duration::seconds(n_day).num_milliseconds()).ok().unwrap();
+            let expires_at_ms = now_ms + n_day_ms;
+
             let now_timestamp = now_ms / 1000;
-
-            let d = Utc.timestamp(now_timestamp as i64, 0);
-
-            let mut y = d.year();
-            let mut m = d.month0()+ _program.unwrap().valid_month_count as u32;
-
-            let mut div:u32 = m/12;
-            if div > 0 {
-                if m%12 == 0 {
-                    div = div-1;
-                }
-                y = y + div as i32;
-                m = m-(12* div);
-            }
-            let expires_at = Utc.ymd(y, m+1, 1).and_hms(0, 0, 0);
+            let expires_at = expires_at_ms / 1000;
 
             let new_stake_nft = StakeInfo{
                 pallet_id: pallet_id,
                 program_id: program_id,
                 stake_amount: _program.unwrap().stake_amount,
-                expires_at: expires_at.timestamp() as i64,
+                expires_at: expires_at as i64,
                 nft_id: commodity_id.clone(),
             };
 
@@ -268,7 +256,7 @@ decl_module! {
                 }
             } 
 
-            Self::deposit_event(RawEvent::Stake(from_address, program_id, pallet_id, _program.unwrap().valid_month_count, now_timestamp.to_string().into_bytes(), expires_at.timestamp().to_string().into_bytes(), commodity_id.clone(), _program.unwrap().stake_amount));        
+            Self::deposit_event(RawEvent::Stake(from_address, program_id, pallet_id, _program.unwrap().valid_day_count, now_timestamp.to_string().into_bytes(), expires_at.to_string().into_bytes(), commodity_id.clone(), _program.unwrap().stake_amount));        
             Ok(())
         }
         

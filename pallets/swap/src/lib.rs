@@ -20,8 +20,6 @@ use pallet_subgame_assets::{self as SubGameAssets};
 
 #[allow(unused_imports)]
 use num_traits::float::FloatCore;
-#[allow(unused_imports)]
-use micromath::F32Ext;
 
 #[cfg(test)]
 mod mock;
@@ -193,7 +191,7 @@ decl_module! {
 			}
 			
 			// LP token balance
-			let lp_balance: u64 = ((_no_decimal_x as f32 * _no_decimal_y as f32).sqrt() as f64 * LP_DECIMALS as f64).floor() as u64;
+			let lp_balance: u64 = (libm::sqrt(_no_decimal_x as f64 * _no_decimal_y as f64) * LP_DECIMALS as f64).floor() as u64;
 			
 			// LP asset id
 			let lp_asset_id: T::AssetId = frame_system::Module::<T>::block_number().saturated_into::<u32>().into();
@@ -365,7 +363,7 @@ decl_module! {
 				}
 
 				// mint LP token
-				let new_lp_balance: u64 = ((_no_decimal_x as f32 * _no_decimal_y as f32).sqrt() as f64 * LP_DECIMALS as f64).floor() as u64;
+				let new_lp_balance: u64 = (libm::sqrt(_no_decimal_x as f64 * _no_decimal_y as f64) * LP_DECIMALS as f64).floor() as u64;
 				SubGameAssets::Module::<T>::_mint(swap_pool.account.clone(), swap_pool.asset_lp, sender.clone(), new_lp_balance.saturated_into())?;
 			}
 

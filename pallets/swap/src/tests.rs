@@ -1,11 +1,21 @@
 use crate::{Error, mock::*};
-use frame_support::{assert_noop, assert_ok};
+use frame_support::{assert_noop, assert_ok, traits::{OnFinalize, OnInitialize}};
 use pallet_subgame_assets as SubGameAssets;
 
 pub const SGB_DECIMALS: u64 = 10_000_000_000;
 pub const USDT_DECIMALS: u64 = 1_000_000;
 pub const GOGO_DECIMALS: u64 = 1_000_000;
 pub const LP_DECIMALS: u64 = 1_000_000;
+
+fn run_to_block( n: u64) {
+	while System::block_number() < n {
+		Swap::on_finalize(System::block_number());
+		System::on_finalize(System::block_number());
+		System::set_block_number(System::block_number()+1);
+		System::on_initialize(System::block_number());
+		Swap::on_initialize(System::block_number());
+	}
+}
 
 fn init_asset() {
     let user = 1;
@@ -120,10 +130,26 @@ fn create_pool_lp_check() {
         let y: u64 = 200000000;
         assert_ok!(Swap::create_pool(Origin::signed(user.clone()), asset_x, x, asset_y, y));
 
-        // Check LP token balance
         let swap_pool = Swap::swap_pool(1);
         let got_lp_balance = SubGameAssets::Module::<Test>::total_supply(swap_pool.asset_lp);
-        let want_lp_balance = (((x as f64 / GOGO_DECIMALS as f64) as f32 * (y as f64 / USDT_DECIMALS as f64) as f32).sqrt() as f64 * LP_DECIMALS as f64).floor() as u64;
+        let want_lp_balance = (libm::sqrt((x as f64 / GOGO_DECIMALS as f64) * (y as f64 / USDT_DECIMALS as f64)) * LP_DECIMALS as f64).floor() as u64;
+        println!("===");
+        println!("got_lp_balance = {:?}, want_lp_balance = {:?}", got_lp_balance, want_lp_balance);
+        println!("===");
+        assert_eq!(want_lp_balance, got_lp_balance);
+
+        run_to_block(10);
+
+        let user = 1;
+        let asset_x: u32 = 0;
+        let x: u64 = 350000000000000;
+        let asset_y: u32 = 7;
+        let y: u64 = 35000000000;
+        assert_ok!(Swap::create_pool(Origin::signed(user.clone()), asset_x, x, asset_y, y));
+
+        let swap_pool = Swap::swap_pool(2);
+        let got_lp_balance = SubGameAssets::Module::<Test>::total_supply(swap_pool.asset_lp);
+        let want_lp_balance = (libm::sqrt((x as f64 / SGB_DECIMALS as f64) * (y as f64 / USDT_DECIMALS as f64)) * LP_DECIMALS as f64).floor() as u64;
         println!("===");
         println!("got_lp_balance = {:?}, want_lp_balance = {:?}", got_lp_balance, want_lp_balance);
         println!("===");
@@ -166,7 +192,7 @@ fn add_liquidity() {
         // Check LP token balance
         let swap_pool = Swap::swap_pool(1);
         let got_lp_balance = SubGameAssets::Module::<Test>::total_supply(swap_pool.asset_lp);
-        let _lp_total_supply = (((x as f64 / GOGO_DECIMALS as f64) as f64 * (y as f64 / SGB_DECIMALS as f64)).sqrt() * LP_DECIMALS as f64).floor() as u64;
+        let _lp_total_supply = (libm::sqrt((x as f64 / GOGO_DECIMALS as f64) * (y as f64 / SGB_DECIMALS as f64)) as f64 * LP_DECIMALS as f64).floor() as u64;
         let want_lp_balance = ((dx as f64 / x as f64) * _lp_total_supply as f64).floor() as u64 + _lp_total_supply;
         assert_eq!(want_lp_balance, got_lp_balance);
     });

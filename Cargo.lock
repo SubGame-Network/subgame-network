@@ -3878,6 +3878,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-demogame"
+version = "3.0.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "pallet-balances",
+ "pallet-lease",
+ "pallet-nft",
+ "pallet-stake-nft",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-elections-phragmen"
 version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4002,6 +4022,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-lease"
+version = "3.0.0"
+dependencies = [
+ "chrono",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-nft",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-membership"
 version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4024,6 +4061,21 @@ checksum = "775556e56d1b9ab9a2437b8ea281bb16d7aadda8f309213d6d72d0a6a4c6fec4"
 dependencies = [
  "frame-support",
  "frame-system",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-nft"
+version = "3.0.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-timestamp",
  "parity-scale-codec",
  "serde",
  "sp-core",
@@ -4144,6 +4196,25 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+]
+
+[[package]]
+name = "pallet-stake-nft"
+version = "3.0.0"
+dependencies = [
+ "chrono",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-lease",
+ "pallet-nft",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -7547,6 +7618,7 @@ dependencies = [
  "pallet-contracts-primitives",
  "pallet-contracts-rpc-runtime-api",
  "pallet-democracy",
+ "pallet-demogame",
  "pallet-elections-phragmen",
  "pallet-gamecenter",
  "pallet-gametemplates",
@@ -7554,8 +7626,10 @@ dependencies = [
  "pallet-grandpa",
  "pallet-im-online",
  "pallet-indices",
+ "pallet-lease",
  "pallet-membership",
  "pallet-multisig",
+ "pallet-nft",
  "pallet-offences",
  "pallet-proxy",
  "pallet-randomness-collective-flip",
@@ -7563,6 +7637,7 @@ dependencies = [
  "pallet-scheduler",
  "pallet-session",
  "pallet-stake",
+ "pallet-stake-nft",
  "pallet-staking",
  "pallet-staking-reward-curve",
  "pallet-subgame-assets",

@@ -1,0 +1,47 @@
+[package]
+description = 'After providing users to stake SGB, they can get an nft token, and they can use special functions with nft token. SGB will be returned through redemption, and nft token will be burned at the same time. The module will provide different stake amount schemes and different valid periods. When the stake expires, nft token can no longer be used for special functions, SGB can be returned through redemption, and nft token will be burned.'
+edition = '2018'
+homepage = 'https://www.subgame.org'
+license = 'UnLicense'
+name = 'pallet-stake-nft'
+repository = 'https://github.com/SubGame-Network/subgame-network'
+version = '3.0.0'
+
+[package.metadata.docs.rs]
+targets = ['x86_64-unknown-linux-gnu']
+
+[dependencies]
+serde = { version = "1.0.116", optional = true }
+
+# Substrate dependencies
+codec = { default-features = false, features = ['derive'], package = 'parity-scale-codec', version = '2.0.0' }
+frame-support = { default-features = false, version = '3.0.0' }
+frame-system = { default-features = false, version = '3.0.0' }
+sp-runtime = { default-features = false, version = '3.0.0' }
+sp-std = { default-features = false, version = '3.0.0' }
+chrono = { version = "0.4.11", default-features = false }
+pallet-timestamp = { default-features = false, version = '3.0.0' }
+
+pallet-nft = { path = '../nft', default-features = false, version = '3.0.0' }
+pallet-lease = { path = '../lease', default-features = false, version = '3.0.0' }
+# use unit test
+balances = { package = 'pallet-balances', version = '3.0.0', default-features = false }
+
+
+[dev-dependencies]
+sp-core = { default-features = false, version = '3.0.0' }
+sp-io = { default-features = false, version = '3.0.0' }
+
+[features]
+default = ['std']
+std = [
+    'serde',
+    'codec/std',
+    'frame-support/std',
+    'frame-system/std',
+    'sp-runtime/std',
+    'sp-std/std',
+    'pallet-nft/std',
+    'balances/std'
+
+]

@@ -8,6 +8,10 @@ It is an ever-growing library of game templates, and new games are continuously 
 ![](https://i.imgur.com/o0nS8iu.png)
 
 
+* Lease platform(`pallet-nft`/`pallet-stake-nft`/`pallet-lease`)：
+SubGame lease platform users can obtain the right to use the pallet within a certain time limit by staking SGB, and the developer can put the developed pallet on the lease platform.
+The lease platform mainly uses the two pallets, Stake NFT Pallet and Lease Pallet, to control the right to use the game Pallet. When the user stakes SGB, the platform will generate NFT tokens as the user’s certificate of the pallet. The NFT tokens will be destroyed when the time limit expires. At that time, the right to use the pallet will be lost.
+
 
 ## The first game template
 Template name： `pallet-gametemplates-guess-hash`
@@ -213,4 +217,35 @@ redemption
 【Then】
 ```
  return Error ChipsIsNotExist
+```
+
+### Lease
+Lease Pallet is used to control all behavior permissions on the lease platform.
+#### Test case
+```rust
+fn set_authority()
+fn check_authority()
+fn add_pallet()
+```
+### Stake NFT Pallet
+Stake NFT Pallet is used to bind specific other Pallets to generate exclusive NFT tokens.
+#### Test case
+```rust
+fn stake()
+fn stake_expired()
+fn add_program()
+fn add_program_error_exist()
+```
+
+### Game Pallet
+All (including future) different types of game modules.
+### demo
+This module is a special pallet, and you need to use `stake-nft` to obtain access rights (this is a simulated pallet)
+
+#### Test case
+```rust
+fn stake()
+fn stake_expired()
+fn add_program()
+fn add_program_error_exist()
 ```

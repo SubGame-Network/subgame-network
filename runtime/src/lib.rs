@@ -947,6 +947,54 @@ impl pallet_stake::Config for Runtime {
 
 /*** Pallet Asset ***/
 parameter_types! {
+    pub const CommodityLimit: u128 =    1000000000000000000000;
+    pub const UserCommodityLimit: u64 = 10000000000000000000;
+}
+impl pallet_nft::Config for Runtime {
+/// The dispatch origin that is able to mint new instances of this type of commodity.
+    type CommodityAdmin = EnsureRoot<AccountId>;
+    /// The maximum number of this type of commodity that may exist (minted - burned).
+    type CommodityLimit = CommodityLimit;
+    /// The maximum number of this type of commodity that any single account may own.
+    type UserCommodityLimit = UserCommodityLimit;
+    type Event = Event;
+}
+
+ord_parameter_types! {
+    pub const ModuleOwner: AccountId = AccountId::from(
+        // 5CwARBdeFR8MJGvpHv7kaab2akiebDFGF9TDvRa5MimyGtEJ
+        hex_literal::hex!("50eebb67d5888f999969633cdf644bf552500a18ecd156a972dd19fe7d4f1051")
+    );
+}
+impl pallet_stake_nft::Config for Runtime {
+    type ProgramId = u64;
+    type PalletId = u64;
+    type Balances = pallet_balances::Module<Runtime>;
+    type UniqueAssets = SubgameNFT;
+    type Lease = Lease;
+    type OwnerAddress = ModuleOwner;
+    type Event = Event;
+}
+
+parameter_types! {
+    pub const PalletIdPalletDemogame: u64 =    1;
+}
+
+impl pallet_lease::Config for Runtime {
+    type PalletId = u64;
+    type UniqueAssets = SubgameNFT;
+    type OwnerAddress = ModuleOwner;
+    type Event = Event;
+}
+
+impl pallet_demogame::Config for Runtime {
+    type PalletId = PalletIdPalletDemogame;
+    type UniqueAssets = SubgameNFT;
+    type Lease = Lease;
+    type Event = Event;
+}
+
+parameter_types! {
 	pub const AssetDepositBase: Balance = 100 * MILLICENTS;
 	pub const AssetDepositPerZombie: Balance = 1 * MILLICENTS;
 	pub const StringLimit: u32 = 50;
@@ -1020,6 +1068,10 @@ construct_runtime!(
         GameGuessHashModule: pallet_gametemplates_guess_hash::{Module, Call, Storage, Event<T>},
         Bridge: pallet_bridge::{Module, Call, Storage, Event<T>},
         Stake: pallet_stake::{Module, Call, Storage, Event<T>},
+        SubgameNFT: pallet_nft::{Module, Call, Storage, Event<T>},
+        SubgameStakeNft: pallet_stake_nft::{Module, Call, Storage, Event<T>},
+        Lease: pallet_lease::{Module, Call, Storage, Event<T>},
+        DemoGame: pallet_demogame::{Module, Call, Storage, Event<T>},
         SubgameAssets: pallet_subgame_assets::{Module, Call, Storage, Event<T>},
         Swap: pallet_swap::{Module, Call, Storage, Event<T>},
     }

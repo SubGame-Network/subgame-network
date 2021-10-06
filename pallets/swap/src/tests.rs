@@ -25,7 +25,7 @@ fn init_asset() {
     let name = "USDT".as_bytes().to_vec();
     let symbol = "USDT".as_bytes().to_vec();
     let decimals = 6;
-    let mint_balance = 1000000 * USDT_DECIMALS;
+    let mint_balance = 100000000 * USDT_DECIMALS;
     assert_ok!(SubGameAssets::Module::<Test>::_force_create(asset_id, user.clone(), max_zombies, min_balance));
     assert_ok!(SubGameAssets::Module::<Test>::_force_set_metadata(user.clone(), asset_id, name, symbol, decimals));
     assert_ok!(SubGameAssets::Module::<Test>::_mint(user.clone(), asset_id, user.clone(), mint_balance));
@@ -37,7 +37,7 @@ fn init_asset() {
     let name = "GOGO".as_bytes().to_vec();
     let symbol = "GOGO".as_bytes().to_vec();
     let decimals = 6;
-    let mint_balance = 1000000 * GOGO_DECIMALS;
+    let mint_balance = 100000000 * GOGO_DECIMALS;
     assert_ok!(SubGameAssets::Module::<Test>::_force_create(asset_id, user.clone(), max_zombies, min_balance));
     assert_ok!(SubGameAssets::Module::<Test>::_force_set_metadata(user.clone(), asset_id, name, symbol, decimals));
     assert_ok!(SubGameAssets::Module::<Test>::_mint(user.clone(), asset_id, user.clone(), mint_balance));
@@ -90,7 +90,7 @@ fn create_pool2() {
         // Should return not enough balance error
         let user = 1;
         let asset_x: u32 = 8;
-        let x: u64 = 1000000 * GOGO_DECIMALS + 100;
+        let x: u64 = 100000000 * GOGO_DECIMALS + 100;
         let asset_y: u32 = 0;
         let y: u64 = 11 * SGB_DECIMALS;
         assert_noop!(Swap::create_pool(Origin::signed(user.clone()), asset_x, x, asset_y, y), Error::<Test>::NotEnoughBalance);
@@ -245,6 +245,32 @@ fn add_liquidity3() {
 }
 
 #[test]
+fn add_liquidity4() {
+    new_test_ext().execute_with(|| {
+        init_asset();
+
+        let user = 1;
+        let asset_x: u32 = 8;
+        let x: u64 = 267148620;
+        let asset_y: u32 = 0;
+        let y: u64 = 29617744175575;
+        assert_ok!(Swap::create_pool(Origin::signed(user.clone()), asset_x, x, asset_y, y));
+
+        let swap_id = 1;
+        let new_lp_balance = 925091992;
+        let swap_pool = Swap::swap_pool(swap_id);
+        let old_lp_balance = SubGameAssets::Module::<Test>::total_supply(swap_pool.asset_lp);
+        assert_ok!(SubGameAssets::Module::<Test>::_burn(swap_pool.account, swap_pool.asset_lp, user, old_lp_balance));
+        assert_ok!(SubGameAssets::Module::<Test>::_mint(swap_pool.account, swap_pool.asset_lp, user, new_lp_balance));
+        
+        let user = 1;
+        let dx: u64 = 1000000;
+        let dy: u64 = 110866153481;
+        assert_ok!(Swap::add_liquidity(Origin::signed(user.clone()), swap_id, dx, dy));
+    });
+}
+
+#[test]
 fn remove_liquidity() {
     new_test_ext().execute_with(|| {
         init_asset();
@@ -329,5 +355,24 @@ fn swap() {
         // Should return ZeroBalance error
         let _input_amount: u64 = 0 * GOGO_DECIMALS;
         assert_noop!(Swap::swap(Origin::signed(user.clone()), swap_id, input_asset, _input_amount, output_asset, expected_output_amount, slipage, deadline), Error::<Test>::ZeroBalance);
+    });
+}
+
+#[test]
+fn swap2() {
+    new_test_ext().execute_with(|| {
+
+        // $r = 1 - 0.003
+		// $a = $dx / $x
+		// $dy = ($a * $r) / (1 + ($a * $r)) * $y
+        let x: f64 = 9378908395443.0;
+        let y: f64 = 1037063538.0;
+        let dx: f64 = 10000000000.25;
+        let r: f64 = 1.0 - 0.003;
+        let a: f64 = dx / x;
+        let dy: f64 = (a * r) / (1.0 + (a * r)) * y;
+        let output_amount: u64 = dy.floor() as u64;
+
+        println!("{:?}", output_amount);
     });
 }

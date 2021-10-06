@@ -221,7 +221,7 @@ decl_module! {
 
             // add N day
             let n_day = _program.unwrap().valid_day_count as i64;
-            let n_day_ms = u64::try_from(chrono::Duration::seconds(n_day).num_milliseconds()).ok().unwrap();
+            let n_day_ms = u64::try_from(chrono::Duration::days(n_day).num_milliseconds()).ok().unwrap();
             let expires_at_ms = now_ms + n_day_ms;
 
             let now_timestamp = now_ms / 1000;

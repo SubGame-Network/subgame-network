@@ -37,9 +37,10 @@ fn demo() {
 
 
 }
-
-fn demoErrorPermission() {
+#[test]
+fn demo_error_permission() {
     new_test_ext().execute_with(|| {
+        assert_ok!(Lease::add_pallet(Origin::signed(3), 1, Vec::<u8>::from("test pallet")));
         assert_err!(
             DemoGame::demo(Origin::signed(10)),
             Error::<Test>::PermissionDenied

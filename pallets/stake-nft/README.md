@@ -1,4 +1,4 @@
-# pallet-nft
+# pallet-stake-nft
 
 ## description
 After providing users to stake SGB, they can get an nft token, and they can use special functions with nft token. SGB will be returned through redemption, and nft token will be burned at the same time. The module will provide different stake amount schemes and different valid periods. When the stake expires, nft token can no longer be used for special functions, SGB can be returned through redemption, and nft token will be burned.
@@ -13,7 +13,7 @@ After providing users to stake SGB, they can get an nft token, and they can use 
 [dependencies]
 ...
 // Add this code
-pallet-nft = { path = '../pallets/nft', default-features = false, version = '3.0.0' }
+pallet-stake-nft = { path = '../pallets/stake-nft', default-features = false, version = '3.0.0' }
 ```
 
 ### Configure the Pallet
@@ -66,5 +66,5 @@ cargo test
 ## Documentation
 
 ```
-cargo doc --open --package pallet-nft
+cargo doc --open --package pallet-stake-nft
 ```

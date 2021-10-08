@@ -2,6 +2,7 @@
 
 ## description
 A unique asset (NFT) interface and a Substrate FRAME implementation optimized for commodity assets.
+This pallet is to refer to the code of [pallet-nft](https://github.com/danforbes/pallet-nft), upgrade v3 and rewrite.
 
 ## Getting Started
 

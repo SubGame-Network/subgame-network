@@ -5,6 +5,7 @@ use balances;
 use frame_support::parameter_types;
 use frame_system as system;
 use pallet_nft;
+use pallet_lease;
 use sp_core::H256;
 use sp_runtime::{
     testing::Header,
@@ -15,8 +16,6 @@ type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
 
-pub const MILLISECS_PER_BLOCK: u64 = 12000;
-pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
 // impl_outer_origin! {
 //     pub enum Origin for Test where system = frame_system {}
 // }
@@ -118,17 +117,11 @@ impl pallet_stake_nft::Config for Test {
     type Event = Event;
 }
 
-
-
-parameter_types! {
-    pub const MinimumPeriod: u64 = SLOT_DURATION / 2;
-}
-
 impl pallet_timestamp::Config for Test {
     /// A timestamp: milliseconds since the unix epoch.
     type Moment = u64;
     type OnTimestampSet = ();
-    type MinimumPeriod = MinimumPeriod;
+    type MinimumPeriod = ();
     type WeightInfo = ();
 }
 

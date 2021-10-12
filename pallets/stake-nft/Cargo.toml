@@ -42,6 +42,7 @@ std = [
     'sp-runtime/std',
     'sp-std/std',
     'pallet-nft/std',
-    'balances/std'
+    'balances/std',
+    'pallet-timestamp/std'
 
 ]

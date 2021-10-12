@@ -1,6 +1,7 @@
 # pallet-demogame
 
 ## description
+We will provide this game A pallet to users for lease. This is a sample pallet. There will be more pallets that can be leased in the future.
 This module is a special pallet, and you need to use `stake-nft` to obtain access rights (this is a simulated pallet)
 
 #### demo()

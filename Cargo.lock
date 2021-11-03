@@ -1435,7 +1435,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cfcf0ed7fe52a17a03854ec54a9f76d6d84508d1c0e66bc1793301c73fc8493c"
 dependencies = [
  "byteorder",
- "rand 0.8.2",
+ "rand 0.8.4",
  "rustc-hex",
  "static_assertions",
 ]
@@ -3754,6 +3754,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-card-factory"
+version = "3.0.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-lease",
+ "pallet-manage-card-info",
+ "pallet-nft",
+ "parity-scale-codec",
+ "rand 0.8.4",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-chips"
 version = "3.0.0"
 dependencies = [
@@ -3913,6 +3933,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-game-recharge"
+version = "3.0.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-lease",
+ "pallet-nft",
+ "pallet-subgame-assets",
+ "parity-scale-codec",
+ "rand 0.8.4",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-gamecenter"
 version = "3.0.0"
 dependencies = [
@@ -4039,6 +4079,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-manage-card-info"
+version = "3.0.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-lease",
+ "pallet-nft",
+ "parity-scale-codec",
+ "rand 0.8.4",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-membership"
 version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4076,6 +4135,25 @@ dependencies = [
  "frame-support",
  "frame-system",
  "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-nft-exchange"
+version = "3.0.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-lease",
+ "pallet-nft",
+ "parity-scale-codec",
+ "rand 0.8.4",
  "serde",
  "sp-core",
  "sp-io",
@@ -4180,6 +4258,25 @@ dependencies = [
  "sp-staking",
  "sp-std",
  "sp-trie",
+]
+
+[[package]]
+name = "pallet-seventh-planet"
+version = "3.0.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-lease",
+ "pallet-nft",
+ "parity-scale-codec",
+ "rand 0.8.4",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -4424,7 +4521,7 @@ dependencies = [
  "log",
  "memmap2",
  "parking_lot 0.11.1",
- "rand 0.8.2",
+ "rand 0.8.4",
 ]
 
 [[package]]
@@ -5106,9 +5203,9 @@ dependencies = [
 
 [[package]]
 name = "rand"
-version = "0.8.2"
+version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18519b42a40024d661e1714153e9ad0c3de27cd495760ceb09710920f1098b1e"
+checksum = "2e7573632e6454cf6b99d7aac4ccca54be06da05aca2ef7423d22d27d4d4bcd8"
 dependencies = [
  "libc",
  "rand_chacha 0.3.0",
@@ -7611,6 +7708,7 @@ dependencies = [
  "pallet-balances",
  "pallet-bounties",
  "pallet-bridge",
+ "pallet-card-factory",
  "pallet-chips",
  "pallet-collective",
  "pallet-contracts",
@@ -7619,6 +7717,7 @@ dependencies = [
  "pallet-democracy",
  "pallet-demogame",
  "pallet-elections-phragmen",
+ "pallet-game-recharge",
  "pallet-gamecenter",
  "pallet-gametemplates",
  "pallet-gametemplates-guess-hash",
@@ -7626,15 +7725,18 @@ dependencies = [
  "pallet-im-online",
  "pallet-indices",
  "pallet-lease",
+ "pallet-manage-card-info",
  "pallet-membership",
  "pallet-multisig",
  "pallet-nft",
+ "pallet-nft-exchange",
  "pallet-offences",
  "pallet-proxy",
  "pallet-randomness-collective-flip",
  "pallet-recovery",
  "pallet-scheduler",
  "pallet-session",
+ "pallet-seventh-planet",
  "pallet-stake",
  "pallet-stake-nft",
  "pallet-staking",
@@ -7805,7 +7907,7 @@ checksum = "dac1c663cfc93810f88aed9b8941d48cabf856a1b111c29a40439018d870eb22"
 dependencies = [
  "cfg-if 1.0.0",
  "libc",
- "rand 0.8.2",
+ "rand 0.8.4",
  "redox_syscall 0.2.4",
  "remove_dir_all",
  "winapi 0.3.9",

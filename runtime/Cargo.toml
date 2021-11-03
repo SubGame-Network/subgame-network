@@ -39,6 +39,11 @@ pallet-stake-nft = { path = '../pallets/stake-nft', default-features = false, ve
 pallet-lease = { path = '../pallets/lease', default-features = false, version = '3.0.0'  }
 pallet-demogame = { path = '../pallets/demogame', default-features = false, version = '3.0.0'  }
 pallet-swap = { path = '../pallets/swap', default-features = false, version = '3.0.0'  }
+pallet-manage-card-info = { path = '../pallets/manage-card-info', default-features = false, version = '3.0.0'  }
+pallet-card-factory = { path = '../pallets/card-factory', default-features = false, version = '3.0.0'  }
+pallet-seventh-planet = { path = '../pallets/seventh-planet', default-features = false, version = '3.0.0'  }
+pallet-nft-exchange = { path = '../pallets/nft-exchange', default-features = false, version = '3.0.0'  }
+pallet-game-recharge = { path = '../pallets/game-recharge', default-features = false, version = '3.0.0'  }
 
 # Substrate dependencies
 frame-benchmarking = { default-features = false, optional = true, version = '3.0.0' }
@@ -161,4 +166,10 @@ std = [
     'pallet-lease/std',
     'pallet-demogame/std',
     'pallet-swap/std',
+    'pallet-nft-exchange/std',
+    'pallet-manage-card-info/std',
+    'pallet-card-factory/std',
+    'pallet-seventh-planet/std',
+    'pallet-nft-exchange/std',
+    'pallet-game-recharge/std',
 ]

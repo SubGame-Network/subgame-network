@@ -232,7 +232,7 @@ pub struct SubGameAssetMetadata<DepositBalance: Encode + Decode + Clone + Debug 
 decl_storage! {
 	trait Store for Module<T: Config> as Assets {
 		/// Details of an asset.
-		Asset: map hasher(blake2_128_concat) T::AssetId => Option<SubGameAssetDetails<
+		pub Asset: map hasher(blake2_128_concat) T::AssetId => Option<SubGameAssetDetails<
 			T::SGAssetBalance,
 			T::AccountId,
 			BalanceOf<T>,

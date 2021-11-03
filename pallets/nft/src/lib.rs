@@ -84,7 +84,7 @@ decl_storage! {
         /// A mapping from an account to a list of all of the commodities of this type that are owned by it.
         CommoditiesForAccount get(fn commodities_for_account): map hasher(blake2_128_concat) T::AccountId => Vec<Commodity<T>>;
         /// A mapping from a commodity ID to the account that owns it.
-        AccountForCommodity get(fn account_for_commodity): map hasher(identity) CommodityId<T> => T::AccountId;
+        AccountForCommodity get(fn account_for_commodity): map hasher(blake2_128_concat) CommodityId<T> => T::AccountId;
     }
 
     // add_extra_genesis {
@@ -247,7 +247,7 @@ impl<T: Config> UniqueAssets<T::AccountId> for Module<T> {
         let commodity_id = T::Hashing::hash_of(&commodity_info);
 
         ensure!(
-            !AccountForCommodity::<T>::contains_key(&commodity_id),
+            !AccountForCommodity::<T>::contains_key(commodity_id),
             Error::<T>::CommodityExists
         );
 

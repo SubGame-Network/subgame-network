@@ -8,9 +8,7 @@ use sc_service::{error::Error as ServiceError, Configuration, TaskManager, BaseP
 use std::{sync::{Arc, Mutex}, time::Duration, collections::{HashMap, BTreeMap}};
 use subgame_runtime::{self, opaque::Block, RuntimeApi};
 use fc_rpc_core::types::{FilterPool, PendingTransactions};
-use fc_consensus::FrontierBlockImport;
 use crate::cli::Cli;
-use sp_consensus_aura::sr25519::{AuthorityPair as AuraPair};
 
 // Our native executor instance.
 native_executor_instance!(
@@ -23,20 +21,6 @@ native_executor_instance!(
 type FullClient = sc_service::TFullClient<Block, RuntimeApi, Executor>;
 type FullBackend = sc_service::TFullBackend<Block>;
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
-
-pub type ConsensusResult = (
-	sc_consensus_aura::AuraBlockImport<
-		Block,
-		FullClient,
-		FrontierBlockImport<
-			Block,
-			sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>,
-			FullClient
-		>,
-		AuraPair
-	>,
-	sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>
-);
 
 pub fn executable_name() -> String {
     std::env::current_exe()

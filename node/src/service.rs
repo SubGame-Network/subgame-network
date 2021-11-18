@@ -4,10 +4,13 @@ use sc_client_api::{ExecutorProvider, RemoteBackend};
 use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
 use sc_finality_grandpa::SharedVoterState;
-use sc_service::{error::Error as ServiceError, Configuration, TaskManager};
-use std::sync::Arc;
-use std::time::Duration;
+use sc_service::{error::Error as ServiceError, Configuration, TaskManager, BasePath};
+use std::{sync::{Arc, Mutex}, time::Duration, collections::{HashMap, BTreeMap}};
 use subgame_runtime::{self, opaque::Block, RuntimeApi};
+use fc_rpc_core::types::{FilterPool, PendingTransactions};
+use fc_consensus::FrontierBlockImport;
+use crate::cli::Cli;
+use sp_consensus_aura::sr25519::{AuthorityPair as AuraPair};
 
 // Our native executor instance.
 native_executor_instance!(
@@ -21,8 +24,47 @@ type FullClient = sc_service::TFullClient<Block, RuntimeApi, Executor>;
 type FullBackend = sc_service::TFullBackend<Block>;
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
 
+pub type ConsensusResult = (
+	sc_consensus_aura::AuraBlockImport<
+		Block,
+		FullClient,
+		FrontierBlockImport<
+			Block,
+			sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>,
+			FullClient
+		>,
+		AuraPair
+	>,
+	sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>
+);
+
+pub fn executable_name() -> String {
+    std::env::current_exe()
+        .ok()
+        .and_then(|e| e.file_name().map(|s| s.to_os_string()))
+        .and_then(|w| w.into_string().ok())
+        .unwrap_or_else(|| env!("CARGO_PKG_NAME").into())
+}
+
+pub fn open_frontier_backend(config: &Configuration) -> Result<Arc<fc_db::Backend<Block>>, String> {
+	let config_dir = config.base_path.as_ref()
+		.map(|base_path| base_path.config_dir(config.chain_spec.id()))
+		.unwrap_or_else(|| {
+			BasePath::from_project("", "", &executable_name())
+				.config_dir(config.chain_spec.id())
+		});
+	let database_dir = config_dir.join("frontier").join("db");
+
+	Ok(Arc::new(fc_db::Backend::<Block>::new(&fc_db::DatabaseSettings {
+		source: fc_db::DatabaseSettingsSrc::RocksDb {
+			path: database_dir,
+			cache_size: 0,
+		}
+	})?))
+}
+
 pub fn new_partial(
-    config: &Configuration,
+    config: &Configuration, _cli: &Cli
 ) -> Result<
     sc_service::PartialComponents<
         FullClient,
@@ -43,6 +85,7 @@ pub fn new_partial(
             >,
             sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
             sc_consensus_babe::BabeLink<Block>,
+            PendingTransactions, Option<FilterPool>, Arc<fc_db::Backend<Block>>,
         ),
     >,
     ServiceError,
@@ -68,16 +111,20 @@ pub fn new_partial(
         client.clone(),
     );
 
+    let pending_transactions: PendingTransactions
+		= Some(Arc::new(Mutex::new(HashMap::new())));
+
+	let filter_pool: Option<FilterPool>
+		= Some(Arc::new(Mutex::new(BTreeMap::new())));
+
+    let frontier_backend = open_frontier_backend(config)?;
+
     let (grandpa_block_import, grandpa_link) = sc_finality_grandpa::block_import(
         client.clone(),
         &(client.clone() as Arc<_>),
         select_chain.clone(),
     )?;
 
-    // let aura_block_import = sc_consensus_aura::AuraBlockImport::<_, _, _, AuraPair>::new(
-    //     grandpa_block_import.clone(),
-    //     client.clone(),
-    // );
     let justification_import = grandpa_block_import.clone();
 	let (block_import, babe_link) = sc_consensus_babe::block_import(
 		sc_consensus_babe::Config::get_or_compute(&*client)?,
@@ -97,7 +144,7 @@ pub fn new_partial(
 		sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone()),
 	)?;
 
-	let import_setup = (block_import, grandpa_link, babe_link.clone());
+    let import_setup = (block_import, grandpa_link, babe_link.clone(), pending_transactions, filter_pool, frontier_backend);
 
     Ok(sc_service::PartialComponents {
         client,
@@ -120,7 +167,12 @@ pub fn new_partial(
 // }
 
 /// Builds a new service for a full client.
-pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> {
+pub fn new_full(
+    mut config: Configuration,
+    cli: &Cli,
+) -> Result<TaskManager, ServiceError> {
+    let enable_dev_signer = cli.run.enable_dev_signer;
+
     let sc_service::PartialComponents {
         client,
         backend,
@@ -131,7 +183,7 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
         transaction_pool,
         inherent_data_providers,
         other: import_setup,
-    } = new_partial(&config)?;
+    } = new_partial(&config, cli)?;
 
     // if let Some(url) = &config.keystore_remote {
     //     match remote_keystore(url) {
@@ -144,7 +196,7 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
     //         }
     //     };
     // }
-    let (block_import, grandpa_link, babe_link) = import_setup;
+    let (block_import, grandpa_link, babe_link, pending_transactions, filter_pool, frontier_backend) = import_setup;
 
 	let role = config.role.clone();
 	let force_authoring = config.force_authoring;
@@ -179,18 +231,36 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
         );
     }
 
+    let is_authority = role.is_authority();
+    
+    // Channel for the rpc handler to communicate with the authorship task.
+	let (command_sink, _commands_stream) = futures::channel::mpsc::channel(1000);
+
+    let subscription_task_executor = sc_rpc::SubscriptionTaskExecutor::new(task_manager.spawn_handle());
+
     let rpc_extensions_builder = {
         let client = client.clone();
         let pool = transaction_pool.clone();
+        let pending = pending_transactions.clone();
+        let filter_pool = filter_pool.clone();
+        let frontier_backend = frontier_backend.clone();
+        let network = network.clone();
 
         Box::new(move |deny_unsafe, _| {
             let deps = crate::rpc::FullDeps {
                 client: client.clone(),
                 pool: pool.clone(),
                 deny_unsafe,
+                is_authority,
+				enable_dev_signer,
+				network: network.clone(),
+				pending_transactions: pending.clone(),
+				filter_pool: filter_pool.clone(),
+				backend: frontier_backend.clone(),
+				command_sink: Some(command_sink.clone())
             };
 
-            crate::rpc::create_full(deps)
+            crate::rpc::create_full(deps, subscription_task_executor.clone())
         })
     };
 

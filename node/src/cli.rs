@@ -1,5 +1,20 @@
-use sc_cli::RunCmd;
 use structopt::StructOpt;
+
+#[allow(missing_docs)]
+#[derive(Debug, StructOpt)]
+pub struct RunCmd {
+	#[allow(missing_docs)]
+	#[structopt(flatten)]
+	pub base: sc_cli::RunCmd,
+
+	#[cfg(feature = "manual-seal")]
+	/// Choose sealing method.
+	#[structopt(long = "sealing")]
+	pub sealing: Sealing,
+
+	#[structopt(long = "enable-dev-signer")]
+	pub enable_dev_signer: bool,
+}
 
 #[derive(Debug, StructOpt)]
 pub struct Cli {

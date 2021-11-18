@@ -4,7 +4,7 @@ use sc_service::Properties;
 use sp_consensus_babe::{AuthorityId as BabeId};
 use sp_runtime::{Perbill};
 use sp_core::crypto::UncheckedInto;
-use sp_core::{sr25519, Pair, Public};
+use sp_core::{sr25519, Pair, Public, H160};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
@@ -21,6 +21,7 @@ use subgame_runtime::{
 };
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use std::collections::BTreeMap;
+use std::str::FromStr;
 
 fn session_keys(
     babe: BabeId,
@@ -89,6 +90,17 @@ pub fn development_config() -> Result<ChainSpec, String> {
     let wasm_binary =
         WASM_BINARY.ok_or_else(|| "Development wasm binary not available".to_string())?;
 
+    let mut accounts = BTreeMap::new();
+    accounts.insert(
+        H160::from_str("402531198b6a5A7a88D7D04943B0874f3a5d7239").unwrap(),
+        pallet_evm::GenesisAccount {
+            nonce: 0.into(),
+            balance: (500000000 as u128 * 10_u128.pow(18)).into(),
+            storage: BTreeMap::new(),                                 
+            code: wasm_binary.to_vec(),
+        },
+    );
+
     Ok(ChainSpec::from_genesis(
         // Name
         "subgame_dev",
@@ -110,6 +122,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
                     (get_account_id_from_seed::<sr25519::Public>("Bob//stash"), 5000000000000000000),
                 ],
                 true,
+                accounts.clone(),
             )
         },
         // Bootnodes
@@ -128,6 +141,18 @@ pub fn development_config() -> Result<ChainSpec, String> {
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
     let wasm_binary =
         WASM_BINARY.ok_or_else(|| "Development wasm binary not available".to_string())?;
+
+    let mut accounts = BTreeMap::new();
+    accounts.insert(
+        H160::from_str("402531198b6a5A7a88D7D04943B0874f3a5d7239").unwrap(),
+        pallet_evm::GenesisAccount {
+            nonce: 0.into(),
+            balance: (500000000 as u128 * 10_u128.pow(18)).into(),
+            storage: BTreeMap::new(),                                 
+            code: wasm_binary.to_vec(),
+        },
+    );
+
     Ok(ChainSpec::from_genesis(
         // Name
         "SubGame Staging",
@@ -183,6 +208,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                     (hex!["8097750cd4845d1e9b5ad167845dfceb43511271ea3ac966f082e7ba003aa87c"].into(), 1000000000000),    // 100
                 ],
                 true,
+                accounts.clone(),
             )
         },
         // Bootnodes
@@ -201,6 +227,18 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 pub fn mainnet_config() -> Result<ChainSpec, String> {
     let wasm_binary =
         WASM_BINARY.ok_or_else(|| "Main net wasm binary not available".to_string())?;
+
+    let mut accounts = BTreeMap::new();
+    accounts.insert(
+        H160::from_str("402531198b6a5A7a88D7D04943B0874f3a5d7239").unwrap(),
+        pallet_evm::GenesisAccount {
+            nonce: 0.into(),
+            balance: (500000000 as u128 * 10_u128.pow(18)).into(),
+            storage: BTreeMap::new(),                                 
+            code: wasm_binary.to_vec(),
+        },
+    );
+
     Ok(ChainSpec::from_genesis(
         // Name
         "SubGame",
@@ -328,6 +366,7 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                     (hex!["56050eb15aa425e8a502477d7cc0e4bd4b5e55b67a0b340ea27e437ed4595302"].into(), 1000000000000), // 100
                 ],
                 true,
+                accounts.clone(),
             )
         },
         // Bootnodes
@@ -352,6 +391,7 @@ fn testnet_genesis(
     root_key: AccountId,
     endowed_accounts: Vec<(AccountId, u128)>,
     enable_println: bool,
+    accounts: BTreeMap<H160, pallet_evm::GenesisAccount>,
 ) -> GenesisConfig {
     GenesisConfig {
         frame_system: Some(SystemConfig {
@@ -426,7 +466,7 @@ fn testnet_genesis(
 
         pallet_aura: Some(AuraConfig { authorities: vec![] }),
         pallet_evm: Some(EVMConfig {
-			accounts: BTreeMap::new(),
+			accounts: accounts
 		}),
 		pallet_ethereum: Some(EthereumConfig {}),
     }
@@ -439,6 +479,7 @@ fn mainnet_genesis(
     root_key: AccountId,
     endowed_accounts: Vec<(AccountId, u128)>,
     enable_println: bool,
+    accounts: BTreeMap<H160, pallet_evm::GenesisAccount>,
 ) -> GenesisConfig {
     GenesisConfig {
         frame_system: Some(SystemConfig {
@@ -513,7 +554,7 @@ fn mainnet_genesis(
 
         pallet_aura: Some(AuraConfig { authorities: vec![] }),
         pallet_evm: Some(EVMConfig {
-			accounts: BTreeMap::new(),
+			accounts: accounts
 		}),
 		pallet_ethereum: Some(EthereumConfig {}),
     }

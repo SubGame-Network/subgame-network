@@ -811,7 +811,7 @@ impl FeeCalculator for FixedGasPrice {
 }
 
 parameter_types! {
-	pub const ChainId: u64 = 42;
+	pub const ChainId: u64 = 83211831;
 	pub BlockGasLimit: U256 = U256::from(u32::max_value());
 }
 

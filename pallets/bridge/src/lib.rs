@@ -109,7 +109,7 @@ decl_module! {
         fn deposit_event() = default;
 
         /// outchain to subgame (sgb)
-        #[weight = (100_000, DispatchClass::Normal, Pays::No)]
+        #[weight = (100_000)]
         pub fn send(origin, to_address: T::AccountId, amount: BalanceOf<T>, coin_type: u8, hash: Vec<u8>) -> dispatch::DispatchResult {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();

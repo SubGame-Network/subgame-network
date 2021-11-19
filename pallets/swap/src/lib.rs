@@ -371,7 +371,7 @@ decl_module! {
 			Ok(())
 		}
 
-		#[weight = (<T as Config>::WeightInfo::remove_liquidity(), DispatchClass::Normal, Pays::No)]
+		#[weight = (<T as Config>::WeightInfo::remove_liquidity())]
 		pub fn remove_liquidity(
 			origin,
 		    swap_id: T::SwapId,
@@ -435,7 +435,7 @@ decl_module! {
 			Ok(())
 		}
 
-		#[weight = (<T as Config>::WeightInfo::swap(), DispatchClass::Normal, Pays::No)]
+		#[weight = (<T as Config>::WeightInfo::swap())]
 		pub fn swap(
 			origin,
 		    swap_id: T::SwapId,

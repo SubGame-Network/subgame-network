@@ -6,7 +6,7 @@ use codec::{Decode, Encode};
 use frame_support::{
     decl_error, decl_event, decl_module, decl_storage, dispatch, ensure, 
     traits::{Get, Currency, ReservableCurrency, ExistenceRequirement, Vec},
-    weights::{Weight, Pays, DispatchClass},
+    weights::{Weight},
 };
 use frame_system::ensure_signed;
 
@@ -83,7 +83,7 @@ decl_module! {
         type Error = Error<T>;
         fn deposit_event() = default;
 
-        #[weight = (T::WeightInfo::sign_up())]
+        #[weight = T::WeightInfo::sign_up()]
         pub fn sign_up(origin, account: Vec<u8>, referrer_account: Vec<u8>) -> dispatch::DispatchResult {
             let _who = ensure_signed(origin)?;
             
@@ -109,7 +109,7 @@ decl_module! {
             Ok(())
         }
 
-        #[weight = (T::WeightInfo::stake())]
+        #[weight = T::WeightInfo::stake()]
         pub fn stake(origin, amount: BalanceOf<T>) -> dispatch::DispatchResult {
             let _who = ensure_signed(origin)?;
             ensure!(UserInfoMap::<T>::contains_key(&_who), Error::<T>::UserNotExists);
@@ -122,7 +122,7 @@ decl_module! {
             Ok(())
         }
 
-        #[weight = (T::WeightInfo::unlock())]
+        #[weight = T::WeightInfo::unlock()]
         pub fn unlock(origin, _who: T::AccountId, amount: BalanceOf<T>) -> dispatch::DispatchResult {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();
@@ -144,7 +144,7 @@ decl_module! {
             Ok(())
         }
 
-        #[weight = (T::WeightInfo::withdraw())]
+        #[weight = T::WeightInfo::withdraw()]
         pub fn withdraw(origin, _who: T::AccountId, amount: BalanceOf<T>) -> dispatch::DispatchResult {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();
@@ -158,7 +158,7 @@ decl_module! {
             Ok(())
         }
 
-        #[weight = (T::WeightInfo::import_stake())]
+        #[weight = T::WeightInfo::import_stake()]
         pub fn import_stake(origin, _who: T::AccountId, amount: BalanceOf<T>) -> dispatch::DispatchResult {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();
@@ -176,7 +176,7 @@ decl_module! {
             Ok(())
         }
 
-        #[weight = (T::WeightInfo::delete_user())]
+        #[weight = T::WeightInfo::delete_user()]
         pub fn delete_user(origin, _who: T::AccountId, account: Vec<u8>) -> dispatch::DispatchResult {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();

@@ -92,7 +92,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 
     let mut accounts = BTreeMap::new();
     accounts.insert(
-        H160::from_str("402531198b6a5A7a88D7D04943B0874f3a5d7239").unwrap(),
+        H160::from_str("baf45897e06490e0fa5C386Cdc222c6d04C66c39").unwrap(),
         pallet_evm::GenesisAccount {
             nonce: 0.into(),
             balance: (500000000 as u128 * 10_u128.pow(18)).into(),
@@ -120,6 +120,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
                     (get_account_id_from_seed::<sr25519::Public>("Bob"), 5000000000000000000),
                     (get_account_id_from_seed::<sr25519::Public>("Alice//stash"), 5000000000000000000),
                     (get_account_id_from_seed::<sr25519::Public>("Bob//stash"), 5000000000000000000),
+                    (hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(), 5000000000000000000),
                 ],
                 true,
                 accounts.clone(),
@@ -144,7 +145,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 
     let mut accounts = BTreeMap::new();
     accounts.insert(
-        H160::from_str("402531198b6a5A7a88D7D04943B0874f3a5d7239").unwrap(),
+        H160::from_str("baf45897e06490e0fa5C386Cdc222c6d04C66c39").unwrap(),
         pallet_evm::GenesisAccount {
             nonce: 0.into(),
             balance: (500000000 as u128 * 10_u128.pow(18)).into(),
@@ -230,7 +231,7 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 
     let mut accounts = BTreeMap::new();
     accounts.insert(
-        H160::from_str("402531198b6a5A7a88D7D04943B0874f3a5d7239").unwrap(),
+        H160::from_str("baf45897e06490e0fa5C386Cdc222c6d04C66c39").unwrap(),
         pallet_evm::GenesisAccount {
             nonce: 0.into(),
             balance: (500000000 as u128 * 10_u128.pow(18)).into(),

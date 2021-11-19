@@ -6,13 +6,13 @@ use codec::{Decode, Encode};
 use frame_support::{
     decl_error, decl_event, decl_module, decl_storage, dispatch, ensure,
     traits::{Currency, ExistenceRequirement, Get},
-    weights::{Weight, Pays, DispatchClass},
+    weights::{Weight},
     debug,
 
 };
 use sp_std::convert::TryInto;
 
-use pallet_subgame_assets::{AssetsTrait, AssetsTransfer};
+// use pallet_subgame_assets::{AssetsTrait, AssetsTransfer};
 use frame_system::ensure_signed;
 // use sp_runtime::{{
 //     traits::{CheckedAdd, CheckedSub}
@@ -109,7 +109,7 @@ decl_module! {
         fn deposit_event() = default;
 
         /// outchain to subgame (sgb)
-        #[weight = (100_000)]
+        #[weight = 100_000]
         pub fn send(origin, to_address: T::AccountId, amount: BalanceOf<T>, coin_type: u8, hash: Vec<u8>) -> dispatch::DispatchResult {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();

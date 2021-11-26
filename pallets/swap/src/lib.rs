@@ -6,7 +6,7 @@ use codec::{Decode, Encode};
 use frame_support::{
 	decl_error, decl_event, decl_module, decl_storage, dispatch, ensure, Parameter,
 	traits::{Currency, ReservableCurrency, ExistenceRequirement},
-	weights::{Weight, Pays, DispatchClass},
+	weights::{Weight},
 };
 use sp_runtime::{
 	ModuleId,
@@ -371,7 +371,7 @@ decl_module! {
 			Ok(())
 		}
 
-		#[weight = (<T as Config>::WeightInfo::remove_liquidity())]
+		#[weight = <T as Config>::WeightInfo::remove_liquidity()]
 		pub fn remove_liquidity(
 			origin,
 		    swap_id: T::SwapId,
@@ -435,7 +435,7 @@ decl_module! {
 			Ok(())
 		}
 
-		#[weight = (<T as Config>::WeightInfo::swap())]
+		#[weight = <T as Config>::WeightInfo::swap()]
 		pub fn swap(
 			origin,
 		    swap_id: T::SwapId,

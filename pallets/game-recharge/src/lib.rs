@@ -68,7 +68,6 @@ decl_storage! {
 		pub NextOrderId get(fn next_order_id): u128 = 1;
 
 		pub Platforms get(fn platform_by_id): map hasher(blake2_128_concat) u128 => Option<GRPlatform<T::AccountId, T::AssetId, Plan<T::SGAssetBalance>>>;
-		pub UserRecharge get(fn recharge_by_account): map hasher(blake2_128_concat) T::AccountId => T::SGAssetBalance;
 		
 	}
 }
@@ -82,7 +81,7 @@ decl_event! {
 		NewPlatform(u128,AccountId,AccountId,AssetId,Vec<Plan<SGAssetBalance>>),
 		UpdatePlatform(AccountId,u128,Vec<Plan<SGAssetBalance>>),
 		Recharge(AccountId,u128,SGAssetBalance,SGAssetBalance),
-		Withdraw(AccountId,u128,SGAssetBalance,SGAssetBalance),
+		Withdraw(AccountId,SGAssetBalance),
 	}
 }
 
@@ -209,7 +208,6 @@ decl_module! {
 
 			SubGameAssets::Module::<T>::_transfer(sender.clone(), _platform.asset_id, pool_owner.clone(), amount)?;
 
-			UserRecharge::<T>::mutate(sender.clone(), |b| *b += amount);
 
 			Self::deposit_event(RawEvent::Recharge(
 				sender,
@@ -238,6 +236,11 @@ decl_module! {
 			ensure!(SubGameAssets::Module::<T>::balance(_platform.asset_id, _platform.pool_account.clone()) >= amount, Error::<T>::BalanceNotEnough);
 
 			SubGameAssets::Module::<T>::_transfer(_platform.pool_account, _platform.asset_id, target.clone(), amount)?;
+			
+			Self::deposit_event(RawEvent::Withdraw(
+				target,
+				amount,
+			));
 			Ok(())
 		}
 		

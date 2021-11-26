@@ -44,11 +44,14 @@ use codec::{alloc::string::{ToString}};
 // use alloc::string::{String, ToString};
 use frame_system::ensure_signed;
 use sp_runtime::traits::{Hash};
-use sp_std::{cmp::Eq, vec::Vec};
+use sp_std::{cmp::Eq, vec::Vec, str};
 
 pub mod nft;
 pub use crate::nft::UniqueAssets;
 
+use frame_support::{
+    debug,
+};
 #[cfg(test)]
 mod mock;
 
@@ -113,7 +116,7 @@ decl_event!(
         /// The commodity has been minted and distributed to the account.
         Minted(CommodityId, AccountId),
         /// Ownership of the commodity has been transferred to the account.
-        Transferred(CommodityId, AccountId),
+        Transferred(CommodityId, AccountId, AccountId),
     }
 );
 
@@ -155,8 +158,7 @@ decl_module! {
         #[weight = 10_000]
         pub fn mint(origin, owner_account: T::AccountId, info: Vec<u8>) -> dispatch::DispatchResult {
             T::CommodityAdmin::ensure_origin(origin)?;
-            let commodity_id = <Self as UniqueAssets<_>>::mint(&owner_account, info)?;
-            Self::deposit_event(RawEvent::Minted(commodity_id, owner_account.clone()));
+            <Self as UniqueAssets<_>>::mint(&owner_account, info)?;
             Ok(())
         }
 
@@ -172,7 +174,6 @@ decl_module! {
             ensure!(who == Self::account_for_commodity(&commodity_id), Error::<T>::NotCommodityOwner);
 
             <Self as UniqueAssets<_>>::burn(&commodity_id)?;
-            Self::deposit_event(RawEvent::Burned(commodity_id.clone()));
             Ok(())
         }
 
@@ -192,7 +193,6 @@ decl_module! {
             ensure!(who == Self::account_for_commodity(&commodity_id), Error::<T>::NotCommodityOwner);
 
             <Self as UniqueAssets<_>>::transfer(&dest_account, &commodity_id)?;
-            Self::deposit_event(RawEvent::Transferred(commodity_id.clone(), dest_account.clone()));
             Ok(())
         }
     }
@@ -236,16 +236,19 @@ impl<T: Config> UniqueAssets<T::AccountId> for Module<T> {
     ) -> dispatch::result::Result<CommodityId<T>, dispatch::DispatchError> {
         // let commodity_info = TryInto::<u64>::try_into(now).ok().unwrap(); // convert to u64(time ms)
         let commodity_info: Vec<u8>;
+        let id = Self::next_nfc_id().to_string();
         if info.is_empty() {
-            let b = Self::next_nfc_id().to_string().into_bytes();
-            commodity_info = b;
+            commodity_info = id.into_bytes();
         } else {
-            commodity_info = info;
+            let i = str::from_utf8(&info).unwrap();
+            commodity_info = (id + &(". ".to_string()) + i).into_bytes();
         }
         
 
         let commodity_id = T::Hashing::hash_of(&commodity_info);
+        
 
+        debug::info!("find ：{:?}", AccountForCommodity::<T>::contains_key(commodity_id));
         ensure!(
             !AccountForCommodity::<T>::contains_key(commodity_id),
             Error::<T>::CommodityExists
@@ -274,6 +277,7 @@ impl<T: Config> UniqueAssets<T::AccountId> for Module<T> {
         });
         AccountForCommodity::<T>::insert(commodity_id, &owner_account);
 
+        Self::deposit_event(RawEvent::Minted(commodity_id, owner_account.clone()));
         Ok(commodity_id)
     }
 
@@ -295,6 +299,7 @@ impl<T: Config> UniqueAssets<T::AccountId> for Module<T> {
         });
         AccountForCommodity::<T>::remove(&commodity_id);
 
+        Self::deposit_event(RawEvent::Burned(commodity_id.clone()));
         Ok(())
     }
 
@@ -315,7 +320,7 @@ impl<T: Config> UniqueAssets<T::AccountId> for Module<T> {
 
         TotalForAccount::<T>::mutate(&owner, |total| *total -= 1);
         TotalForAccount::<T>::mutate(dest_account, |total| *total += 1);
-        let commodity = CommoditiesForAccount::<T>::mutate(owner, |commodities| {
+        let commodity = CommoditiesForAccount::<T>::mutate(owner.clone(), |commodities| {
             let pos = commodities
                 .binary_search_by(|probe| probe.0.cmp(commodity_id))
                 .expect("We already checked that we have the correct owner; qed");
@@ -329,6 +334,7 @@ impl<T: Config> UniqueAssets<T::AccountId> for Module<T> {
         });
         AccountForCommodity::<T>::insert(&commodity_id, &dest_account);
 
+        Self::deposit_event(RawEvent::Transferred(commodity_id.clone(), owner.clone(), dest_account.clone()));
         Ok(())
     }
 }

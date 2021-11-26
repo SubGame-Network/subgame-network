@@ -291,7 +291,6 @@ impl<T: Config> NftExchange<T::AccountId, NftId<T>, BalanceOf<T>> for Module<T> 
 		Ok(())
 	}
 
-	// down auction
 	fn _auction_buy(
 		auction_id: u128,
 		buyer: T::AccountId,
@@ -305,6 +304,18 @@ impl<T: Config> NftExchange<T::AccountId, NftId<T>, BalanceOf<T>> for Module<T> 
 
 			// check balance
 			ensure!(T::Balances::free_balance(&buyer) >= _auction.amount, Error::<T>::MoneyNotEnough);
+
+
+			// double check nft owner
+			let owner = T::UniqueAssets::owner_of(&_auction.nft_id);
+			// stop auction
+			if owner != _auction.seller {
+				Self::_auction_done(
+					auction_id,
+					owner.clone(), 
+				)?
+			}
+			ensure!(owner == _auction.seller, Error::<T>::NotNftOwner);
 			
 			// check auction exist & sender is admin
 			let _platform = Platforms::<T>::get(_auction.platform_id).ok_or(Error::<T>::UnknowPlatform)?;

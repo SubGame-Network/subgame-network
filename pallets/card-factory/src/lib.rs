@@ -168,11 +168,12 @@ impl<T: Config> CardFactory<T::AccountId, NftId<T>> for Module<T> {
 		let _card_type = T::ManageCardInfo::_get_card_types(_card_info.type_id).ok_or(Error::<T>::UnknownType)?;
 		ensure!(admin == _card_type.admin, Error::<T>::NotAdmin);
 
-		let nft_id = T::UniqueAssets::mint(&admin, Vec::new())?;
+
 		let id = Self::next_card_id();
 
 		ensure!(_card_type.ability_of_level.len() >= level as usize, Error::<T>::AbilityOfLevelNotMatchLimit);
 
+		let nft_id = T::UniqueAssets::mint(&admin, Vec::new())?;
 		let ability_of_level = _card_type.ability_of_level[(level-1) as usize];
 
 		let ability_max = ability_of_level.ability_value_1_max;

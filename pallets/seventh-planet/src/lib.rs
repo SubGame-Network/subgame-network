@@ -80,6 +80,11 @@ decl_module! {
 			
 			ensure!(T::UniqueAssets::owner_of(&card_nft_id) == admin, Error::<T>::NotNftOwner);
 			T::UniqueAssets::transfer(&target, &card_nft_id)?;
+
+			Self::deposit_event(RawEvent::DrawCard(
+				target,
+				card_nft_id,
+			));
 			Ok(())
 		}
 
@@ -103,6 +108,12 @@ decl_module! {
 
 			T::UniqueAssets::transfer(&target, &new_card_nft_id)?;
 			
+			Self::deposit_event(RawEvent::SyntheticCards(
+				target,
+				old_card_nft_id1,
+				old_card_nft_id2,
+				new_card_nft_id,
+			));
 			Ok(())
 		}
 		

@@ -1051,8 +1051,8 @@ impl pallet_card_factory::Config for Runtime {
 
 ord_parameter_types! {
     pub const SeventhPlanetOwner: AccountId = AccountId::from(
-        // 5CwARBdeFR8MJGvpHv7kaab2akiebDFGF9TDvRa5MimyGtEJ
-        hex_literal::hex!("50eebb67d5888f999969633cdf644bf552500a18ecd156a972dd19fe7d4f1051")
+        // 3iFsAZv22G5cTuGQzBpFKu58wWiQ7oFJuBcgkMsQPUirm2tu	
+        hex_literal::hex!("2c46f54479f019745c0a06d5de89fa7c8b61005233ceb2cd81fcbb7bf334ac23")
     );
 }
 /*** Pallet Seventh Planet ***/
@@ -1075,16 +1075,9 @@ impl pallet_nft_exchange::Config for Runtime {
     type WeightInfo = ();
 }
 
-ord_parameter_types! {
-    pub const GameRechargeOwner: AccountId = AccountId::from(
-        // 5CwARBdeFR8MJGvpHv7kaab2akiebDFGF9TDvRa5MimyGtEJ
-        hex_literal::hex!("50eebb67d5888f999969633cdf644bf552500a18ecd156a972dd19fe7d4f1051")
-    );
-}
 /*** Pallet Game Recharge ***/
 impl pallet_game_recharge::Config for Runtime {
 	type Event = Event;
-	type PoolOwnerAddress = GameRechargeOwner;
     type Assets = SubgameAssets;
     type UniqueAssets = SubgameNFT;
     type Lease = Lease;

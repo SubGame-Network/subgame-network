@@ -51,7 +51,6 @@ pub trait Config: frame_system::Config + SubGameAssets::Config {
 	/// The overarching event type.
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
 	
-	type PoolOwnerAddress: Get<Self::AccountId>;
     type UniqueAssets: UniqueAssets<Self::AccountId>;
     type Assets: AssetsTrait + AssetsTransfer<Self::AccountId, u32>;
     type Lease: Lease<Self::AccountId, NftId<Self>>;
@@ -193,8 +192,6 @@ decl_module! {
 			// check platform exist
 			let _platform = Platforms::<T>::get(platform_id).ok_or(Error::<T>::UnknownPlatform)?;
 
-			let pool_owner = T::PoolOwnerAddress::get();
-
             let plan = _platform.plan
 			.iter()
 			.find(|&&probe| probe.amount == amount);
@@ -206,7 +203,7 @@ decl_module! {
 
 			ensure!(SubGameAssets::Module::<T>::balance(_platform.asset_id, sender.clone()) >= amount, Error::<T>::BalanceNotEnough);
 
-			SubGameAssets::Module::<T>::_transfer(sender.clone(), _platform.asset_id, pool_owner.clone(), amount)?;
+			SubGameAssets::Module::<T>::_transfer(sender.clone(), _platform.asset_id, _platform.pool_account.clone(), amount)?;
 
 
 			Self::deposit_event(RawEvent::Recharge(

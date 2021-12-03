@@ -266,10 +266,8 @@ impl<T: Config> Lease<T::AccountId, NftId<T>> for Module<T> {
         let mut have_pallet_permission = false;
         for _asset in assets.iter() {
             let _nft_id = _asset.0.clone();
-            debug::info!("_nft_id ：{:?}", _nft_id);
             if LeaseInfos::<T>::contains_key(_nft_id.clone()) {
                 let lease_info = LeaseInfos::<T>::get(_nft_id);
-                debug::info!("lease_info.pallet_id ：{:?}", lease_info.pallet_id);
                 if lease_info.pallet_id == pallet_id {
                     have_pallet_permission = true;
                     break;

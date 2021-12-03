@@ -62,6 +62,7 @@ pub struct StakeInfo<ProgramId, PalletId, Balance, NftId> {
     program_id: ProgramId,
     pallet_id: PalletId,
     stake_amount: Balance,
+    will_expire: bool,
     expires_at: i64,
     nft_id: NftId,
 }
@@ -131,6 +132,9 @@ decl_event!(
     {
         ProgramAdded(ProgramId, BalanceOf, u64),
         Stake(AccountId, ProgramId, PalletId, u64, Vec<u8>, Vec<u8>, NftId, BalanceOf),
+        UpdateStakeExpire(AccountId, NftId, bool),
+        Renew(AccountId, NftId, Vec<u8>),
+        Expire(AccountId, NftId),
     }
 );
 
@@ -141,8 +145,10 @@ decl_error! {
         AlreadyPallet,
         NotFoundPallet,
         AlreadyStake,
+        NotFoundNft,
         MoneyNotEnough,
-        PermissionDenied
+        PermissionDenied,
+        NotFoundData
     }
 }
 
@@ -221,7 +227,7 @@ decl_module! {
 
             // add N day
             let n_day = _program.unwrap().valid_day_count as i64;
-            let n_day_ms = u64::try_from(chrono::Duration::days(n_day).num_milliseconds()).ok().unwrap();
+            let n_day_ms = u64::try_from(chrono::Duration::seconds(n_day).num_milliseconds()).ok().unwrap();
             let expires_at_ms = now_ms + n_day_ms;
 
             let now_timestamp = now_ms / 1000;
@@ -231,6 +237,7 @@ decl_module! {
                 pallet_id: pallet_id,
                 program_id: program_id,
                 stake_amount: _program.unwrap().stake_amount,
+                will_expire: false,
                 expires_at: expires_at as i64,
                 nft_id: commodity_id.clone(),
             };
@@ -259,6 +266,24 @@ decl_module! {
             Self::deposit_event(RawEvent::Stake(from_address, program_id, pallet_id, _program.unwrap().valid_day_count, now_timestamp.to_string().into_bytes(), expires_at.to_string().into_bytes(), commodity_id.clone(), _program.unwrap().stake_amount));        
             Ok(())
         }
+      
+        #[weight = 10_000]
+        pub fn set_stake_will_expire(origin, nft_id: NftId<T>, will_expire: bool) -> dispatch::DispatchResult {
+            let sender = ensure_signed(origin)?;
+
+            // check stake exist
+            let stake_list = StakeInfos::<T>::get(sender.clone());
+            let index_option = stake_list.iter().position(|probe| probe.nft_id == nft_id);
+            ensure!(index_option != None, Error::<T>::NotFoundNft);
+            let index = index_option.unwrap();
+
+            Self::deposit_event(RawEvent::UpdateStakeExpire(sender.clone(), nft_id.clone(), will_expire));  
+            StakeInfos::<T>::try_mutate_exists(sender, |stake_info| {
+                let _stake_info = stake_info.as_mut().ok_or( Error::<T>::NotFoundData)?;
+                _stake_info[index].will_expire = will_expire;
+                Ok(())
+            })
+        }
         
         fn on_finalize() {
             let now = pallet_timestamp::Pallet::<T>::get();
@@ -270,20 +295,55 @@ decl_module! {
                 for (index, stake) in stakes.iter().enumerate() {
                     // expires
                     if now_timestamp > stake.expires_at {
-                        debug::info!("發現過期");
-                        // nft_owner
-                        // let nft_owner = T::UniqueAssets::owner_of(&stake.nft_id.clone());
-                        T::UniqueAssets::burn(&stake.nft_id.clone()).map_err(|err| debug::error!("err: {:?}", err)).ok();
+                        // 過期不自動續約
+                        if stake.will_expire {
+                             // nft_owner
+                            // let nft_owner = T::UniqueAssets::owner_of(&stake.nft_id.clone());
 
-                        T::Lease::revoke(stake.nft_id.clone(), stake.pallet_id).map_err(|err| debug::error!("err: {:?}", err)).ok();
+                            let owner = T::OwnerAddress::get();
+                            // check balance
+                            if T::Balances::free_balance(&owner) <= stake.stake_amount {
+                                debug::info!("stake-nft owner餘額不足，無法進行退款, nft: {:?}", stake.nft_id.clone());
+                                return
+                            }
 
-                        let owner = T::OwnerAddress::get();
-                        T::Balances::transfer(&owner, &user, stake.stake_amount, ExistenceRequirement::KeepAlive).map_err(|err| debug::error!("err: {:?}", err)).ok();
-            
-                        // remove record
-                        StakeInfos::<T>::mutate(user.clone(), |stake_nft_data| {
-                            stake_nft_data.remove(index);
-                        });
+                            debug::info!("stake-nft 過期,已註銷, nft: {:?}", stake.nft_id.clone());
+
+                            T::UniqueAssets::burn(&stake.nft_id.clone()).map_err(|err| debug::error!("err: {:?}", err)).ok();
+
+                            T::Lease::revoke(stake.nft_id.clone(), stake.pallet_id).map_err(|err| debug::error!("err: {:?}", err)).ok();
+
+                            T::Balances::transfer(&owner, &user, stake.stake_amount, ExistenceRequirement::KeepAlive).map_err(|err| debug::error!("err: {:?}", err)).ok();
+                
+                            // remove record
+                            StakeInfos::<T>::mutate(user.clone(), |stake_nft_data| {
+                                stake_nft_data.remove(index);
+                            });
+
+                            Self::deposit_event(RawEvent::Expire(user.clone(), stake.nft_id.clone()));        
+                            
+                        }else{
+                            debug::info!("stake-nft 過期,自動續約, nft: {:?}", stake.nft_id);
+
+                            let mut _programs_list = Programs::<T>::get();
+                            let _program = _programs_list.iter().find(|&&probe| probe.program_id == stake.program_id);
+                            // now time
+                            let now = pallet_timestamp::Pallet::<T>::get();
+                            let now_ms = TryInto::<u64>::try_into(now).ok().unwrap(); // convert to u64
+
+                            // add N day
+                            let n_day = _program.unwrap().valid_day_count as i64;
+                            let n_day_ms = u64::try_from(chrono::Duration::seconds(n_day).num_milliseconds()).ok().unwrap();
+                            let expires_at_ms = now_ms + n_day_ms;
+
+                            let expires_at = expires_at_ms / 1000;
+
+                            StakeInfos::<T>::mutate(user.clone(), |stake_info| {
+                                stake_info[index].expires_at = expires_at as i64;
+                            });
+                            Self::deposit_event(RawEvent::Renew(user.clone(), stake.nft_id.clone(), expires_at.to_string().into_bytes()));  
+                        }
+                       
                     }
                 } 
             }

@@ -179,23 +179,30 @@ impl<T: Config> CardFactory<T::AccountId, NftId<T>> for Module<T> {
 		let ability_max = ability_of_level.ability_value_1_max;
 		let ability_min = ability_of_level.ability_value_1_min;
 			
-		let random_seed = BlakeTwo256::hash(&(id).encode());
 		
 		// let a = T::MyRandomness::random(&(T::PalletId::get(), 100u32).encode());
 		// let random_seed = sp_io::offchain::random_seed();
-		let mut rng = RandomNumberGenerator::<BlakeTwo256>::new(random_seed);
 		
 
+		let ability_value_1: &u32;
+		let mut range = Vec::new();
 		// let mut rng = rand::thread_rng();
 		// let die = Uniform::from(ability_min..ability_max);
 		// let ability_value_1 = die.sample(&mut rng);
-		let mut range = Vec::new();
-		for n in ability_min..ability_max{
-			range.push(n);
+		if ability_max <= ability_min {
+			ability_value_1 = &ability_max;
+		}else{
+			let random_seed = BlakeTwo256::hash(&(id).encode());
+			let mut rng = RandomNumberGenerator::<BlakeTwo256>::new(random_seed);
+			for n in ability_min..ability_max{
+				range.push(n);
+			}
+			let ability_value_2 = rng.pick_item(&range).unwrap();
+			ability_value_1  =  ability_value_2;
 		}
 
-		let ability_value_1 = rng.pick_item(&range).unwrap();
-
+		
+		
 		Cards::<T>::insert(id, Card {
 			id: id,
 			card_info_id: card_info_id,

@@ -324,12 +324,22 @@ fn swap() {
 
         let before_user_y_balance = SubGameAssets::Module::<Test>::balance(swap_pool.asset_y, user);
 
+        // Should return Slipage error
         let swap_id = 1;
         let input_asset: u32 = 8;
         let input_amount: u64 = 1 * GOGO_DECIMALS;
         let output_asset: u32 = 7;
         let expected_output_amount: u64 = 5 * USDT_DECIMALS; 
-        let slipage: u64 = 15;
+        let slipage: u64 = 90;
+        let deadline: u64 = 30;
+        assert_noop!(Swap::swap(Origin::signed(user.clone()), swap_id, input_asset, input_amount, output_asset, expected_output_amount, slipage, deadline), Error::<Test>::Slipage);
+
+        let swap_id = 1;
+        let input_asset: u32 = 8;
+        let input_amount: u64 = 1 * GOGO_DECIMALS;
+        let output_asset: u32 = 7;
+        let expected_output_amount: u64 = 5 * USDT_DECIMALS; 
+        let slipage: u64 = 990;
         let deadline: u64 = 30;
         assert_ok!(Swap::swap(Origin::signed(user.clone()), swap_id, input_asset, input_amount, output_asset, expected_output_amount, slipage, deadline));
 

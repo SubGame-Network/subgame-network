@@ -489,8 +489,9 @@ decl_module! {
 			// slipage
 			let _expected_output_amount: u64 = expected_output_amount.saturated_into::<u64>();
 			if _expected_output_amount > 0u64 && slipage > 0u64 {
-				let got_slipage: f64  = (_expected_output_amount as i64 - output_amount as i64).abs() as f64 / _expected_output_amount as f64 * 100f64;
-				ensure!(slipage as f64 >= got_slipage  , Error::<T>::Slipage);
+				let got_slipage: f64 = (_expected_output_amount as i64 - output_amount as i64).abs() as f64 / _expected_output_amount as f64 * 100f64;
+				let _slipage: f64 = slipage as f64 / 100f64;
+				ensure!(_slipage as f64 >= got_slipage  , Error::<T>::Slipage);
 			}
 
 			// transfer input

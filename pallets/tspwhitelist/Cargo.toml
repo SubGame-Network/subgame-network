@@ -1,0 +1,48 @@
+[package]
+authors = ['SubGame']
+description = 'SubGame TSP Whitelist Dapp'
+edition = '2018'
+homepage = 'https://www.subgame.org'
+license = 'Apache-2.0 License'
+name = 'pallet-tspwhitelist'
+repository = 'https://github.com/SubGame-Network/'
+version = '3.0.0'
+
+[package.metadata.docs.rs]
+targets = ['x86_64-unknown-linux-gnu']
+
+# alias "parity-scale-code" to "codec"
+[dependencies.codec]
+default-features = false
+features = ['derive']
+package = 'parity-scale-codec'
+version = '2.0.0'
+
+[dependencies]
+frame-support = { default-features = false, version = '3.0.0' }
+frame-system = { default-features = false, version = '3.0.0' }
+sp-runtime = { default-features = false, version = '3.0.0' }
+balances = { package = 'pallet-balances', version = '3.0.0', default-features = false }
+pallet-subgame-assets = { path = '../subgame-assets', default-features = false, version = '3.0.0' }
+num-traits = { default-features = false, version = '0.2' }
+libm = { default-features = false, version = '0.2.1' }
+sp-core = { default-features = false, version = '3.0.0' }
+hex-literal = { default-features = false, version = '0.3.1' }
+hex = { default-features = false, version = '0.3.1' }
+chrono = { default-features = false, version = '0.4.19' }
+
+[dev-dependencies]
+serde = { version = "1.0.119" }
+sp-io = { default-features = false, version = '3.0.0' }
+
+[features]
+default = ['std']
+std = [
+    'codec/std',
+    'frame-support/std',
+    'frame-system/std',
+    'sp-runtime/std',
+    'balances/std',
+    'pallet-subgame-assets/std',
+    'num-traits/std',
+]

@@ -4492,6 +4492,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-tspwhitelist"
+version = "3.0.0"
+dependencies = [
+ "chrono",
+ "frame-support",
+ "frame-system",
+ "hex 0.3.2",
+ "hex-literal",
+ "libm",
+ "num-traits",
+ "pallet-balances",
+ "pallet-subgame-assets",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
 name = "pallet-utility"
 version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7749,6 +7769,7 @@ dependencies = [
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-treasury",
+ "pallet-tspwhitelist",
  "pallet-utility",
  "parity-scale-codec",
  "serde",

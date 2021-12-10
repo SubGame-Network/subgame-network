@@ -22,7 +22,7 @@ fn run_to_block( n: u64) {
 
 fn init_asset() {
     let user = 1;
-    let asset_id = 8;
+    let asset_id = 1001;
     let max_zombies = 10;
     let min_balance = 1;
     let name = "TSP".as_bytes().to_vec();

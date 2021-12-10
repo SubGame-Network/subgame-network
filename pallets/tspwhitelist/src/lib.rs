@@ -139,7 +139,7 @@ decl_module! {
 			}
 			ensure!(is_whitelist == true, Error::<T>::NotWhitelist);
 
-			let tsp_id: T::AssetId = 8u32.into();
+			let tsp_id: T::AssetId = 1001u32.into();
 			let tsp_rate: u64 = 50;
 			let whitelist_tsp: u64 = amount.saturated_into::<u64>() / SGB_DECIMALS * tsp_rate * TSP_DECIMALS;
 

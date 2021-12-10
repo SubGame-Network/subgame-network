@@ -72,6 +72,8 @@ pub use pallet_bridge;
 pub use pallet_stake;
 // swap
 pub use pallet_swap;
+// TSP Whitelist
+pub use pallet_tspwhitelist;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -1020,7 +1022,6 @@ impl pallet_subgame_assets::Config for Runtime {
 	type WeightInfo = pallet_subgame_assets::weights::SubstrateWeight<Runtime>;
 }
 
-
 /*** Pallet Swap ***/
 impl pallet_swap::Config for Runtime {
     type Event = Event;
@@ -1085,6 +1086,18 @@ impl pallet_game_recharge::Config for Runtime {
 	type WeightInfo = ();
 }
 
+ord_parameter_types! {
+    pub const TSPWhitelistOwner: AccountId = AccountId::from(
+        // 3j9yeQo2gNaSMQJFMGAZn6P84sjADngxTHXbdcGZDAvx9v7w
+        hex_literal::hex!("5405886b48c155875129e66571eae988b603bbaedb013f13ddab66fec7b42760")
+    );
+}
+impl pallet_tspwhitelist::Config for Runtime {
+    type Event = Event;
+    type WeightInfo = ();
+    type Currency = Balances;
+    type OwnerAddress = TSPWhitelistOwner;
+}
 construct_runtime!(
     pub enum Runtime where
         Block = Block,
@@ -1139,6 +1152,7 @@ construct_runtime!(
         SeventhPlanet: pallet_seventh_planet::{Module, Call, Storage, Event<T>},
         NftExchange: pallet_nft_exchange::{Module, Call, Storage, Event<T>},
         GameRecharge: pallet_game_recharge::{Module, Call, Storage, Event<T>},
+        TspWhitelist: pallet_tspwhitelist::{Module, Call, Storage, Event<T>},
     }
 );
 

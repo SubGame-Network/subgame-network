@@ -44,6 +44,7 @@ pallet-card-factory = { path = '../pallets/card-factory', default-features = fal
 pallet-seventh-planet = { path = '../pallets/seventh-planet', default-features = false, version = '3.0.0'  }
 pallet-nft-exchange = { path = '../pallets/nft-exchange', default-features = false, version = '3.0.0'  }
 pallet-game-recharge = { path = '../pallets/game-recharge', default-features = false, version = '3.0.0'  }
+pallet-tspwhitelist = { path = '../pallets/tspwhitelist', default-features = false, version = '3.0.0' }
 
 # Substrate dependencies
 frame-benchmarking = { default-features = false, optional = true, version = '3.0.0' }

@@ -1,4 +1,5 @@
-use crate::{mock::*};
+use crate::*;
+use crate::mock::{*, PalletTimestamp};
 use frame_support::{
     assert_ok, 
     traits::{OnFinalize, OnInitialize},
@@ -10,11 +11,12 @@ use pallet_subgame_assets as SubGameAssets;
 /// TSP token decimals
 pub const TSP_DECIMALS: u64 = 1_000_000;
 
-fn run_to_block( n: u64) {
+fn run_to_block(n: u64, t: u64) {
 	while System::block_number() < n {
 		TSPWhitelist::on_finalize(System::block_number());
 		System::on_finalize(System::block_number());
 		System::set_block_number(System::block_number()+1);
+        PalletTimestamp::set_timestamp(t);
 		System::on_initialize(System::block_number());
 		TSPWhitelist::on_initialize(System::block_number());
 	}
@@ -42,7 +44,8 @@ fn init_asset() {
 #[test]
 fn whitelist() {
     new_test_ext().execute_with(|| {
-        run_to_block(10);
+        let now: u64 = chrono::Utc::now().timestamp().saturated_into::<u64>() * 1000u64;
+        run_to_block(10, now);
 
 		init_asset();
 
@@ -83,7 +86,8 @@ fn whitelist() {
 #[test]
 fn add_whitelist() {
     new_test_ext().execute_with(|| {
-        run_to_block(10);
+        let now: u64 = chrono::Utc::now().timestamp().saturated_into::<u64>() * 1000u64;
+        run_to_block(10, now);
 
         let owner = 1;
         let new_whitelist = 2;
@@ -96,7 +100,8 @@ fn add_whitelist() {
 #[test]
 fn del_whitelist() {
     new_test_ext().execute_with(|| {
-        run_to_block(10);
+        let now: u64 = chrono::Utc::now().timestamp().saturated_into::<u64>() * 1000u64;
+        run_to_block(10, now);
 
         let owner = 1;
         let new_whitelist = 2;

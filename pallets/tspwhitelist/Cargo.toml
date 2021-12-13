@@ -30,6 +30,7 @@ sp-core = { default-features = false, version = '3.0.0' }
 hex-literal = { default-features = false, version = '0.3.1' }
 hex = { default-features = false, version = '0.3.1' }
 chrono = { default-features = false, version = '0.4.19' }
+pallet-timestamp = { default-features = false, version = '3.0.0' }
 
 [dev-dependencies]
 serde = { version = "1.0.119" }
@@ -45,4 +46,5 @@ std = [
     'balances/std',
     'pallet-subgame-assets/std',
     'num-traits/std',
+    'pallet-timestamp/std',
 ]

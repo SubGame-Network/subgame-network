@@ -9,6 +9,7 @@ use sp_runtime::{
 };
 use frame_system::{EnsureRoot};
 use pallet_subgame_assets;
+use pallet_timestamp;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -23,6 +24,7 @@ frame_support::construct_runtime!(
         System: frame_system::{Module, Call, Config, Storage, Event<T>},
         Balances: balances::{Module, Call, Storage, Config<T>, Event<T>},
         SubGameAssets: pallet_subgame_assets::{Module, Call, Storage, Event<T>},
+        PalletTimestamp: pallet_timestamp::{Module, Call, Storage, Inherent},
         TSPWhitelist: pallet_tspwhitelist::{Module, Call, Storage, Event<T>},
     }
 );
@@ -99,6 +101,14 @@ impl pallet_subgame_assets::Config for Test {
     type StringLimit = StringLimit;
     type MetadataDepositBase = MetadataDepositBase;
     type MetadataDepositPerByte = MetadataDepositPerByte;
+    type WeightInfo = ();
+}
+
+impl pallet_timestamp::Config for Test {
+    /// A timestamp: milliseconds since the unix epoch.
+    type Moment = u64;
+    type OnTimestampSet = ();
+    type MinimumPeriod = ();
     type WeightInfo = ();
 }
 

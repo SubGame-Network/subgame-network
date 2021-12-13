@@ -8,6 +8,7 @@ use frame_support::{
 	traits::{Currency, ReservableCurrency, ExistenceRequirement, Get, Vec},
 	weights::{Weight, DispatchClass, Pays},
 };
+use frame_support::sp_std::convert::{TryInto};
 use sp_runtime::{
 	MultiSignature, AccountId32,
 	traits::{
@@ -16,9 +17,7 @@ use sp_runtime::{
 };
 use frame_system::ensure_signed;
 use pallet_subgame_assets::{self as SubGameAssets};
-
-#[allow(unused_imports)]
-use chrono::prelude::*;
+use pallet_timestamp::{self as PalletTimestamp};
 
 #[allow(unused_imports)]
 use num_traits::float::FloatCore;
@@ -47,7 +46,7 @@ pub const TSP_DECIMALS: u64 = 1_000_000;
 pub type Signature = MultiSignature;
 pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
 
-pub trait Config: frame_system::Config + SubGameAssets::Config {
+pub trait Config: frame_system::Config + SubGameAssets::Config + PalletTimestamp::Config {
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
 	type WeightInfo: WeightInfo;
 	type Currency: ReservableCurrency<Self::AccountId>;
@@ -86,6 +85,7 @@ decl_error! {
 		PermissionDenied,
 		WhitelistExists,
 		WhitelistNotFound,
+		TSPNotEnough,
 	}
 }
 
@@ -100,13 +100,13 @@ decl_module! {
 			let sender = ensure_signed(origin)?;
 			let owner = T::OwnerAddress::get();
 
-			// // TODO: 測試先註解
-			// // Check whitelist time end
-			// let time_now = Utc::now().timestamp();
-			// let event_start_time = 1639569600;
-			// let event_end_time = 1639828800;
-			// ensure!(time_now >= event_start_time, Error::<T>::WhitelistNotStart);
-			// ensure!(time_now <= event_end_time, Error::<T>::WhitelistEnd);
+			// Check whitelist time end
+			let _now = PalletTimestamp::Pallet::<T>::get();
+			let time_now = (TryInto::<u64>::try_into(_now).ok().unwrap()) as u64 / 1000u64;
+			let event_start_time = 1639569600u64;
+			let event_end_time = 1639828800u64;
+			ensure!(time_now >= event_start_time, Error::<T>::WhitelistNotStart);
+			ensure!(time_now <= event_end_time, Error::<T>::WhitelistEnd);
 
 			// Check whitelist sgb limit end
 			ensure!(WhitelistReceiveSGB::<T>::get().saturated_into::<u64>() < 2000000u64 * SGB_DECIMALS, Error::<T>::WhitelistEnd);
@@ -142,6 +142,8 @@ decl_module! {
 			let tsp_id: T::AssetId = 1001u32.into();
 			let tsp_rate: u64 = 50;
 			let whitelist_tsp: u64 = amount.saturated_into::<u64>() / SGB_DECIMALS * tsp_rate * TSP_DECIMALS;
+			let tsp_balance: u64 = SubGameAssets::Module::<T>::balance(tsp_id, owner.clone()).saturated_into::<u64>();
+			ensure!(tsp_balance >= whitelist_tsp, Error::<T>::TSPNotEnough);
 
 			// transfer SGB to SubGame
 			let _amount: u64 = amount.saturated_into::<u64>();

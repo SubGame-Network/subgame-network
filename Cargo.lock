@@ -4504,6 +4504,7 @@ dependencies = [
  "num-traits",
  "pallet-balances",
  "pallet-subgame-assets",
+ "pallet-timestamp",
  "parity-scale-codec",
  "serde",
  "sp-core",

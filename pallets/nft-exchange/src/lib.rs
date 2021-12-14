@@ -312,7 +312,7 @@ impl<T: Config> NftExchange<T::AccountId, NftId<T>, BalanceOf<T>> for Module<T> 
 			if owner != _auction.seller {
 				Self::_auction_done(
 					auction_id,
-					owner.clone(), 
+					_auction.seller.clone(), 
 				)?
 			}
 			ensure!(owner == _auction.seller, Error::<T>::NotNftOwner);
@@ -338,6 +338,7 @@ impl<T: Config> NftExchange<T::AccountId, NftId<T>, BalanceOf<T>> for Module<T> 
 			
 			// auction done
 			AuctioningNfts::<T>::remove(_auction.nft_id.clone());
+			// Auctions::<T>::remove(auction_id);
 
 			Self::deposit_event(RawEvent::AuctionBuy(
 				auction_id,
@@ -362,6 +363,7 @@ impl<T: Config> NftExchange<T::AccountId, NftId<T>, BalanceOf<T>> for Module<T> 
 
 		// auction done
 		AuctioningNfts::<T>::remove(_auction.nft_id.clone());
+		// Auctions::<T>::remove(auction_id);
 
 		Self::deposit_event(RawEvent::AuctionDone(
 			auction_id,

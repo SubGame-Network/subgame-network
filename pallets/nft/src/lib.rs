@@ -248,7 +248,7 @@ impl<T: Config> UniqueAssets<T::AccountId> for Module<T> {
         let commodity_id = T::Hashing::hash_of(&commodity_info);
         
 
-        debug::info!("find ：{:?}", AccountForCommodity::<T>::contains_key(commodity_id));
+        // debug::info!("find ：{:?}", AccountForCommodity::<T>::contains_key(commodity_id));
         ensure!(
             !AccountForCommodity::<T>::contains_key(commodity_id),
             Error::<T>::CommodityExists

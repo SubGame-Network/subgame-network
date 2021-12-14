@@ -1277,14 +1277,14 @@ impl<T: Config> AssetsTransfer<T::AccountId, T::AssetId> for Module<T> {
 		beneficiary: T::AccountId,
 		amount: u64
 	) -> DispatchResult {
-		debug::info!("mint log id：{:?}", id);
-		debug::info!("mint log amount：{:?}", amount);
+		// debug::info!("mint log id：{:?}", id);
+		// debug::info!("mint log amount：{:?}", amount);
 		// let metadata = Self::metadata(&id);
 		// let amount_have_decimal = amount / ((10i32.pow(metadata.decimals.into()))as u64 );
 		let amount_have_decimal = amount;
-		debug::info!("mint log amount_have_decimal:{:?}", amount_have_decimal);
+		// debug::info!("mint log amount_have_decimal:{:?}", amount_have_decimal);
 		let balance: Option<T::SGAssetBalance> = amount_have_decimal.try_into().ok();
-		debug::info!("mint log balance{:?}", balance);
+		// debug::info!("mint log balance{:?}", balance);
 		Self::_mint(sender, id, beneficiary, balance.unwrap())?;
         Ok(())
 	}
@@ -1295,13 +1295,13 @@ impl<T: Config> AssetsTransfer<T::AccountId, T::AssetId> for Module<T> {
 		who: T::AccountId,
 		amount: u64
 	) -> DispatchResult {
-		debug::info!("burn log id：{:?}", id);
-		debug::info!("burn log amount：{:?}", amount);
+		// debug::info!("burn log id：{:?}", id);
+		// debug::info!("burn log amount：{:?}", amount);
 		// let metadata = Self::metadata(&id);
 		// let amount_have_decimal = amount / ((10i32.pow(metadata.decimals.into()))as u64 );
 		let amount_have_decimal = amount;
 		let balance: Option<T::SGAssetBalance> = amount_have_decimal.try_into().ok();
-		debug::info!("burn log balance{:?}", balance);
+		// debug::info!("burn log balance{:?}", balance);
 		Self::_burn(sender, id, who, balance.unwrap())?;
         Ok(())
 	}

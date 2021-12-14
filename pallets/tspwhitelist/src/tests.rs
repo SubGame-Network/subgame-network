@@ -93,7 +93,7 @@ fn add_whitelist() {
         let new_whitelist = 2;
         assert_ok!(TSPWhitelist::add_whitelist(Origin::signed(owner), new_whitelist));
 
-        assert_eq!(TSPWhitelist::whitelist_account().len(), 13);
+        assert_eq!(TSPWhitelist::whitelist_account().len(), 1387);
     });
 }
 
@@ -111,6 +111,6 @@ fn del_whitelist() {
         let del_whitelist = 2;
         assert_ok!(TSPWhitelist::del_whitelist(Origin::signed(owner), del_whitelist));
 
-        assert_eq!(TSPWhitelist::whitelist_account().len(), 12);
+        assert_eq!(TSPWhitelist::whitelist_account().len(), 1386);
     });
 }

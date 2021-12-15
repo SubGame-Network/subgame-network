@@ -58,6 +58,8 @@ decl_storage! {
 		pub WhitelistStore get(fn whitelist_store): map hasher(blake2_128_concat) T::AccountId => T::SGAssetBalance;
 		pub WhitelistAccount get(fn whitelist_account): Vec<T::AccountId>;
 		pub WhitelistReceiveSGB get(fn whitelist_receive_sgb): T::SGAssetBalance;
+		pub WhitelistStartTime get(fn whitelist_start_time): u64;
+		pub WhitelistEndTime get(fn whitelist_end_time): u64;
 	}
 }
 
@@ -70,6 +72,7 @@ decl_event!(
 		Whitelist(AccountId, SGAssetBalance),
 		AddWhitelist(AccountId),
 		DelWhitelist(AccountId),
+		EditWhitelistTime(u64, u64),
 	}
 );
 
@@ -86,6 +89,7 @@ decl_error! {
 		WhitelistExists,
 		WhitelistNotFound,
 		TSPNotEnough,
+		WhitelistTimeError,
 	}
 }
 
@@ -103,8 +107,8 @@ decl_module! {
 			// Check whitelist time end
 			let _now = PalletTimestamp::Pallet::<T>::get();
 			let time_now = (TryInto::<u64>::try_into(_now).ok().unwrap()) as u64 / 1000u64;
-			let event_start_time = 1639540800u64;
-			let event_end_time = 1639800000u64;
+			let event_start_time: u64 = Self::whitelist_start_time();
+			let event_end_time: u64 = Self::whitelist_end_time();
 			ensure!(time_now >= event_start_time, Error::<T>::WhitelistNotStart);
 			ensure!(time_now <= event_end_time, Error::<T>::WhitelistEnd);
 
@@ -168,6 +172,13 @@ decl_module! {
 				WhitelistAccount::<T>::put(whitelist);
 			}
 
+			if Self::whitelist_start_time() == 0u64 {
+				WhitelistStartTime::put(1639540800u64);
+			}
+			if Self::whitelist_end_time() == 0u64 {
+				WhitelistEndTime::put(1640059200u64);
+			}
+
 			<T as Config>::WeightInfo::on_finalize()
         }
 
@@ -220,6 +231,23 @@ decl_module! {
 			WhitelistAccount::<T>::put(whitelist);
 			
 			Self::deposit_event(RawEvent::DelWhitelist(account));
+			Ok(())
+		}
+
+		#[weight = (10_000, DispatchClass::Normal, Pays::No)]
+		pub fn edit_whitelist_time(origin, start: u64, end: u64) -> dispatch::DispatchResult
+		{
+			let sender = ensure_signed(origin)?;
+			let owner = T::OwnerAddress::get();
+			ensure!(owner == sender, Error::<T>::PermissionDenied);
+
+			ensure!(start > 0u64, Error::<T>::WhitelistTimeError);
+			ensure!(end > 0u64, Error::<T>::WhitelistTimeError);
+
+			WhitelistStartTime::put(start);
+			WhitelistEndTime::put(end);
+
+			Self::deposit_event(RawEvent::EditWhitelistTime(start, end));
 			Ok(())
 		}
 	}

@@ -82,6 +82,7 @@ decl_error! {
 		NftAuctionDone,
 		UnknowPlatform,
 		NftAuctioning,
+		Invalid
 	}
 }
 
@@ -316,6 +317,7 @@ impl<T: Config> NftExchange<T::AccountId, NftId<T>, BalanceOf<T>> for Module<T> 
 				)?
 			}
 			ensure!(owner == _auction.seller, Error::<T>::NotNftOwner);
+			ensure!(buyer.clone() != _auction.seller, Error::<T>::NotNftOwner);
 			
 			// check auction exist & sender is admin
 			let _platform = Platforms::<T>::get(_auction.platform_id).ok_or(Error::<T>::UnknowPlatform)?;

@@ -66,6 +66,7 @@ decl_event! {
 		NewPlatform(AccountId,u8,AccountId),
 		UpdatePlatform(AccountId,u128,u8,AccountId),
 		AuctionDone(u128),
+		AuctionChangePrice(AccountId,u128,BalanceOf),
 	}
 }
 
@@ -175,6 +176,20 @@ decl_module! {
 			)
 		}
 
+		#[weight = T::WeightInfo::auction_buy()]
+		fn auction_change_price(origin,
+			auction_id: u128,
+			amount: BalanceOf<T>,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin)?;
+			
+			Self::_auction_change_price(
+				sender, 
+				auction_id,
+				amount,
+			)
+		}
+
 		#[weight = T::WeightInfo::auction_done()]
 		fn auction_done(origin,
 			auction_id: u128,
@@ -256,7 +271,6 @@ impl<T: Config> NftExchange<T::AccountId, NftId<T>, BalanceOf<T>> for Module<T> 
 		amount: BalanceOf<T>,
 	) -> DispatchResult {
 		ensure!(amount > 0u8.try_into().ok().unwrap() , Error::<T>::AuctionAmountNotAllowed);
-		// check platform existt
 		ensure!(Platforms::<T>::contains_key(platform_id), Error::<T>::UnknowPlatform);
 		
 		// check nft owner
@@ -319,7 +333,7 @@ impl<T: Config> NftExchange<T::AccountId, NftId<T>, BalanceOf<T>> for Module<T> 
 			ensure!(owner == _auction.seller, Error::<T>::NotNftOwner);
 			ensure!(buyer.clone() != _auction.seller, Error::<T>::NotNftOwner);
 			
-			// check auction exist & sender is admin
+			// check platform exist & sender is admin
 			let _platform = Platforms::<T>::get(_auction.platform_id).ok_or(Error::<T>::UnknowPlatform)?;
 			let amount_u64 = TryInto::<u64>::try_into(_auction.amount).ok().unwrap();
 			let percentage_of_fee: u64 = _platform.percentage_of_fee.into();
@@ -347,6 +361,48 @@ impl<T: Config> NftExchange<T::AccountId, NftId<T>, BalanceOf<T>> for Module<T> 
 				buyer,
 				_auction.percentage_of_fee,
 				_auction.platform_fee,
+			));
+			Ok(())
+		})
+	}
+
+
+	fn _auction_change_price(
+		sender: T::AccountId,
+		auction_id: u128,
+		amount: BalanceOf<T>,
+	) -> DispatchResult {
+		ensure!(amount > 0u8.try_into().ok().unwrap() , Error::<T>::AuctionAmountNotAllowed);
+
+		Auctions::<T>::try_mutate_exists(auction_id, |auction| {
+			// check info exist
+			let _auction = auction.as_mut().ok_or(Error::<T>::NotFoundData)?;
+
+			// check nft_id auctions is exist
+			ensure!(AuctioningNfts::<T>::contains_key(_auction.nft_id.clone()), Error::<T>::NftAuctionDone);
+
+			// double check nft owner
+			let owner = T::UniqueAssets::owner_of(&_auction.nft_id);
+			// stop auction
+			if owner != _auction.seller {
+				Self::_auction_done(
+					auction_id,
+					_auction.seller.clone(), 
+				)?
+			}
+			ensure!(owner == _auction.seller, Error::<T>::NotNftOwner);
+			ensure!(sender.clone() == _auction.seller, Error::<T>::Invalid);
+			
+			// check platform exist & sender is admin
+			let _platform = Platforms::<T>::get(_auction.platform_id).ok_or(Error::<T>::UnknowPlatform)?;
+
+			_auction.amount = amount;
+
+
+			Self::deposit_event(RawEvent::AuctionChangePrice(
+				sender,
+				auction_id,
+				amount,
 			));
 			Ok(())
 		})

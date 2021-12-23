@@ -59,6 +59,12 @@ pub trait NftExchange<AccountId, NftId, BalanceOf> {
 		buyer: AccountId,
 	) -> DispatchResult;
 
+	fn _auction_change_price(
+		sender: AccountId,
+		auction_id: u128,
+		amount: BalanceOf,
+	) -> DispatchResult;
+
 	fn _auction_done(
 		auction_id: u128,
 		owner: AccountId,

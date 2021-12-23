@@ -62,9 +62,8 @@ pub trait Config: frame_system::Config + SubGameAssets::Config {
 
 
 decl_storage! {
-	trait Store for Module<T: Config> as NftExchange {
+	trait Store for Module<T: Config> as GameRecharge {
 		pub NextPlatformId get(fn next_platform_id): u128 = 1;
-		pub NextOrderId get(fn next_order_id): u128 = 1;
 
 		pub Platforms get(fn platform_by_id): map hasher(blake2_128_concat) u128 => Option<GRPlatform<T::AccountId, T::AssetId, Plan<T::SGAssetBalance>>>;
 		
@@ -79,8 +78,8 @@ decl_event! {
 	{
 		NewPlatform(u128,AccountId,AccountId,AssetId,Vec<Plan<SGAssetBalance>>),
 		UpdatePlatform(AccountId,u128,Vec<Plan<SGAssetBalance>>),
-		Recharge(AccountId,u128,SGAssetBalance,SGAssetBalance),
-		Withdraw(AccountId,SGAssetBalance),
+		Recharge(AccountId,u128,SGAssetBalance,SGAssetBalance,u128),
+		Withdraw(AccountId,SGAssetBalance,u128),
 	}
 }
 
@@ -211,6 +210,7 @@ decl_module! {
 				match_id,
 				amount,
 				score,
+				platform_id,
 			));
 			Ok(())
 		}
@@ -237,6 +237,7 @@ decl_module! {
 			Self::deposit_event(RawEvent::Withdraw(
 				target,
 				amount,
+				platform_id
 			));
 			Ok(())
 		}

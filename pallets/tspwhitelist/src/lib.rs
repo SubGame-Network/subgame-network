@@ -162,25 +162,25 @@ decl_module! {
 			Ok(())
 		}
 
-		fn on_initialize(_now: T::BlockNumber) -> Weight {
-            let mut whitelist = WhitelistAccount::<T>::get();
-			if whitelist.len() == 0 {
-				for addr in Self::default_whitelist() {
-					let _account = T::AccountId::decode(&mut &addr.encode()[..]).unwrap_or_default();
-					whitelist.push(_account);
-				}
-				WhitelistAccount::<T>::put(whitelist);
-			}
+		// fn on_initialize(_now: T::BlockNumber) -> Weight {
+            // let mut whitelist = WhitelistAccount::<T>::get();
+			// if whitelist.len() == 0 {
+			// 	for addr in Self::default_whitelist() {
+			// 		let _account = T::AccountId::decode(&mut &addr.encode()[..]).unwrap_or_default();
+			// 		whitelist.push(_account);
+			// 	}
+			// 	WhitelistAccount::<T>::put(whitelist);
+			// }
 
-			if Self::whitelist_start_time() == 0u64 {
-				WhitelistStartTime::put(1639540800u64);
-			}
-			if Self::whitelist_end_time() == 0u64 {
-				WhitelistEndTime::put(1640059200u64);
-			}
+			// if Self::whitelist_start_time() == 0u64 {
+			// 	WhitelistStartTime::put(1639540800u64);
+			// }
+			// if Self::whitelist_end_time() == 0u64 {
+			// 	WhitelistEndTime::put(1640059200u64);
+			// }
 
-			<T as Config>::WeightInfo::on_finalize()
-        }
+			// <T as Config>::WeightInfo::on_finalize()
+        // }
 
 		#[weight = (10_000, DispatchClass::Normal, Pays::No)]
 		pub fn add_whitelist(origin, account: T::AccountId) -> dispatch::DispatchResult

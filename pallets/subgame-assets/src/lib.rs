@@ -129,9 +129,7 @@ pub use weights::WeightInfo;
 type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 use sp_std::convert::TryInto;
-use frame_support::{
-    debug,
-};
+
 /// The module configuration trait.
 pub trait Config: frame_system::Config {
 	/// The overarching event type.

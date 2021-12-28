@@ -113,6 +113,27 @@ decl_module! {
 				admin,
 				card_info_id,
 				level,
+				1u8
+			)
+		}
+		
+		#[weight = T::WeightInfo::create_card()]
+		fn create_card_many(origin,
+			card_info_id: u128,
+			level: u8,
+			quantity: u8,
+		) -> DispatchResult {
+			let admin = ensure_signed(origin)?;
+			// check permission
+            let is_ok = T::Lease::check_authority(T::PalletId::get(), admin.clone())?;
+            ensure!(is_ok == true, Error::<T>::PermissionDenied);
+			
+			
+			Self::_create_card(
+				admin,
+				card_info_id,
+				level,
+				quantity
 			)
 		}
 		
@@ -163,66 +184,67 @@ impl<T: Config> CardFactory<T::AccountId, NftId<T>> for Module<T> {
 		admin: T::AccountId,
 		card_info_id: u128,
 		level: u8,
+		quantity: u8,
 	) -> DispatchResult {
 		let _card_info = T::ManageCardInfo::_get_card_infos(card_info_id).ok_or(Error::<T>::UnknownType)?;
 		let _card_type = T::ManageCardInfo::_get_card_types(_card_info.type_id).ok_or(Error::<T>::UnknownType)?;
 		ensure!(admin == _card_type.admin, Error::<T>::NotAdmin);
 
-
-		let id = Self::next_card_id();
-
 		ensure!(_card_type.ability_of_level.len() >= level as usize, Error::<T>::AbilityOfLevelNotMatchLimit);
 
-		let nft_id = T::UniqueAssets::mint(&admin, Vec::new())?;
 		let ability_of_level = _card_type.ability_of_level[(level-1) as usize];
 
-		let ability_max = ability_of_level.ability_value_1_max;
+		let ability_max = ability_of_level.ability_value_1_max + 1;
 		let ability_min = ability_of_level.ability_value_1_min;
 			
 		
 		// let a = T::MyRandomness::random(&(T::PalletId::get(), 100u32).encode());
 		// let random_seed = sp_io::offchain::random_seed();
 		
-
-		let ability_value_1: &u32;
-		let mut range = Vec::new();
-		// let mut rng = rand::thread_rng();
-		// let die = Uniform::from(ability_min..ability_max);
-		// let ability_value_1 = die.sample(&mut rng);
-		if ability_max <= ability_min {
-			ability_value_1 = &ability_max;
-		}else{
-			let random_seed = BlakeTwo256::hash(&(id).encode());
-			let mut rng = RandomNumberGenerator::<BlakeTwo256>::new(random_seed);
-			for n in ability_min..ability_max{
-				range.push(n);
+		for _n in 1..=quantity {
+			let nft_id = T::UniqueAssets::mint(&admin, Vec::new())?;
+			let id = Self::next_card_id();
+			let ability_value_1: &u32;
+			let mut range = Vec::new();
+			// let mut rng = rand::thread_rng();
+			// let die = Uniform::from(ability_min..ability_max);
+			// let ability_value_1 = die.sample(&mut rng);
+			if ability_max <= ability_min {
+				ability_value_1 = &ability_max;
+			}else{
+				let random_seed = BlakeTwo256::hash(&(id).encode());
+				let mut rng = RandomNumberGenerator::<BlakeTwo256>::new(random_seed);
+				for n in ability_min..ability_max{
+					range.push(n);
+				}
+				let ability_value_2 = rng.pick_item(&range).unwrap();
+				ability_value_1  =  ability_value_2;
 			}
-			let ability_value_2 = rng.pick_item(&range).unwrap();
-			ability_value_1  =  ability_value_2;
+
+			
+			
+			Cards::<T>::insert(id, Card {
+				id: id,
+				card_info_id: card_info_id,
+				level: level,
+				ability_value_1: *ability_value_1,
+				nft_id: nft_id.clone(),
+			});
+
+			CardsByNftId::<T>::insert(nft_id.clone(), id);
+
+			NextCardId::mutate(|card_info_id| *card_info_id += 1);
+
+			Self::deposit_event(RawEvent::NewCard(
+				admin.clone(),
+				id,
+				card_info_id,
+				level,
+				*ability_value_1,
+				nft_id.clone(),
+			));
 		}
 
-		
-		
-		Cards::<T>::insert(id, Card {
-			id: id,
-			card_info_id: card_info_id,
-			level: level,
-			ability_value_1: *ability_value_1,
-			nft_id: nft_id.clone(),
-		});
-
-		CardsByNftId::<T>::insert(nft_id.clone(), id);
-
-        NextCardId::mutate(|card_info_id| *card_info_id += 1);
-
-		Self::deposit_event(RawEvent::NewCard(
-			admin,
-			id,
-			card_info_id,
-			level,
-			*ability_value_1,
-			nft_id,
-		));
 		Ok(())
 	}
 

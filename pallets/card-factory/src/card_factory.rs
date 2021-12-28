@@ -18,6 +18,7 @@ pub trait CardFactory<AccountId, NftId> {
 		admin: AccountId,
 		card_info_id: u128,
 		level: u8,
+		quantity: u8,
 	) -> DispatchResult;
 
 	/// admin can edit card

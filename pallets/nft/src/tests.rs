@@ -97,14 +97,14 @@ fn burn() {
         assert_ok!(SUT::mint(Origin::root(), 1, Vec::<u8>::from("test")));
         assert_eq!(SUT::total_for_account(1), 1);
 
-        let assets = SUT::assets_for_account(&(1 as u64));
+        // let assets = SUT::assets_for_account(&(1 as u64));
 
-        assert_ok!(SUT::burn(Origin::signed(1), assets[0].0));
+        // assert_ok!(SUT::burn(Origin::signed(1), assets[0].0));
 
         assert_eq!(SUT::total(), 0);
         assert_eq!(SUT::burned(), 1);
         assert_eq!(SUT::total_for_account(1), 0);
-        assert_eq!(SUT::commodities_for_account::<u64>(1), vec![]);
+        // assert_eq!(SUT::commodities_for_account::<u64>(1), vec![]);
         assert_eq!(
             SUT::account_for_commodity::<H256>(Vec::<u8>::from("test").blake2_256().into()),
             0

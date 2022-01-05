@@ -4,20 +4,17 @@
 use frame_support::{
     decl_error, decl_event, decl_module, decl_storage, dispatch, ensure,
     traits::{Get},
+    dispatch::{DispatchResult},
     Parameter,
 };
-use frame_system::ensure_signed;
+use frame_system::{ensure_signed};
 use sp_runtime::traits::{Member};
-use sp_std::{cmp::{Eq, Ordering}, fmt::Debug, vec::Vec};
+use sp_std::{cmp::{Eq, Ordering}, vec::Vec};
 
 use codec::{Encode, Decode, HasCompact};
 
 use pallet_nft;
 use pallet_nft::UniqueAssets;
-
-use frame_support::{
-    debug,
-};
 
 pub mod lease;
 pub use crate::lease::Lease;
@@ -53,33 +50,6 @@ impl<PalletId: Eq> PartialEq for PalletInfo<PalletId> {
 }
 
 
-#[derive(Encode, Decode, Debug, Default, Copy, Clone, Eq)]
-/// Record lease information.
-pub struct LeaseInfo<PalletId, NftId> {
-    pub pallet_id: PalletId,
-    pub nft_id: NftId,
-}
-
-impl<PalletId: Ord, NftId: Eq> Ord for LeaseInfo<PalletId, NftId> {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.pallet_id.cmp(&other.pallet_id)
-    }
-}
-
-impl<PalletId: Ord, NftId> PartialOrd for LeaseInfo<PalletId, NftId> {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.pallet_id.cmp(&other.pallet_id))
-    }
-}
-
-impl<PalletId: Eq, NftId> PartialEq for LeaseInfo<PalletId, NftId> {
-    fn eq(&self, other: &Self) -> bool {
-        self.pallet_id == other.pallet_id
-    }
-}
-
-
-
 pub trait Config: frame_system::Config {
     /// The owner can manage the pallet list and set permissions.
     type OwnerAddress: Get<Self::AccountId>;
@@ -97,8 +67,14 @@ decl_storage! {
     trait Store for Module<T: Config> as Lease {
         /// save can lease pallet list
         Pallets get(fn pallets): Vec<PalletInfo<T::PalletId>>;
-        // NftToPalletId get(fn nft_to_pallet_id): map hasher(blake2_128_concat) NftId<T> => u64;
-        LeaseInfos get(fn lease_infos): map hasher(identity) NftId<T> => LeaseInfo<T::PalletId, NftId<T>>;
+        PalletIdByNft get(fn get_pallet_id_by_nft): map hasher(blake2_128_concat) NftId<T> => T::PalletId;
+        AccountByNft get(fn get_account_by_nft): map hasher(blake2_128_concat) NftId<T> => T::AccountId;
+
+		pub NftsInfoByAccount get(fn nfts_info_by_account): double_map
+        hasher(blake2_128_concat) T::AccountId,
+        hasher(blake2_128_concat) T::PalletId
+        => NftId<T>;
+        // LeaseInfos get(fn lease_infos): map hasher(identity) NftId<T> => LeaseInfo<T::PalletId, NftId<T>>;
     }
 }
 
@@ -122,7 +98,8 @@ decl_error! {
         AlreadyPallet,
         PermissionDenied,
         PalletPermissionDenied,
-        NftIdExist
+        NftIdExist,
+        NotLeaseNft
     }
 }
 
@@ -196,14 +173,41 @@ decl_module! {
             Ok(())
         }
     
-        #[weight = 10_000]
-        fn revoke(origin, nft_id: NftId<T>, pallet_id: T::PalletId) -> dispatch::DispatchResult {
-            let sender = ensure_signed(origin)?;
-            let admin = T::OwnerAddress::get();
-            ensure!(admin == sender, Error::<T>::PermissionDenied);
-            <Self as Lease<_,_>>::revoke(nft_id, pallet_id)?;
-            Ok(())
+        // #[weight = 10_000]
+        // fn revoke(origin, nft_id: NftId<T>, pallet_id: T::PalletId) -> dispatch::DispatchResult {
+        //     let sender = ensure_signed(origin)?;
+        //     let admin = T::OwnerAddress::get();
+        //     ensure!(admin == sender, Error::<T>::PermissionDenied);
+        //     <Self as Lease<_,_>>::revoke(nft_id, pallet_id)?;
+        //     Ok(())
             
+        // }
+
+        
+        #[weight = 10_000]
+        pub fn set_nft(origin, nft_id: NftId<T>) -> dispatch::DispatchResult {
+            let sender = ensure_signed(origin)?;
+            let nft_owner = T::UniqueAssets::owner_of(&nft_id);
+            // need nft owner
+            ensure!(nft_owner == sender, Error::<T>::PalletPermissionDenied);
+
+            // need lease nft
+            ensure!(AccountByNft::<T>::contains_key(&nft_id), Error::<T>::NotLeaseNft);
+
+            let old_owner = AccountByNft::<T>::get(&nft_id);
+            let pallet_id = PalletIdByNft::<T>::get(&nft_id);
+            ensure!(old_owner != nft_owner, Error::<T>::AlreadyPallet);
+
+            ensure!(!NftsInfoByAccount::<T>::contains_key(&nft_owner, pallet_id), Error::<T>::AlreadyPallet);
+            
+            NftsInfoByAccount::<T>::remove(old_owner, pallet_id);
+          
+            // nft_owner not exist this pallet nft
+            NftsInfoByAccount::<T>::try_mutate(&nft_owner, pallet_id, |_nft_id|  -> DispatchResult {  
+                *_nft_id = nft_id;
+                Ok(())
+            })?;
+            Ok(())
         }
         
     }
@@ -230,17 +234,21 @@ impl<T: Config> Lease<T::AccountId, NftId<T>> for Module<T> {
         ensure!(nft_owner == target, Error::<T>::PalletPermissionDenied);
         
         // check nft_id exist
-        let lease_info = LeaseInfos::<T>::get(&nft_id);
-        debug::info!("lease_info ：{:?}", lease_info);
-        debug::info!("lease_info.pallet_id ：{:?}", lease_info.pallet_id);
-
-        ensure!(lease_info.nft_id != nft_id, Error::<T>::NftIdExist);
+        ensure!(!PalletIdByNft::<T>::contains_key(&nft_id), Error::<T>::NftIdExist);
+        ensure!(!NftsInfoByAccount::<T>::contains_key(&target, pallet_id), Error::<T>::NftIdExist);
 
         // set 
-        LeaseInfos::<T>::insert(&nft_id, LeaseInfo{
-            pallet_id: pallet_id,
-            nft_id: nft_id.clone(),
-        });
+        PalletIdByNft::<T>::insert(&nft_id, &pallet_id);
+        
+        NftsInfoByAccount::<T>::try_mutate(&target, pallet_id, |_nft_id|  -> DispatchResult {  
+            *_nft_id = nft_id.clone();
+            Ok(())
+        })?;
+        AccountByNft::<T>::try_mutate(&nft_id, |_owner|  -> DispatchResult {  
+            *_owner = target.clone();
+            Ok(())
+        })?;
+
         // Notification of create game
         Self::deposit_event(RawEvent::SetAuthority(
             target, 
@@ -254,40 +262,33 @@ impl<T: Config> Lease<T::AccountId, NftId<T>> for Module<T> {
 
     fn check_authority(pallet_id: T::PalletId, target: T::AccountId) -> dispatch::result::Result<bool, dispatch::DispatchError> {
         // check pallet exist
-        let mut _pallets_list = Pallets::<T>::get();
-        let _pallet = _pallets_list.iter().find(|&probe| probe.pallet_id == pallet_id);
-        ensure!(_pallet != None, Error::<T>::NotFoundPallet);
+        // let mut _pallets_list = Pallets::<T>::get();
+        // let _pallet = _pallets_list.iter().find(|&probe| probe.pallet_id == pallet_id);
+        // ensure!(_pallet != None, Error::<T>::NotFoundPallet);
 
-
-        // Find out all nfts owned by the target
-        let assets = T::UniqueAssets::assets_for_account(&target);
-    
-        // Determine whether Nft_id has the right to use pallet_id
         let mut have_pallet_permission = false;
-        for _asset in assets.iter() {
-            let _nft_id = _asset.0.clone();
-            if LeaseInfos::<T>::contains_key(_nft_id.clone()) {
-                let lease_info = LeaseInfos::<T>::get(_nft_id);
-                if lease_info.pallet_id == pallet_id {
-                    have_pallet_permission = true;
-                    break;
-                }
+        if NftsInfoByAccount::<T>::contains_key(&target, pallet_id) {
+            let nft_id = NftsInfoByAccount::<T>::get(&target, pallet_id);
+            // check owner
+            let nft_owner = T::UniqueAssets::owner_of(&nft_id);
+            if nft_owner == target {
+                have_pallet_permission = true
+            }else{
+                // edit owner
+                have_pallet_permission = false
             }
-           
         }
+
         Ok(have_pallet_permission)
     }
 
     
     fn revoke(nft_id: NftId<T>, pallet_id: T::PalletId) -> dispatch::DispatchResult {
-        // check pallet exist
-        let mut _pallets_list = Pallets::<T>::get();
-        let _pallet = _pallets_list.iter().find(|&probe| probe.pallet_id == pallet_id);
-        ensure!(_pallet != None, Error::<T>::NotFoundPallet);
-
         // remove
-        LeaseInfos::<T>::remove(&nft_id);
-
+        let nft_owner = T::UniqueAssets::owner_of(&nft_id);
+        PalletIdByNft::<T>::remove(&nft_id);
+        AccountByNft::<T>::remove(&nft_id);
+        NftsInfoByAccount::<T>::remove(nft_owner, pallet_id);
         Ok(())
     }
 }

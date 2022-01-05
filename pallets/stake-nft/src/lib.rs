@@ -113,7 +113,7 @@ pub type PalletId<T> =
 pub type MomentOf<T> = <T as pallet_timestamp::Config>::Moment;
 
 decl_storage! {
-    trait Store for Module<T: Config> as StakeNFT {
+    trait Store for Module<T: Config> as NewStakeNFT {
         Programs get(fn programs_list): Vec<Program<T::ProgramId, BalanceOf<T>>>;
         StakeUsers get(fn stake_users):  Vec<T::AccountId>;
         StakeInfos get(fn stake_infos): map hasher(blake2_128_concat) T::AccountId => Vec<StakeInfo<T::ProgramId, PalletId<T>, BalanceOf<T>, NftId<T>>>;

@@ -102,6 +102,7 @@ decl_module! {
 		fn create_card(origin,
 			card_info_id: u128,
 			level: u8,
+			
 		) -> DispatchResult {
 			let admin = ensure_signed(origin)?;
 			// check permission
@@ -314,24 +315,24 @@ impl<T: Config> CardFactory<T::AccountId, NftId<T>> for Module<T> {
 		Ok(())
 	}
 
-	/// card
-	fn _get_user_cards(
-		owner: T::AccountId,
-	) -> Vec<Card<NftId<T>>>  {
-		let assets = T::UniqueAssets::assets_for_account(&owner);
-		let mut _cards: Vec<Card<NftId<T>>> = Vec::new();
-		for _asset in assets.iter() {
+	// /// card
+	// fn _get_user_cards(
+	// 	owner: T::AccountId,
+	// ) -> Vec<Card<NftId<T>>>  {
+	// 	let assets = T::UniqueAssets::assets_for_account(&owner);
+	// 	let mut _cards: Vec<Card<NftId<T>>> = Vec::new();
+	// 	for _asset in assets.iter() {
 
-            let _nft_id = _asset.0.clone();
-			let card_id = Self::card_by_nftid(_nft_id);
-			let card = Self::card_by_id(card_id);
-			if card.id == 0 {
-				continue;
-			}
-			_cards.push(card);
-		}
+    //         let _nft_id = _asset.0.clone();
+	// 		let card_id = Self::card_by_nftid(_nft_id);
+	// 		let card = Self::card_by_id(card_id);
+	// 		if card.id == 0 {
+	// 			continue;
+	// 		}
+	// 		_cards.push(card);
+	// 	}
 
-		_cards
-	}
+	// 	_cards
+	// }
 	
 }

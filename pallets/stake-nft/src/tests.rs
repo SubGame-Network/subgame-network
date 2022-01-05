@@ -34,13 +34,13 @@ fn stake() {
 
         assert_eq!(SubgameNFT::total(), 1);
         assert_eq!(SubgameNFT::total_for_account(4), 1);
-        let nft_list = SubgameNFT::commodities_for_account::<u64>(4);
+        // let nft_list = SubgameNFT::commodities_for_account::<u64>(4);
         let nft_id = nft_list[0].0;
 
 
-        let lease_info = Lease::lease_infos(nft_id);
-        assert_eq!(lease_info.pallet_id, pallet_id);
-        assert_eq!(lease_info.nft_id, nft_id);
+        // let lease_info = Lease::lease_infos(nft_id);
+        // assert_eq!(lease_info.pallet_id, pallet_id);
+        // assert_eq!(lease_info.nft_id, nft_id);
     });
 }
 
@@ -59,7 +59,7 @@ fn stake_expired() {
         
         assert_eq!(SubgameNFT::total(), 1);
         assert_eq!(SubgameNFT::total_for_account(4), 1);
-        let nft_list = SubgameNFT::commodities_for_account::<u64>(4);
+        // let nft_list = SubgameNFT::commodities_for_account::<u64>(4);
         let nft_id = nft_list[0].0;
 
 
@@ -75,7 +75,7 @@ fn stake_expired() {
         let expires_at_ms = now_ms + n_day_ms;
         run_to_block(1, expires_at_ms);
 
-        let nft_list = SubgameNFT::commodities_for_account::<u64>(4);
+        // let nft_list = SubgameNFT::commodities_for_account::<u64>(4);
         assert_eq!(nft_list.len(), 1);
     });
 }

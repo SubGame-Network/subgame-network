@@ -82,7 +82,7 @@ decl_storage! {
         /// The total number of this type of commodity owned by an account.
         TotalForAccount get(fn total_for_account): map hasher(blake2_128_concat) T::AccountId => u64 = 0;
         /// A mapping from an account to a list of all of the commodities of this type that are owned by it.
-        CommoditiesForAccount get(fn commodities_for_account): map hasher(blake2_128_concat) T::AccountId => Vec<Commodity<T>>;
+        // CommoditiesForAccount get(fn commodities_for_account): map hasher(blake2_128_concat) T::AccountId => Vec<Commodity<T>>;
         /// A mapping from a commodity ID to the account that owns it.
         AccountForCommodity get(fn account_for_commodity): map hasher(blake2_128_concat) CommodityId<T> => T::AccountId;
     }
@@ -219,9 +219,9 @@ impl<T: Config> UniqueAssets<T::AccountId> for Module<T> {
         Self::total_for_account(account)
     }
 
-    fn assets_for_account(account: &T::AccountId) -> Vec<Commodity<T>> {
-        Self::commodities_for_account(account)
-    }
+    // fn assets_for_account(account: &T::AccountId) -> Vec<Commodity<T>> {
+    //     Self::commodities_for_account(account)
+    // }
 
     fn owner_of(commodity_id: &CommodityId<T>) -> T::AccountId {
         Self::account_for_commodity(commodity_id)
@@ -261,17 +261,17 @@ impl<T: Config> UniqueAssets<T::AccountId> for Module<T> {
             Error::<T>::TooManyCommodities
         );
 
-        let new_commodity = (commodity_id, commodity_info);
+        // let new_commodity = (commodity_id, commodity_info);
 
         Total::mutate(|total| *total += 1);
         NextNfcId::mutate(|nft_id| *nft_id += 1);
         TotalForAccount::<T>::mutate(owner_account, |total| *total += 1);
-        CommoditiesForAccount::<T>::mutate(owner_account, |commodities| {
-            match commodities.binary_search(&new_commodity) {
-                Ok(_pos) => {} // should never happen
-                Err(pos) => commodities.insert(pos, new_commodity),
-            }
-        });
+        // CommoditiesForAccount::<T>::mutate(owner_account, |commodities| {
+        //     match commodities.binary_search(&new_commodity) {
+        //         Ok(_pos) => {} // should never happen
+        //         Err(pos) => commodities.insert(pos, new_commodity),
+        //     }
+        // });
         AccountForCommodity::<T>::insert(commodity_id, &owner_account);
 
         Self::deposit_event(RawEvent::Minted(commodity_id, owner_account.clone()));
@@ -288,12 +288,12 @@ impl<T: Config> UniqueAssets<T::AccountId> for Module<T> {
         Total::mutate(|total| *total -= 1);
         Burned::mutate(|total| *total += 1);
         TotalForAccount::<T>::mutate(&owner, |total| *total -= 1);
-        CommoditiesForAccount::<T>::mutate(owner, |commodities| {
-            let pos = commodities
-                .binary_search_by(|probe| probe.0.cmp(commodity_id))
-                .expect("We already checked that we have the correct owner; qed");
-            commodities.remove(pos);
-        });
+        // CommoditiesForAccount::<T>::mutate(owner, |commodities| {
+        //     let pos = commodities
+        //         .binary_search_by(|probe| probe.0.cmp(commodity_id))
+        //         .expect("We already checked that we have the correct owner; qed");
+        //     commodities.remove(pos);
+        // });
         AccountForCommodity::<T>::remove(&commodity_id);
 
         Self::deposit_event(RawEvent::Burned(commodity_id.clone()));
@@ -317,18 +317,18 @@ impl<T: Config> UniqueAssets<T::AccountId> for Module<T> {
 
         TotalForAccount::<T>::mutate(&owner, |total| *total -= 1);
         TotalForAccount::<T>::mutate(dest_account, |total| *total += 1);
-        let commodity = CommoditiesForAccount::<T>::mutate(owner.clone(), |commodities| {
-            let pos = commodities
-                .binary_search_by(|probe| probe.0.cmp(commodity_id))
-                .expect("We already checked that we have the correct owner; qed");
-            commodities.remove(pos)
-        });
-        CommoditiesForAccount::<T>::mutate(dest_account, |commodities| {
-            match commodities.binary_search(&commodity) {
-                Ok(_pos) => {} // should never happen
-                Err(pos) => commodities.insert(pos, commodity),
-            }
-        });
+        // let commodity = CommoditiesForAccount::<T>::mutate(owner.clone(), |commodities| {
+        //     let pos = commodities
+        //         .binary_search_by(|probe| probe.0.cmp(commodity_id))
+        //         .expect("We already checked that we have the correct owner; qed");
+        //     commodities.remove(pos)
+        // });
+        // CommoditiesForAccount::<T>::mutate(dest_account, |commodities| {
+        //     match commodities.binary_search(&commodity) {
+        //         Ok(_pos) => {} // should never happen
+        //         Err(pos) => commodities.insert(pos, commodity),
+        //     }
+        // });
         AccountForCommodity::<T>::insert(&commodity_id, &dest_account);
 
         Self::deposit_event(RawEvent::Transferred(commodity_id.clone(), owner.clone(), dest_account.clone()));

@@ -4,8 +4,6 @@
 //!
 
 
-use sp_std::{vec::Vec};
-
 
 use frame_support::{
     dispatch::{DispatchResult},
@@ -35,9 +33,9 @@ pub trait CardFactory<AccountId, NftId> {
 		card_id: u128,
 	) -> DispatchResult;
 
-	/// card
-	fn _get_user_cards(
-		owner: AccountId,
-	) -> Vec<Self::Card>;
+	// /// card
+	// fn _get_user_cards(
+	// 	owner: AccountId,
+	// ) -> Vec<Self::Card>;
     
 }

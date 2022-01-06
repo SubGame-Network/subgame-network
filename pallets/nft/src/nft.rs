@@ -41,7 +41,7 @@ pub trait UniqueAssets<AccountId> {
     /// The total number of this type of asset that has been burned (may overflow).
     fn burned() -> u128;
     /// The total number of this type of asset owned by an account.
-    fn total_for_account(account: &AccountId) -> u64;
+    // fn total_for_account(account: &AccountId) -> u64;
     /// The set of unique assets owned by an account.
     // fn assets_for_account(account: &AccountId) -> Vec<(Self::AssetId, Self::AssetInfo)>;
     /// The ID of the account that owns an asset.

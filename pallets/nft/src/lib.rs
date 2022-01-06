@@ -80,7 +80,7 @@ decl_storage! {
         /// The total number of this type of commodity that has been burned (may overflow).
         Burned get(fn burned): u128 = 0;
         /// The total number of this type of commodity owned by an account.
-        TotalForAccount get(fn total_for_account): map hasher(blake2_128_concat) T::AccountId => u64 = 0;
+        // TotalForAccount get(fn total_for_account): map hasher(blake2_128_concat) T::AccountId => u64 = 0;
         /// A mapping from an account to a list of all of the commodities of this type that are owned by it.
         // CommoditiesForAccount get(fn commodities_for_account): map hasher(blake2_128_concat) T::AccountId => Vec<Commodity<T>>;
         /// A mapping from a commodity ID to the account that owns it.
@@ -215,9 +215,9 @@ impl<T: Config> UniqueAssets<T::AccountId> for Module<T> {
         Self::burned()
     }
 
-    fn total_for_account(account: &T::AccountId) -> u64 {
-        Self::total_for_account(account)
-    }
+    // fn total_for_account(account: &T::AccountId) -> u64 {
+    //     Self::total_for_account(account)
+    // }
 
     // fn assets_for_account(account: &T::AccountId) -> Vec<Commodity<T>> {
     //     Self::commodities_for_account(account)
@@ -251,10 +251,10 @@ impl<T: Config> UniqueAssets<T::AccountId> for Module<T> {
             Error::<T>::CommodityExists
         );
 
-        ensure!(
-            Self::total_for_account(owner_account) < T::UserCommodityLimit::get(),
-            Error::<T>::TooManyCommoditiesForAccount
-        );
+        // ensure!(
+        //     Self::total_for_account(owner_account) < T::UserCommodityLimit::get(),
+        //     Error::<T>::TooManyCommoditiesForAccount
+        // );
 
         ensure!(
             Self::total() < T::CommodityLimit::get(),
@@ -265,7 +265,7 @@ impl<T: Config> UniqueAssets<T::AccountId> for Module<T> {
 
         Total::mutate(|total| *total += 1);
         NextNfcId::mutate(|nft_id| *nft_id += 1);
-        TotalForAccount::<T>::mutate(owner_account, |total| *total += 1);
+        // TotalForAccount::<T>::mutate(owner_account, |total| *total += 1);
         // CommoditiesForAccount::<T>::mutate(owner_account, |commodities| {
         //     match commodities.binary_search(&new_commodity) {
         //         Ok(_pos) => {} // should never happen
@@ -287,7 +287,7 @@ impl<T: Config> UniqueAssets<T::AccountId> for Module<T> {
 
         Total::mutate(|total| *total -= 1);
         Burned::mutate(|total| *total += 1);
-        TotalForAccount::<T>::mutate(&owner, |total| *total -= 1);
+        // TotalForAccount::<T>::mutate(&owner, |total| *total -= 1);
         // CommoditiesForAccount::<T>::mutate(owner, |commodities| {
         //     let pos = commodities
         //         .binary_search_by(|probe| probe.0.cmp(commodity_id))
@@ -310,13 +310,13 @@ impl<T: Config> UniqueAssets<T::AccountId> for Module<T> {
             Error::<T>::NonexistentCommodity
         );
 
-        ensure!(
-            Self::total_for_account(dest_account) < T::UserCommodityLimit::get(),
-            Error::<T>::TooManyCommoditiesForAccount
-        );
+        // ensure!(
+        //     Self::total_for_account(dest_account) < T::UserCommodityLimit::get(),
+        //     Error::<T>::TooManyCommoditiesForAccount
+        // );
 
-        TotalForAccount::<T>::mutate(&owner, |total| *total -= 1);
-        TotalForAccount::<T>::mutate(dest_account, |total| *total += 1);
+        // TotalForAccount::<T>::mutate(&owner, |total| *total -= 1);
+        // TotalForAccount::<T>::mutate(dest_account, |total| *total += 1);
         // let commodity = CommoditiesForAccount::<T>::mutate(owner.clone(), |commodities| {
         //     let pos = commodities
         //         .binary_search_by(|probe| probe.0.cmp(commodity_id))

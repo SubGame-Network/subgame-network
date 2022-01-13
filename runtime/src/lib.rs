@@ -144,7 +144,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("subgame"),
     impl_name: create_runtime_str!("subgame"),
     authoring_version: 1,
-    spec_version: 166,
+    spec_version: 167,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -377,8 +377,8 @@ impl pallet_staking::Config for Runtime {
 
 	type Currency = Balances;
 	type CurrencyToVote = CurrencyToVote;
-	type RewardRemainder = (); // TODO: Treasury
-	type Slash = (); // TODO: Treasury
+	type RewardRemainder = Treasury; // TODO: Treasury
+	type Slash = Treasury; // TODO: Treasury
 	type Reward = (); // rewards are minted from the voi
 
 	type SessionInterface = Self;

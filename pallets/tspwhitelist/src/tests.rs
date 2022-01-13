@@ -83,34 +83,34 @@ fn whitelist() {
     });
 }
 
-#[test]
-fn add_whitelist() {
-    new_test_ext().execute_with(|| {
-        let now: u64 = chrono::Utc::now().timestamp().saturated_into::<u64>() * 1000u64;
-        run_to_block(10, now);
+// #[test]
+// fn add_whitelist() {
+//     new_test_ext().execute_with(|| {
+//         let now: u64 = chrono::Utc::now().timestamp().saturated_into::<u64>() * 1000u64;
+//         run_to_block(10, now);
 
-        let owner = 1;
-        let new_whitelist = 2;
-        assert_ok!(TSPWhitelist::add_whitelist(Origin::signed(owner), new_whitelist));
+//         let owner = 1;
+//         let new_whitelist = 2;
+//         assert_ok!(TSPWhitelist::add_whitelist(Origin::signed(owner), new_whitelist));
 
-        assert_eq!(TSPWhitelist::whitelist_account().len(), 1387);
-    });
-}
+//         assert_eq!(TSPWhitelist::whitelist_account().len(), 1387);
+//     });
+// }
 
-#[test]
-fn del_whitelist() {
-    new_test_ext().execute_with(|| {
-        let now: u64 = chrono::Utc::now().timestamp().saturated_into::<u64>() * 1000u64;
-        run_to_block(10, now);
+// #[test]
+// fn del_whitelist() {
+//     new_test_ext().execute_with(|| {
+//         let now: u64 = chrono::Utc::now().timestamp().saturated_into::<u64>() * 1000u64;
+//         run_to_block(10, now);
 
-        let owner = 1;
-        let new_whitelist = 2;
-        assert_ok!(TSPWhitelist::add_whitelist(Origin::signed(owner), new_whitelist));
+//         let owner = 1;
+//         let new_whitelist = 2;
+//         assert_ok!(TSPWhitelist::add_whitelist(Origin::signed(owner), new_whitelist));
 
-        let owner = 1;
-        let del_whitelist = 2;
-        assert_ok!(TSPWhitelist::del_whitelist(Origin::signed(owner), del_whitelist));
+//         let owner = 1;
+//         let del_whitelist = 2;
+//         assert_ok!(TSPWhitelist::del_whitelist(Origin::signed(owner), del_whitelist));
 
-        assert_eq!(TSPWhitelist::whitelist_account().len(), 1386);
-    });
-}
+//         assert_eq!(TSPWhitelist::whitelist_account().len(), 1386);
+//     });
+// }

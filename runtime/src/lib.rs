@@ -144,7 +144,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("subgame"),
     impl_name: create_runtime_str!("subgame"),
     authoring_version: 1,
-    spec_version: 157,
+    spec_version: 166,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -338,18 +338,17 @@ pallet_staking_reward_curve::build! {
 	const REWARD_CURVE: PiecewiseLinear<'static> = curve!(
 		min_inflation: 0_025_000,
 		max_inflation: 0_100_000,
-		ideal_stake: 0_500_000,
+		ideal_stake: 0_750_000,
 		falloff: 0_050_000,
 		max_piece_count: 40,
 		test_precision: 0_005_000,
 	);
 }
 
-// Acala
 parameter_types! {
-	pub const SessionsPerEra: sp_staking::SessionIndex = 3; // 3 hours
+	pub const SessionsPerEra: sp_staking::SessionIndex = 1; // 1 hours
 	pub const BondingDuration: pallet_staking::EraIndex = 4; // 12 hours
-	pub const SlashDeferDuration: pallet_staking::EraIndex = 2; // 6 hours
+	pub const SlashDeferDuration: pallet_staking::EraIndex = 1; // 1 hours
 	pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
 	pub const ElectionLookahead: BlockNumber = EPOCH_DURATION_IN_BLOCKS / 4;
 

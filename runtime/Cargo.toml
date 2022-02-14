@@ -112,6 +112,7 @@ runtime-benchmarks = [
     'pallet-collective/runtime-benchmarks',
     'pallet-stake/runtime-benchmarks',
     'pallet-swap/runtime-benchmarks',
+    'pallet-bridge/runtime-benchmarks',
 ]
 std = [
     'codec/std',

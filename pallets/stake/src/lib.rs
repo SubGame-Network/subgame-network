@@ -16,8 +16,11 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-mod default_weight;
 
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+
+mod default_weight;
 pub trait WeightInfo {
     fn sign_up() -> Weight;
     fn stake() -> Weight;

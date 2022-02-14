@@ -27,11 +27,13 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-mod default_weight;
-
 #[macro_use]
 extern crate alloc;
 
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+
+mod default_weight;
 pub trait WeightInfo {
 	fn create_pool() -> Weight;
 	fn add_liquidity() -> Weight;

@@ -4384,6 +4384,7 @@ dependencies = [
 name = "pallet-swap"
 version = "3.0.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "libm",
@@ -4395,6 +4396,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]

@@ -19,9 +19,14 @@ use frame_system::ensure_signed;
 // }};
 use frame_support::traits::Vec;
 
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+
 mod default_weight;
 pub trait WeightInfo {
+    fn send() -> Weight;
     fn receive_bridge() -> Weight;
+    fn update_min_limit() -> Weight;
 }
 
 #[derive(Encode, Decode, Default, Copy, Clone)]
@@ -109,7 +114,7 @@ decl_module! {
         fn deposit_event() = default;
 
         /// outchain to subgame (sgb)
-        #[weight = 100_000]
+        #[weight = T::WeightInfo::send()]
         pub fn send(origin, to_address: T::AccountId, amount: BalanceOf<T>, coin_type: u8, hash: Vec<u8>) -> dispatch::DispatchResult {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();
@@ -173,7 +178,7 @@ decl_module! {
         }
 
         /// outchain to subgame (sgb)
-        #[weight = T::WeightInfo::receive_bridge()]
+        #[weight = T::WeightInfo::update_min_limit()]
         pub fn update_min_limit(origin, amount: BalanceOf<T>) -> dispatch::DispatchResult {
             let sender = ensure_signed(origin)?;
             let owner = T::OwnerAddress::get();

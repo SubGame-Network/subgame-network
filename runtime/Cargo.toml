@@ -109,6 +109,10 @@ runtime-benchmarks = [
     'pallet-balances/runtime-benchmarks',
     'pallet-timestamp/runtime-benchmarks',
     'sp-runtime/runtime-benchmarks',
+    'pallet-collective/runtime-benchmarks',
+    'pallet-stake/runtime-benchmarks',
+    'pallet-swap/runtime-benchmarks',
+    'pallet-bridge/runtime-benchmarks',
 ]
 std = [
     'codec/std',
@@ -161,6 +165,7 @@ std = [
     'pallet-contracts-rpc-runtime-api/std',
     'pallet-scheduler/std',
 
+	'pallet-stake/std',
 	'pallet-nft/std',
 	'pallet-subgame-assets/std',
     'pallet-stake-nft/std',

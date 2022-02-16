@@ -26,6 +26,8 @@ balances = { package = 'pallet-balances', version = '3.0.0', default-features = 
 pallet-subgame-assets = { path = '../subgame-assets', default-features = false, version = '3.0.0' }
 num-traits = { default-features = false, version = '0.2' }
 libm = { default-features = false, version = '0.2.1' }
+frame-benchmarking = { version = '3.1.0', default-features = false, optional = true }
+sp-std = { default-features = false, version = '3.0.0' }
 
 [dev-dependencies]
 serde = { version = "1.0.119" }
@@ -42,4 +44,11 @@ std = [
     'balances/std',
     'pallet-subgame-assets/std',
     'num-traits/std',
+    'frame-benchmarking/std',
+    'sp-std/std',
+]
+runtime-benchmarks = [
+    'frame-benchmarking',
+    'frame-support/runtime-benchmarks',
+	'frame-system/runtime-benchmarks',
 ]

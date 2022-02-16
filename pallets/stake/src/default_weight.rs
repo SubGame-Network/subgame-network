@@ -6,33 +6,33 @@ use frame_support::weights::{constants::RocksDbWeight as DbWeight, Weight};
 
 impl crate::WeightInfo for () {
     fn sign_up() -> Weight {
-        (10_000 as Weight)
-            .saturating_add(DbWeight::get().reads(2 as Weight))
-            .saturating_add(DbWeight::get().writes(2 as Weight))
-    }
-    fn stake() -> Weight {
-        (10_000 as Weight)
-            .saturating_add(DbWeight::get().reads(3 as Weight))
-            .saturating_add(DbWeight::get().writes(3 as Weight))
-    }
-    fn unlock() -> Weight {
-        (10_000 as Weight)
-            .saturating_add(DbWeight::get().reads(4 as Weight))
-            .saturating_add(DbWeight::get().writes(3 as Weight))
-    }
-    fn withdraw() -> Weight {
-        (10_000 as Weight)
-            .saturating_add(DbWeight::get().reads(2 as Weight))
-            .saturating_add(DbWeight::get().writes(1 as Weight))
-    }
-    fn import_stake() -> Weight {
-        (10_000 as Weight)
-            .saturating_add(DbWeight::get().reads(1 as Weight))
-            .saturating_add(DbWeight::get().writes(4 as Weight))
-    }
-    fn delete_user() -> Weight {
-        (10_000 as Weight)
-            .saturating_add(DbWeight::get().reads(1 as Weight))
-            .saturating_add(DbWeight::get().writes(2 as Weight))
-    }
+		(48_000_000 as Weight)
+			.saturating_add(DbWeight::get().reads(2 as Weight))
+			.saturating_add(DbWeight::get().writes(2 as Weight))
+	}
+	fn stake() -> Weight {
+		(78_000_000 as Weight)
+			.saturating_add(DbWeight::get().reads(3 as Weight))
+			.saturating_add(DbWeight::get().writes(2 as Weight))
+	}
+	fn unlock() -> Weight {
+		(84_000_000 as Weight)
+			.saturating_add(DbWeight::get().reads(3 as Weight))
+			.saturating_add(DbWeight::get().writes(2 as Weight))
+	}
+	fn withdraw() -> Weight {
+		(80_000_000 as Weight)
+			.saturating_add(DbWeight::get().reads(2 as Weight))
+			.saturating_add(DbWeight::get().writes(1 as Weight))
+	}
+	fn import_stake() -> Weight {
+		(117_000_000 as Weight)
+			.saturating_add(DbWeight::get().reads(4 as Weight))
+			.saturating_add(DbWeight::get().writes(3 as Weight))
+	}
+	fn delete_user() -> Weight {
+		(40_000_000 as Weight)
+			.saturating_add(DbWeight::get().reads(1 as Weight))
+			.saturating_add(DbWeight::get().writes(2 as Weight))
+	}
 }

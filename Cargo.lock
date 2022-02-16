@@ -3953,6 +3953,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-game-recharge-pro"
+version = "3.0.0"
+dependencies = [
+ "chrono",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-lease",
+ "pallet-nft",
+ "pallet-subgame-assets",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "rand 0.8.4",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-gamecenter"
 version = "3.0.0"
 dependencies = [
@@ -7739,6 +7761,7 @@ dependencies = [
  "pallet-demogame",
  "pallet-elections-phragmen",
  "pallet-game-recharge",
+ "pallet-game-recharge-pro",
  "pallet-gamecenter",
  "pallet-gametemplates",
  "pallet-gametemplates-guess-hash",

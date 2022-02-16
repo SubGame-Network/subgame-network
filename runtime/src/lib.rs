@@ -413,54 +413,54 @@ parameter_types! {
 	pub const MaxProposals: u32 = 100;
 }
 
-// impl pallet_democracy::Config for Runtime {
-// 	type Proposal = Call;
-// 	type Event = Event;
-// 	type Currency = Balances;
-// 	type EnactmentPeriod = EnactmentPeriod;
-// 	type LaunchPeriod = LaunchPeriod;
-// 	type VotingPeriod = VotingPeriod;
-// 	type MinimumDeposit = MinimumDeposit;
-// 	/// A straight majority of the council can decide what their next motion is.
-// 	type ExternalOrigin = pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, CouncilCollective>;
-// 	/// A majority can have the next scheduled referendum be a straight majority-carries vote.
-// 	type ExternalMajorityOrigin = pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, CouncilCollective>;
-// 	/// A unanimous council can have the next scheduled referendum be a straight default-carries
-// 	/// (NTB) vote.
-// 	type ExternalDefaultOrigin = pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, CouncilCollective>;
-// 	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
-// 	/// be tabled immediately and with a shorter voting/enactment period.
-// 	type FastTrackOrigin = pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, TechnicalCollective>;
-// 	type InstantOrigin = pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, TechnicalCollective>;
-// 	type InstantAllowed = InstantAllowed;
-// 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
-// 	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
-// 	type CancellationOrigin = EnsureOneOf<
-// 		AccountId,
-// 		EnsureRoot<AccountId>,
-// 		pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, CouncilCollective>,
-// 	>;
-// 	type BlacklistOrigin = EnsureRoot<AccountId>;
-// 	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
-// 	// Root must agree.
-// 	type CancelProposalOrigin = EnsureOneOf<
-// 		AccountId,
-// 		EnsureRoot<AccountId>,
-// 		pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, TechnicalCollective>,
-// 	>;
-// 	// Any single technical committee member may veto a coming council proposal, however they can
-// 	// only do it once and it lasts only for the cooloff period.
-// 	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
-// 	type CooloffPeriod = CooloffPeriod;
-// 	type PreimageByteDeposit = PreimageByteDeposit;
-// 	type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
-// 	type Slash = Treasury;
-// 	type Scheduler = Scheduler;
-// 	type PalletsOrigin = OriginCaller;
-// 	type MaxVotes = MaxVotes;
-// 	type WeightInfo = pallet_democracy::weights::SubstrateWeight<Runtime>;
-// 	type MaxProposals = MaxProposals;
-// }
+impl pallet_democracy::Config for Runtime {
+	type Proposal = Call;
+	type Event = Event;
+	type Currency = Balances;
+	type EnactmentPeriod = EnactmentPeriod;
+	type LaunchPeriod = LaunchPeriod;
+	type VotingPeriod = VotingPeriod;
+	type MinimumDeposit = MinimumDeposit;
+	/// A straight majority of the council can decide what their next motion is.
+	type ExternalOrigin = pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, CouncilCollective>;
+	/// A majority can have the next scheduled referendum be a straight majority-carries vote.
+	type ExternalMajorityOrigin = pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, CouncilCollective>;
+	/// A unanimous council can have the next scheduled referendum be a straight default-carries
+	/// (NTB) vote.
+	type ExternalDefaultOrigin = pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, CouncilCollective>;
+	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
+	/// be tabled immediately and with a shorter voting/enactment period.
+	type FastTrackOrigin = pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, TechnicalCollective>;
+	type InstantOrigin = pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, TechnicalCollective>;
+	type InstantAllowed = InstantAllowed;
+	type FastTrackVotingPeriod = FastTrackVotingPeriod;
+	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
+	type CancellationOrigin = EnsureOneOf<
+		AccountId,
+		EnsureRoot<AccountId>,
+		pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, CouncilCollective>,
+	>;
+	type BlacklistOrigin = EnsureRoot<AccountId>;
+	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
+	// Root must agree.
+	type CancelProposalOrigin = EnsureOneOf<
+		AccountId,
+		EnsureRoot<AccountId>,
+		pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, TechnicalCollective>,
+	>;
+	// Any single technical committee member may veto a coming council proposal, however they can
+	// only do it once and it lasts only for the cooloff period.
+	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
+	type CooloffPeriod = CooloffPeriod;
+	type PreimageByteDeposit = PreimageByteDeposit;
+	type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
+	type Slash = Treasury;
+	type Scheduler = Scheduler;
+	type PalletsOrigin = OriginCaller;
+	type MaxVotes = MaxVotes;
+	type WeightInfo = pallet_democracy::weights::SubstrateWeight<Runtime>;
+	type MaxProposals = MaxProposals;
+}
 
 parameter_types! {
 	pub const DisabledValidatorsThreshold: Perbill = Perbill::from_percent(17);
@@ -983,6 +983,7 @@ parameter_types! {
     pub const PalletIdPalletCardFactory: u64 =    3;
     pub const PalletIdPalletNftExchange: u64 =    4;
     pub const PalletIdPalletGameRecharge: u64 = 5;
+    pub const PalletIdPalletGameRechargePro: u64 = 6;
 }
 
 impl pallet_lease::Config for Runtime {
@@ -1085,6 +1086,16 @@ impl pallet_game_recharge::Config for Runtime {
 	type WeightInfo = ();
 }
 
+/*** Pallet Game Recharge ***/
+impl pallet_game_recharge_pro::Config for Runtime {
+	type Event = Event;
+    type Assets = SubgameAssets;
+    type UniqueAssets = SubgameNFT;
+    type Lease = Lease;
+    type PalletId = PalletIdPalletGameRechargePro;
+	type WeightInfo = ();
+}
+
 ord_parameter_types! {
     pub const TSPWhitelistOwner: AccountId = AccountId::from(
         // 3j9yeQo2gNaSMQJFMGAZn6P84sjADngxTHXbdcGZDAvx9v7w
@@ -1152,6 +1163,7 @@ construct_runtime!(
         SeventhPlanet: pallet_seventh_planet::{Module, Call, Storage, Event<T>},
         NftExchange: pallet_nft_exchange::{Module, Call, Storage, Event<T>},
         GameRecharge: pallet_game_recharge::{Module, Call, Storage, Event<T>},
+        GameRechargePro: pallet_game_recharge_pro::{Module, Call, Storage, Event<T>},
         TspWhitelist: pallet_tspwhitelist::{Module, Call, Storage, Event<T>},
     }
 );

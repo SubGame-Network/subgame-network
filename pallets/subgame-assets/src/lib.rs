@@ -177,7 +177,7 @@ pub struct SubGameAssetDetails<
 	/// Can change `owner`, `issuer`, `freezer` and `admin` accounts.
 	owner: AccountId,
 	/// Can mint tokens.
-	issuer: AccountId,
+	pub issuer: AccountId,
 	/// Can thaw tokens, force transfers and burn tokens from any account.
 	admin: AccountId,
 	/// Can freeze tokens.

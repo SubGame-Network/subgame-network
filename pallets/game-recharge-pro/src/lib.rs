@@ -80,11 +80,12 @@ decl_event! {
 		AccountId = <T as frame_system::Config>::AccountId,
 		AssetId = <T as SubGameAssets::Config>::AssetId,
 		SGAssetBalance = <T as SubGameAssets::Config>::SGAssetBalance,
+		Moment = <T as pallet_timestamp::Config>::Moment,
 	{
 		NewPlatform(u128,AccountId,AccountId,AssetId,Vec<Plan<SGAssetBalance>>),
 		UpdatePlatform(AccountId,u128,Vec<Plan<SGAssetBalance>>,u64),
 		Recharge(AccountId,u128,SGAssetBalance,SGAssetBalance,u128),
-		Withdraw(AccountId,SGAssetBalance,bool,u128),
+		Withdraw(AccountId,SGAssetBalance,bool,u128,Moment),
 	}
 }
 
@@ -276,10 +277,11 @@ decl_module! {
 				ensure!(now_ms >= expires_at_ms, Error::<T>::WithdrawIntervalTooShort);
 			}
             
-
+			// now 
+			let now = pallet_timestamp::Pallet::<T>::get();
 			// update last withdraw time
 			LastWithdraw::<T>::try_mutate(&target, |t|  -> DispatchResult {  
-				*t = pallet_timestamp::Pallet::<T>::get();
+				*t = now;
 				Ok(())
 			})?;
 
@@ -294,7 +296,8 @@ decl_module! {
 				target,
 				amount,
 				_platform.is_withdraw_mint_mode,
-				platform_id
+				platform_id,
+				now
 			));
 
 			Ok(())

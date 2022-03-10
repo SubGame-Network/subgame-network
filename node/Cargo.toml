@@ -26,7 +26,8 @@ pallet-contracts-rpc  = '3.0.0'
 hex-literal = "0.3.1"
 hex = "0.3.1"
 serde = { version = "1.0.100", features = ["derive"] }
-serde_json = "1.0.40"
+memmap2 = "0.5.0"
+serde_json = "1.0.68"
 
 # local dependencies
 subgame-runtime = { path = '../runtime', version = '3.0.0' }

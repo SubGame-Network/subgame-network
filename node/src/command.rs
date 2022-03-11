@@ -15,6 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::{fs::File};
 use crate::cli::{Cli, Subcommand};
 use crate::{chain_spec, service};
 use sc_cli::{ChainSpec, Role, RuntimeVersion, SubstrateCli};
@@ -51,9 +52,20 @@ impl SubstrateCli for Cli {
             "dev" => Box::new(chain_spec::development_config()?),
             "" | "local" | "testnet" => Box::new(chain_spec::local_testnet_config()?),
             "main" => Box::new(chain_spec::mainnet_config()?),
-            path => Box::new(chain_spec::ChainSpec::from_json_file(
-                std::path::PathBuf::from(path),
-            )?),
+            // path => Box::new(chain_spec::path_config(std::path::PathBuf::from(path))?),
+            path => {
+                let file = File::open(&path)
+                .map_err(|e| format!("Error opening spec file {}", e))?;
+
+                let bytes = unsafe {
+                    memmap2::Mmap::map(&file)
+                        .map_err(|e| format!("Error mmaping spec file {}", e))?
+                };
+                Box::new(chain_spec::ChainSpec::from_json_bytes(
+                    bytes.to_vec(),
+                )?)
+            
+            }
         })
     }
 

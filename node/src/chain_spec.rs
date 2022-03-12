@@ -402,6 +402,48 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                         // 5DepLLUCfTBToyQG6iMzBbQiHfVeD5H9vhpZCWqTC2SpuG6P
                         hex!["4640617dec57512ed1a39a20e2fdff279e907e34111079bde5434f2fccf5df35"].unchecked_into(),
                     ),
+                    (
+                        // 3hH4eATBBNXCk7gd971o3g6oiy5KS5RCo9JGd4McqaGtJbBg
+                        hex!["00f499d88186f4f6002b525497d932b25abd46e63a3e3934db2ada566b9e4a39"].into(),
+                        // 3mLzoxYnJMgakUvj3gW5gFTkqPoquiFfKTf3msEdvHUVYf2A
+                        hex!["b4e59ea2f4a57de47407caec5cfa0e1c348ed9f8a46c129100f32d5ac78c0d14"].into(),
+                        // 5GBoX2FiRWji9HwFND4sDF1ZWjz2chECoEeN2yQvh9sMQMfT
+                        hex!["b65ab58ca40a3829fb8185b2acb2b55e07cf79b445d4b255b64c4d1b915d0662"].unchecked_into(),
+                        // 5FA23h6M5uZRSMZVGg1Nwwp9m6RXem2FQtJY8YsPTVqk7vQz
+                        hex!["88c2291b318ef9c5e9e15d56d485122f3438a3d58d922a324a97e335a74311f4"].unchecked_into(),
+                        // 5GBoX2FiRWji9HwFND4sDF1ZWjz2chECoEeN2yQvh9sMQMfT
+                        hex!["b65ab58ca40a3829fb8185b2acb2b55e07cf79b445d4b255b64c4d1b915d0662"].unchecked_into(),
+                        // 5GBoX2FiRWji9HwFND4sDF1ZWjz2chECoEeN2yQvh9sMQMfT
+                        hex!["b65ab58ca40a3829fb8185b2acb2b55e07cf79b445d4b255b64c4d1b915d0662"].unchecked_into(),
+                    ),
+                    (
+                        // 3mUrADeG8bRCsAVqtVpgUXV726z9HupAEpLZ5rfYAH2fpD3w
+                        hex!["bae2764c96be9b3a33450658f78962080ecf9bf54e3c78291c1feebf216e0d4e"].into(),
+                        // 3nufPoiYeAU1AwxDtZDnUghE7eK4m8hnDfso7DfcVB5Jy7Vp
+                        hex!["fa0b9708eec90f9f6a96745173ea1ba5df5cd2f6d72e6d366b8a64cba3a9d95e"].into(),
+                        // 5HVkcwK8w9dXTJvFJVGDftZ9xJw1gZbee1hTKcoaPrybfozQ
+                        hex!["f0479ab38ac145fd723ac89e45a459eef91ac8fce86d730f4165955199adf60d"].unchecked_into(),
+                        // 5EGDFu8UhRY3PzNAfDoQ39cwdmmiSPFSugfXrnDsRCuSFAsB
+                        hex!["613f232a6c19ac0c8e6db65d4ec271ecd7d99b96ad1f4125c6c59893097d2c51"].unchecked_into(),
+                        // 5HVkcwK8w9dXTJvFJVGDftZ9xJw1gZbee1hTKcoaPrybfozQ
+                        hex!["f0479ab38ac145fd723ac89e45a459eef91ac8fce86d730f4165955199adf60d"].unchecked_into(),
+                        // 5HVkcwK8w9dXTJvFJVGDftZ9xJw1gZbee1hTKcoaPrybfozQ
+                        hex!["f0479ab38ac145fd723ac89e45a459eef91ac8fce86d730f4165955199adf60d"].unchecked_into(),
+                    ),
+                    (
+                        // 3kfZt8hpj1iaapTT9dPM8nEr23qaFpfFRq673qumceTutjTr
+                        hex!["96d3223bb3be0b4e585abb68c78e7daee638d73a9d1fc8470fe676fb0e30140d"].into(),
+                        // 3mWecZRMCAG9u3W86XqyxUqxWNfAJfXEVkEaMDtrgD6ovBi5
+                        hex!["bc42160d01201f46cc2a688eb5a0df7df238088ea7eaf4c44bc329f70f100623"].into(),
+                        // 5Fee1QSSSWRqCRkRiwtBWNmyZiZ3GTcwVmXnGGBEmry45aXH
+                        hex!["9e961600ef0440de2f0a73f977977245cb3bd6841e2a8b5f130fdcf932dae95a"].unchecked_into(),
+                        // 5HpJVXvSSjW2QTVtZV1WXDY7oXrSvHwjbGoYLLpHDieedudT
+                        hex!["fe6d504168eea5643cfef182c4111602d746e2b4e57a697c7cfa9ec73e5f459d"].unchecked_into(),
+                        // 5Fee1QSSSWRqCRkRiwtBWNmyZiZ3GTcwVmXnGGBEmry45aXH
+                        hex!["9e961600ef0440de2f0a73f977977245cb3bd6841e2a8b5f130fdcf932dae95a"].unchecked_into(),
+                        // 5Fee1QSSSWRqCRkRiwtBWNmyZiZ3GTcwVmXnGGBEmry45aXH
+                        hex!["9e961600ef0440de2f0a73f977977245cb3bd6841e2a8b5f130fdcf932dae95a"].unchecked_into(),
+                    ),
                 ],
                 // Sudo account
                 hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(),
@@ -426,6 +468,9 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                     (hex!["4cffd6856ae6b7fc655063e7b87bccd8d29d93f46d93f6af18eb32b06d8f8c5a"].into(), 1000000000000), // 100
                     (hex!["827494fc4cd73bf894072b8f7aadd85370e8ba129c7470cfa971a02b58b6d47c"].into(), 1000000000000), // 100
                     (hex!["1abc61a55cba9a336e6456297bf144b655dda3a31012f89050fbf36d3aeaba2b"].into(), 1000000000000), // 100
+                    (hex!["00f499d88186f4f6002b525497d932b25abd46e63a3e3934db2ada566b9e4a39"].into(), 1000000000000), // 100
+                    (hex!["bae2764c96be9b3a33450658f78962080ecf9bf54e3c78291c1feebf216e0d4e"].into(), 1000000000000), // 100
+                    (hex!["96d3223bb3be0b4e585abb68c78e7daee638d73a9d1fc8470fe676fb0e30140d"].into(), 1000000000000), // 100
                 ],
                 true,
             )

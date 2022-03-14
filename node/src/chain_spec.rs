@@ -356,7 +356,7 @@ fn testnet_genesis(
         pallet_indices: Some(IndicesConfig { indices: vec![] }),
 		// Staking related configs
 		pallet_babe: Some(BabeConfig { authorities: vec![] }),
-        pallet_democracy: Default::default(),
+        // pallet_democracy: Default::default(),
 		//pallet_authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
 		pallet_im_online: Some(ImOnlineConfig { keys: vec![] }),
 		//pallet_treasury: Some(Default::default()),
@@ -437,7 +437,7 @@ fn mainnet_genesis(
         pallet_indices: Some(IndicesConfig { indices: vec![] }),
 		// Staking related configs
 		pallet_babe: Some(BabeConfig { authorities: vec![] }),
-        pallet_democracy: Default::default(),
+        // pallet_democracy: Default::default(),
 		//pallet_authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
 		pallet_im_online: Some(ImOnlineConfig { keys: vec![] }),
 		//pallet_treasury: Some(Default::default()),

@@ -15,7 +15,7 @@ services:
     volumes:
       - .:/subgame
     command: bash -c "./subgame.mainnet
-      --chain main 
+      --chain ./newFork.json  
       --base-path /subgame/storage
       --port 30333
       --ws-port 9944

@@ -5,7 +5,7 @@
 First, install [Docker](https://docs.docker.com/get-docker/) and
 [Docker Compose](https://docs.docker.com/compose/install/).
 
-Download [newFork.json](https://document.subgame.org/newFork.json)
+Download [newFork.zip](https://document.subgame.org/newFork.zip) and unzip get file `newFork.json`
 
 Then run the following command to start a single node chain.
 

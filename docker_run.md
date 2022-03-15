@@ -15,6 +15,8 @@ docker-compose up
 
 > This command will firstly compile your code, and then start a network. You can
 also replace the default command by appending your own. A few useful ones are as follow.
+>
+> If you see this error message `exited with code 137`, you are out of memory! Minimum `16GB` is recommended.
 
 With this command, you should see something like this if your node is running successfully:
 

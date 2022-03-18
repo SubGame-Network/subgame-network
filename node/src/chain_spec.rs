@@ -69,11 +69,14 @@ pub fn authority_keys_from_seed(s: &str) -> (AccountId, AccountId, BabeId, Grand
     )
 }
 
+const DECIMALS: u32 = 18;
+const STASH: Balance = 50000000000000000000; // 50
+
 /// Properties for Subgame.
 pub fn subgame_properties() -> Properties {
     let mut properties = Properties::new();
     properties.insert("ss58Format".into(), 27.into());
-    properties.insert("tokenDecimals".into(), vec![10].into());
+    properties.insert("tokenDecimals".into(), vec![DECIMALS].into());
     properties.insert("tokenSymbol".into(), vec!["SGB"].into());
     properties
 }
@@ -81,7 +84,7 @@ pub fn subgame_properties() -> Properties {
 pub fn subgame_mainnet_properties() -> Properties {
     let mut properties = Properties::new();
     properties.insert("ss58Format".into(), 27.into());
-    properties.insert("tokenDecimals".into(), vec![10].into());
+    properties.insert("tokenDecimals".into(), vec![DECIMALS].into());
     properties.insert("tokenSymbol".into(), vec!["SGB"].into());
     properties
 }
@@ -95,7 +98,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
         H160::from_str("baf45897e06490e0fa5C386Cdc222c6d04C66c39").unwrap(),
         pallet_evm::GenesisAccount {
             nonce: 0.into(),
-            balance: (500000000 as u128 * 10_u128.pow(18)).into(),
+            balance: (500000000 as u128 * 10_u128.pow(DECIMALS)).into(),
             storage: BTreeMap::new(),                                 
             code: wasm_binary.to_vec(),
         },
@@ -116,11 +119,11 @@ pub fn development_config() -> Result<ChainSpec, String> {
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
                 // Pre-funded accounts
                 vec![
-                    (get_account_id_from_seed::<sr25519::Public>("Alice"), 5000000000000000000),
-                    (get_account_id_from_seed::<sr25519::Public>("Bob"), 5000000000000000000),
-                    (get_account_id_from_seed::<sr25519::Public>("Alice//stash"), 5000000000000000000),
-                    (get_account_id_from_seed::<sr25519::Public>("Bob//stash"), 5000000000000000000),
-                    (hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(), 5000000000000000000),
+                    (get_account_id_from_seed::<sr25519::Public>("Alice"), (500000000 as u128 * 10_u128.pow(DECIMALS))),
+                    (get_account_id_from_seed::<sr25519::Public>("Bob"), (500000000 as u128 * 10_u128.pow(DECIMALS))),
+                    (get_account_id_from_seed::<sr25519::Public>("Alice//stash"), (500000000 as u128 * 10_u128.pow(DECIMALS))),
+                    (get_account_id_from_seed::<sr25519::Public>("Bob//stash"), (500000000 as u128 * 10_u128.pow(DECIMALS))),
+                    (hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(), (500000000 as u128 * 10_u128.pow(DECIMALS))),
                 ],
                 true,
                 accounts.clone(),
@@ -148,7 +151,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
         H160::from_str("baf45897e06490e0fa5C386Cdc222c6d04C66c39").unwrap(),
         pallet_evm::GenesisAccount {
             nonce: 0.into(),
-            balance: (500000000 as u128 * 10_u128.pow(18)).into(),
+            balance: (500000000 as u128 * 10_u128.pow(DECIMALS)).into(),
             storage: BTreeMap::new(),                                 
             code: wasm_binary.to_vec(),
         },
@@ -202,11 +205,11 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                 hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(),
                 // Pre-funded accounts
                 vec![
-                    (hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(), 4999998000000000000),  // 499999800
+                    (hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(), (499999800 as u128 * 10_u128.pow(DECIMALS))),  // 499999800
                     // // 5FpfTNAjx3yjU8P6N74uwGj19bpuEXrHTHRm1pWdxAw8Pn65	
-                    (hex!["a63b69bded2ac349e87634116fe96ae1cd1e700f851317aee1a00f0745ec6c1a"].into(), 1000000000000),    // 100
+                    (hex!["a63b69bded2ac349e87634116fe96ae1cd1e700f851317aee1a00f0745ec6c1a"].into(), (100 as u128 * 10_u128.pow(DECIMALS))),    // 100
                     // 5EyJyiFeYtDxdzXbk62wTZSnHyn3Rwhbc56oELNzJVTG2rRY	
-                    (hex!["8097750cd4845d1e9b5ad167845dfceb43511271ea3ac966f082e7ba003aa87c"].into(), 1000000000000),    // 100
+                    (hex!["8097750cd4845d1e9b5ad167845dfceb43511271ea3ac966f082e7ba003aa87c"].into(), (100 as u128 * 10_u128.pow(DECIMALS))),    // 100
                 ],
                 true,
                 accounts.clone(),
@@ -234,7 +237,7 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
         H160::from_str("baf45897e06490e0fa5C386Cdc222c6d04C66c39").unwrap(),
         pallet_evm::GenesisAccount {
             nonce: 0.into(),
-            balance: (500000000 as u128 * 10_u128.pow(18)).into(),
+            balance: (500000000 as u128 * 10_u128.pow(DECIMALS)).into(),
             storage: BTreeMap::new(),                                 
             code: wasm_binary.to_vec(),
         },
@@ -352,19 +355,19 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                 hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(),
                 // Pre-funded accounts
                 vec![
-                    (hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(), 4999994000000000000), // 499999400
+                    (hex!["f03bb9ee7cba9bf90724ac5bd90fcd9553969448dbd4cd3c88b0ee41a062c515"].into(), (499999400 as u128 * 10_u128.pow(DECIMALS))), // 499999400
                     // 5FWWuhHThTUSL97FBpXU9EwobbZ6YZqCs8ryRGDvzAqhfzYF	
-                    (hex!["98643a2c1477740412cf7b2d7203443626b191523df56ba35ec4a4c5b56b814c"].into(), 1000000000000), // 100
+                    (hex!["98643a2c1477740412cf7b2d7203443626b191523df56ba35ec4a4c5b56b814c"].into(), (100 as u128 * 10_u128.pow(DECIMALS))), // 100
                     // 5Gitx5RkseoZeGcyLmmTA48GZBf2WE3TD4TnrWWgtgm1VJFK	
-                    (hex!["ce119a358c2c5e0e1e52301e77c7997dee651ee67a436b03d60252dc5494c03a"].into(), 1000000000000), // 100
+                    (hex!["ce119a358c2c5e0e1e52301e77c7997dee651ee67a436b03d60252dc5494c03a"].into(), (100 as u128 * 10_u128.pow(DECIMALS))), // 100
                     // 5CAmCtwtLkmBgwNhmkQhmktSh9JRcwKfRv8Ee3m5dJxu1LjD
-                    (hex!["049ebece3fe3525306fb16dd804c959684278eec692158320a4c94b11f847e39"].into(), 1000000000000), // 100
+                    (hex!["049ebece3fe3525306fb16dd804c959684278eec692158320a4c94b11f847e39"].into(), (100 as u128 * 10_u128.pow(DECIMALS))), // 100
                     // 5EgxnoyYB1EvvWUNKvpJFxCG8fsg34f4G2PzkybSiG6DR5Dr
-                    (hex!["741f927195ace2d31c4f625cf89556bfa06a764780a1cd7ef333c8a927ab9401"].into(), 1000000000000), // 100
+                    (hex!["741f927195ace2d31c4f625cf89556bfa06a764780a1cd7ef333c8a927ab9401"].into(), (100 as u128 * 10_u128.pow(DECIMALS))), // 100
                     // 5CGDWDTdRh28dQ31owjGjuphbhjta95hpRVRpuXdGDe1sZy6
-                    (hex!["08c78058ff97641449aa5e0e018d777135324b83a81c704d2da1f6a1ad25df22"].into(), 1000000000000), // 100
+                    (hex!["08c78058ff97641449aa5e0e018d777135324b83a81c704d2da1f6a1ad25df22"].into(), (100 as u128 * 10_u128.pow(DECIMALS))), // 100
                     // 5E1VUev4ym8QBDVE9Wp2oReWuYCfkJJBLnrFxdytqHc7yH5q
-                    (hex!["56050eb15aa425e8a502477d7cc0e4bd4b5e55b67a0b340ea27e437ed4595302"].into(), 1000000000000), // 100
+                    (hex!["56050eb15aa425e8a502477d7cc0e4bd4b5e55b67a0b340ea27e437ed4595302"].into(), (100 as u128 * 10_u128.pow(DECIMALS))), // 100
                 ],
                 true,
                 accounts.clone(),
@@ -382,8 +385,6 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
         None,
     ))
 }
-
-const STASH: Balance = 500000000000; // 50
 
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(

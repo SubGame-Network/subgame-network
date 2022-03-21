@@ -1,6 +1,6 @@
 //! Service and ServiceFactory implementation. Specialized wrapper over substrate service.
 
-use sc_client_api::{ExecutorProvider, RemoteBackend};
+use sc_client_api::{ExecutorProvider, RemoteBackend, BlockchainEvents};
 use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
 use sc_finality_grandpa::SharedVoterState;
@@ -9,6 +9,8 @@ use std::{sync::{Arc, Mutex}, time::Duration, collections::{HashMap, BTreeMap}};
 use subgame_runtime::{self, opaque::Block, RuntimeApi};
 use fc_rpc_core::types::{FilterPool, PendingTransactions};
 use crate::cli::Cli;
+use fc_mapping_sync::MappingSyncWorker;
+use futures::StreamExt;
 
 // Our native executor instance.
 native_executor_instance!(
@@ -247,6 +249,17 @@ pub fn new_full(
             crate::rpc::create_full(deps, subscription_task_executor.clone())
         })
     };
+
+    task_manager.spawn_essential_handle().spawn(
+		"frontier-mapping-sync-worker",
+		MappingSyncWorker::new(
+			client.import_notification_stream(),
+			Duration::new(6, 0),
+			client.clone(),
+			backend.clone(),
+			frontier_backend.clone(),
+		).for_each(|()| futures::future::ready(()))
+	);
 
     let (_rpc_handlers, telemetry_connection_notifier) =
         sc_service::spawn_tasks(sc_service::SpawnTasksParams {

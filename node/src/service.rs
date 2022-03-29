@@ -11,6 +11,7 @@ use fc_rpc_core::types::{FilterPool, PendingTransactions};
 use crate::cli::Cli;
 use fc_mapping_sync::MappingSyncWorker;
 use futures::StreamExt;
+use fc_rpc::EthTask;
 
 // Our native executor instance.
 native_executor_instance!(
@@ -89,6 +90,12 @@ pub fn new_partial(
 
     let select_chain = sc_consensus::LongestChain::new(backend.clone());
 
+    let (grandpa_block_import, grandpa_link) = sc_finality_grandpa::block_import(
+        client.clone(),
+        &(client.clone() as Arc<_>),
+        select_chain.clone(),
+    )?;
+
     let transaction_pool = sc_transaction_pool::BasicPool::new_full(
         config.transaction_pool.clone(),
         config.role.is_authority().into(),
@@ -104,12 +111,6 @@ pub fn new_partial(
 		= Some(Arc::new(Mutex::new(BTreeMap::new())));
 
     let frontier_backend = open_frontier_backend(config)?;
-
-    let (grandpa_block_import, grandpa_link) = sc_finality_grandpa::block_import(
-        client.clone(),
-        &(client.clone() as Arc<_>),
-        select_chain.clone(),
-    )?;
 
     let justification_import = grandpa_block_import.clone();
 	let (block_import, babe_link) = sc_consensus_babe::block_import(
@@ -184,13 +185,6 @@ pub fn new_full(
     // }
     let (block_import, grandpa_link, babe_link, pending_transactions, filter_pool, frontier_backend) = import_setup;
 
-	let role = config.role.clone();
-	let force_authoring = config.force_authoring;
-	let backoff_authoring_blocks: Option<()> = None;
-	let name = config.network.node_name.clone();
-	let enable_grandpa = !config.disable_grandpa;
-	let prometheus_registry = config.prometheus_registry().cloned();
-
     config
         .network
         .extra_sets
@@ -207,6 +201,9 @@ pub fn new_full(
             block_announce_validator_builder: None,
         })?;
 
+    // Channel for the rpc handler to communicate with the authorship task.
+	let (command_sink, _commands_stream) = futures::channel::mpsc::channel(1000);
+
     if config.offchain_worker.enabled {
         sc_service::build_offchain_workers(
             &config,
@@ -217,11 +214,13 @@ pub fn new_full(
         );
     }
 
+    let role = config.role.clone();
+	let force_authoring = config.force_authoring;
+	let backoff_authoring_blocks: Option<()> = None;
+	let name = config.network.node_name.clone();
+	let enable_grandpa = !config.disable_grandpa;
+	let prometheus_registry = config.prometheus_registry().cloned();
     let is_authority = role.is_authority();
-    
-    // Channel for the rpc handler to communicate with the authorship task.
-	let (command_sink, _commands_stream) = futures::channel::mpsc::channel(1000);
-
     let subscription_task_executor = sc_rpc::SubscriptionTaskExecutor::new(task_manager.spawn_handle());
 
     let rpc_extensions_builder = {
@@ -276,6 +275,33 @@ pub fn new_full(
             system_rpc_tx,
             config,
         })?;
+
+    // Spawn Frontier EthFilterApi maintenance task.
+	if let Some(filter_pool) = filter_pool {
+		// Each filter is allowed to stay in the pool for 100 blocks.
+		const FILTER_RETAIN_THRESHOLD: u64 = 100;
+		task_manager.spawn_essential_handle().spawn(
+			"frontier-filter-pool",
+			EthTask::filter_pool_task(
+					Arc::clone(&client),
+					filter_pool,
+					FILTER_RETAIN_THRESHOLD,
+			)
+		);
+	}
+
+	// Spawn Frontier pending transactions maintenance task (as essential, otherwise we leak).
+	if let Some(pending_transactions) = pending_transactions {
+		const TRANSACTION_RETAIN_THRESHOLD: u64 = 5;
+		task_manager.spawn_essential_handle().spawn(
+			"frontier-pending-transactions",
+			EthTask::pending_transaction_task(
+				Arc::clone(&client),
+					pending_transactions,
+					TRANSACTION_RETAIN_THRESHOLD,
+				)
+		);
+	}
 
     if role.is_authority() {
         let proposer = sc_basic_authorship::ProposerFactory::new(

@@ -17,9 +17,8 @@ use subgame_runtime::{
 	SessionConfig, StakingConfig, ImOnlineConfig,
     SystemConfig, WASM_BINARY,
 	IndicesConfig, CouncilConfig, TechnicalCommitteeConfig,
-    AuraConfig, EVMConfig, EthereumConfig,
+    EVMConfig, EthereumConfig,
 };
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use std::collections::BTreeMap;
 use std::str::FromStr;
 
@@ -28,9 +27,8 @@ fn session_keys(
     grandpa: GrandpaId,
 	im_online: ImOnlineId,
 	authority_discovery: AuthorityDiscoveryId,
-    aura: AuraId,
 ) -> SessionKeys {
-    SessionKeys { babe, grandpa, im_online, authority_discovery, aura }
+    SessionKeys { babe, grandpa, im_online, authority_discovery }
 }
 
 // The URL for the telemetry server.
@@ -57,7 +55,7 @@ where
 }
 
 /// Generate an Babe authority key.
-pub fn authority_keys_from_seed(s: &str) -> (AccountId, AccountId, BabeId, GrandpaId, ImOnlineId, AuthorityDiscoveryId, AuraId,) {
+pub fn authority_keys_from_seed(s: &str) -> (AccountId, AccountId, BabeId, GrandpaId, ImOnlineId, AuthorityDiscoveryId,) {
     (
         get_account_id_from_seed::<sr25519::Public>(&format!("{}//stash", s)),
 		get_account_id_from_seed::<sr25519::Public>(s),
@@ -65,7 +63,6 @@ pub fn authority_keys_from_seed(s: &str) -> (AccountId, AccountId, BabeId, Grand
         get_from_seed::<GrandpaId>(s),
 		get_from_seed::<ImOnlineId>(s),
 		get_from_seed::<AuthorityDiscoveryId>(s),
-		get_from_seed::<AuraId>(s),
     )
 }
 
@@ -181,8 +178,6 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                         hex!["b86f4ce48d4d810d7bdb5fe76397aecd59d5d9f561fee8963eb71ac989ecd643"].unchecked_into(),
                         // 5GEXjMYCYuogszM2WQnnNKA6bbzCNTKaAAY3BFmNkEsEwgsi	
                         hex!["b86f4ce48d4d810d7bdb5fe76397aecd59d5d9f561fee8963eb71ac989ecd643"].unchecked_into(),
-                        // 5GEXjMYCYuogszM2WQnnNKA6bbzCNTKaAAY3BFmNkEsEwgsi	
-                        hex!["b86f4ce48d4d810d7bdb5fe76397aecd59d5d9f561fee8963eb71ac989ecd643"].unchecked_into(),
                     ),
                     (
                         // 5EyJyiFeYtDxdzXbk62wTZSnHyn3Rwhbc56oELNzJVTG2rRY	
@@ -193,8 +188,6 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                         hex!["bea0af5cbdf831165065bc48495aefe3d6acfcce8ff3b67a1051cd74eecaa86a"].unchecked_into(),
                         // 5DXHpnbhLVjhuE1JGH86q8h3XLGeBmde7pXpGbuqyrPpu3dB	
                         hex!["4082f57de59206d7fcfb839acaa109a63e7860430e0fdaf2edfacdfa2d7cee04"].unchecked_into(),
-                        // 5GNegtwtqxUkjt6JRDy3tbjqWzpaPsW1yjURRr4nyNn4kftb	
-                        hex!["bea0af5cbdf831165065bc48495aefe3d6acfcce8ff3b67a1051cd74eecaa86a"].unchecked_into(),
                         // 5GNegtwtqxUkjt6JRDy3tbjqWzpaPsW1yjURRr4nyNn4kftb	
                         hex!["bea0af5cbdf831165065bc48495aefe3d6acfcce8ff3b67a1051cd74eecaa86a"].unchecked_into(),
                         // 5GNegtwtqxUkjt6JRDy3tbjqWzpaPsW1yjURRr4nyNn4kftb	
@@ -267,8 +260,6 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                         hex!["8ccd0291b5608d702cfe1a7d37c72167009385460ed2a609f743ec8b31afa709"].unchecked_into(),
                         // 5FFKTjUrtLFARzXtXVB2Wy12w4A7PezpR8VKMSyEPFtG9y86	
                         hex!["8ccd0291b5608d702cfe1a7d37c72167009385460ed2a609f743ec8b31afa709"].unchecked_into(),
-                        // 5FFKTjUrtLFARzXtXVB2Wy12w4A7PezpR8VKMSyEPFtG9y86	
-                        hex!["8ccd0291b5608d702cfe1a7d37c72167009385460ed2a609f743ec8b31afa709"].unchecked_into(),
                     ),
                     (
                         // 5Gitx5RkseoZeGcyLmmTA48GZBf2WE3TD4TnrWWgtgm1VJFK	
@@ -279,8 +270,6 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                         hex!["46ccc9886ad9e9afffda6719a8d395d00231f71a7fb34d7dc2c4a777c70f8b74"].unchecked_into(),
                         // 5EfKCjVEJVGWyusmj4CMZo3epGoGqzMfjjkqExghuUVPwwbJ	
                         hex!["72ddcbb2ef0324ba25f97e07fc9c214e4e48c23dbc82731cc4146903c89bf9d8"].unchecked_into(),
-                        // 5DfY3Uwmh35NcXUYu63oU8ktPJTZU9WiPQ1JQ3NR7gNqHjwX	
-                        hex!["46ccc9886ad9e9afffda6719a8d395d00231f71a7fb34d7dc2c4a777c70f8b74"].unchecked_into(),
                         // 5DfY3Uwmh35NcXUYu63oU8ktPJTZU9WiPQ1JQ3NR7gNqHjwX	
                         hex!["46ccc9886ad9e9afffda6719a8d395d00231f71a7fb34d7dc2c4a777c70f8b74"].unchecked_into(),
                         // 5DfY3Uwmh35NcXUYu63oU8ktPJTZU9WiPQ1JQ3NR7gNqHjwX	
@@ -299,8 +288,6 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                         hex!["e4cf15f9766efdfd7a1333096b69d167272c9f6485e0846fa0d4848a424cc013"].unchecked_into(),
                         // 5HEiHuGbFqFroAQQinYQwZ8tbtA7gPpxN5rwrFGuj7urEsHB
                         hex!["e4cf15f9766efdfd7a1333096b69d167272c9f6485e0846fa0d4848a424cc013"].unchecked_into(),
-                        // 5HEiHuGbFqFroAQQinYQwZ8tbtA7gPpxN5rwrFGuj7urEsHB
-                        hex!["e4cf15f9766efdfd7a1333096b69d167272c9f6485e0846fa0d4848a424cc013"].unchecked_into(),
                     ),
                     (
                         // 5EgxnoyYB1EvvWUNKvpJFxCG8fsg34f4G2PzkybSiG6DR5Dr
@@ -311,8 +298,6 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                         hex!["5806cad365b0e59c7365b02f8d809f756bf19e1a49db2f008dd1738d5328844e"].unchecked_into(),
                         // 5CibZaL865e2RUYFEQ4Q5TsT9jMBJzERWxcDPHN2fm97WA1m
                         hex!["1ce622ae9d22f9bc3a5d345adc1831da02cedf52284cc14d6bf33048e4e8f5f0"].unchecked_into(),
-                        // 5E4866nxQfma332tpDYT8vV3B6FwHsKTABijdvfNteLcKNvo
-                        hex!["5806cad365b0e59c7365b02f8d809f756bf19e1a49db2f008dd1738d5328844e"].unchecked_into(),
                         // 5E4866nxQfma332tpDYT8vV3B6FwHsKTABijdvfNteLcKNvo
                         hex!["5806cad365b0e59c7365b02f8d809f756bf19e1a49db2f008dd1738d5328844e"].unchecked_into(),
                         // 5E4866nxQfma332tpDYT8vV3B6FwHsKTABijdvfNteLcKNvo
@@ -331,8 +316,6 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                         hex!["ac1e038cbf41b92fec53c1079a91c622f5a9195f0e3dc691282df2ac4c7cb070"].unchecked_into(),
                         // 5FxP1VaCLwhBnQkjDPjft51i8NQ1HNQiU7mgkczLDPqo3ta9
                         hex!["ac1e038cbf41b92fec53c1079a91c622f5a9195f0e3dc691282df2ac4c7cb070"].unchecked_into(),
-                        // 5FxP1VaCLwhBnQkjDPjft51i8NQ1HNQiU7mgkczLDPqo3ta9
-                        hex!["ac1e038cbf41b92fec53c1079a91c622f5a9195f0e3dc691282df2ac4c7cb070"].unchecked_into(),
                     ),
                     (
                         // 5E1VUev4ym8QBDVE9Wp2oReWuYCfkJJBLnrFxdytqHc7yH5q
@@ -343,8 +326,6 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                         hex!["86a8b858dd647620fd2099621650850bb740c6e71bca5b57fd59d4cdc567dd31"].unchecked_into(),
                         // 5FBisezR5yPaUchMxr2s1VJdQ4vUjh76D11NwqXTSXQGG1qy
                         hex!["8a0ed77ec9a0438a5e2dc6558eec6e8e93c13121bd7709f08908e506d74dd60c"].unchecked_into(),
-                        // 5F7GPoqnwnwaudBKYCXYHYQfNBaemhMjVXm3Xgizjne9HUYu
-                        hex!["86a8b858dd647620fd2099621650850bb740c6e71bca5b57fd59d4cdc567dd31"].unchecked_into(),
                         // 5F7GPoqnwnwaudBKYCXYHYQfNBaemhMjVXm3Xgizjne9HUYu
                         hex!["86a8b858dd647620fd2099621650850bb740c6e71bca5b57fd59d4cdc567dd31"].unchecked_into(),
                         // 5F7GPoqnwnwaudBKYCXYHYQfNBaemhMjVXm3Xgizjne9HUYu
@@ -389,7 +370,7 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
     wasm_binary: &[u8],
-    initial_authorities: Vec<(AccountId, AccountId, BabeId, GrandpaId, ImOnlineId, AuthorityDiscoveryId, AuraId)>,
+    initial_authorities: Vec<(AccountId, AccountId, BabeId, GrandpaId, ImOnlineId, AuthorityDiscoveryId)>,
     root_key: AccountId,
     endowed_accounts: Vec<(AccountId, u128)>,
     enable_println: bool,
@@ -430,7 +411,7 @@ fn testnet_genesis(
 					(
 						x.0.clone(),
 						x.0.clone(),
-						session_keys(x.2.clone(), x.3.clone(), x.4.clone(), x.5.clone(), x.6.clone()),
+						session_keys(x.2.clone(), x.3.clone(), x.4.clone(), x.5.clone()),
 					)
 				})
 				.collect::<Vec<_>>(),
@@ -466,7 +447,6 @@ fn testnet_genesis(
         }),
         /*** Pallet Contracts ***/
 
-        pallet_aura: Some(AuraConfig { authorities: vec![] }),
         pallet_evm: Some(EVMConfig {
 			accounts: accounts
 		}),
@@ -477,7 +457,7 @@ fn testnet_genesis(
 /// Configure initial storage state for FRAME modules.
 fn mainnet_genesis(
     wasm_binary: &[u8],
-    initial_authorities: Vec<(AccountId, AccountId, BabeId, GrandpaId, ImOnlineId, AuthorityDiscoveryId, AuraId)>,
+    initial_authorities: Vec<(AccountId, AccountId, BabeId, GrandpaId, ImOnlineId, AuthorityDiscoveryId)>,
     root_key: AccountId,
     endowed_accounts: Vec<(AccountId, u128)>,
     enable_println: bool,
@@ -518,7 +498,7 @@ fn mainnet_genesis(
 					(
 						x.0.clone(),
 						x.0.clone(),
-						session_keys(x.2.clone(), x.3.clone(), x.4.clone(), x.5.clone(), x.6.clone()),
+						session_keys(x.2.clone(), x.3.clone(), x.4.clone(), x.5.clone()),
 					)
 				})
 				.collect::<Vec<_>>(),
@@ -554,7 +534,6 @@ fn mainnet_genesis(
         }),
         /*** Pallet Contracts ***/
 
-        pallet_aura: Some(AuraConfig { authorities: vec![] }),
         pallet_evm: Some(EVMConfig {
 			accounts: accounts
 		}),

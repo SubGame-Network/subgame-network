@@ -12,6 +12,7 @@ use crate::cli::Cli;
 use fc_mapping_sync::MappingSyncWorker;
 use futures::StreamExt;
 use fc_rpc::EthTask;
+use fc_consensus::FrontierBlockImport;
 
 // Our native executor instance.
 native_executor_instance!(
@@ -63,11 +64,16 @@ pub fn new_partial(
             sc_consensus_babe::BabeBlockImport<
                 Block,
                 FullClient,
-                sc_finality_grandpa::GrandpaBlockImport<
-                    FullBackend,
+                // sc_finality_grandpa::GrandpaBlockImport<
+                //     FullBackend,
+                //     Block,
+                //     FullClient,
+                //     FullSelectChain,
+                // >,
+                FrontierBlockImport<
                     Block,
-                    FullClient,
-                    FullSelectChain,
+                    sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>,
+                    FullClient
                 >,
             >,
             sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
@@ -112,10 +118,16 @@ pub fn new_partial(
 
     let frontier_backend = open_frontier_backend(config)?;
 
+    let frontier_block_import = FrontierBlockImport::new(
+        grandpa_block_import.clone(),
+        client.clone(),
+        frontier_backend.clone(),
+    );
+
     let justification_import = grandpa_block_import.clone();
 	let (block_import, babe_link) = sc_consensus_babe::block_import(
 		sc_consensus_babe::Config::get_or_compute(&*client)?,
-		grandpa_block_import,
+		frontier_block_import,
 		client.clone(),
 	)?;
     
@@ -457,6 +469,14 @@ pub fn new_light(mut config: Configuration) -> Result<TaskManager, ServiceError>
 		sp_consensus::NeverCanAuthor,
 	)?;
 
+    let light_deps = crate::rpc::LightDeps {
+		remote_blockchain: backend.remote_blockchain(),
+		fetcher: on_demand.clone(),
+		client: client.clone(),
+		pool: transaction_pool.clone(),
+	};
+	let rpc_extensions = crate::rpc::create_light(light_deps);
+
     let (network, network_status_sinks, system_rpc_tx, network_starter) =
         sc_service::build_network(sc_service::BuildNetworkParams {
             config: &config,
@@ -483,7 +503,8 @@ pub fn new_light(mut config: Configuration) -> Result<TaskManager, ServiceError>
         transaction_pool,
         task_manager: &mut task_manager,
         on_demand: Some(on_demand),
-        rpc_extensions_builder: Box::new(|_, _| ()),
+        // rpc_extensions_builder: Box::new(|_, _| ()),
+        rpc_extensions_builder: Box::new(sc_service::NoopRpcExtensionBuilder(rpc_extensions)),
         config,
         client,
         keystore: keystore_container.sync_keystore(),

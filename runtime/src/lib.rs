@@ -55,7 +55,6 @@ use pallet_evm::{
 	Account as EVMAccount, FeeCalculator, HashedAddressMapping,
 	EnsureAddressTruncated, Runner,
 };
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::crypto::Public;
 use codec::{Encode, Decode};
 
@@ -133,7 +132,6 @@ pub mod opaque {
             pub grandpa: Grandpa,
 			pub im_online: ImOnline,
 			pub authority_discovery: AuthorityDiscovery,
-            pub aura: Aura,
         }
     }
 }
@@ -264,10 +262,6 @@ impl frame_system::Config for Runtime {
     type SystemWeightInfo = ();
     /// This is used as an identifier of the chain. 42 is the generic substrate prefix.
     type SS58Prefix = SS58Prefix;
-}
-
-impl pallet_aura::Config for Runtime {
-	type AuthorityId = AuraId;
 }
 
 impl pallet_grandpa::Config for Runtime {
@@ -753,8 +747,6 @@ impl pallet_timestamp::Config for Runtime {
     type OnTimestampSet = Babe;
     type MinimumPeriod = MinimumPeriod;
     type WeightInfo = ();
-    #[cfg(feature = "aura")]
-	type OnTimestampSet = Aura;
 }
 
 parameter_types! {
@@ -845,8 +837,8 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for EthereumFindAuthor<F>
 		I: 'a + IntoIterator<Item=(ConsensusEngineId, &'a [u8])>
 	{
 		if let Some(author_index) = F::find_author(digests) {
-			let authority_id = Aura::authorities()[author_index as usize].clone();
-			return Some(H160::from_slice(&authority_id.to_raw_vec()[4..24]));
+            let authority_id = Babe::authorities()[author_index as usize].clone();
+            return Some(H160::from_slice(&authority_id.0.to_raw_vec()[4..24]));
 		}
 		None
 	}
@@ -854,7 +846,7 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for EthereumFindAuthor<F>
 
 impl pallet_ethereum::Config for Runtime {
 	type Event = Event;
-	type FindAuthor = EthereumFindAuthor<Aura>;
+	type FindAuthor = EthereumFindAuthor<Babe>;
 	type StateRoot = pallet_ethereum::IntermediateStateRoot;
 }
 /*** Pallet evm ***/
@@ -1232,7 +1224,6 @@ construct_runtime!(
         TspWhitelist: pallet_tspwhitelist::{Module, Call, Storage, Event<T>},
         Ethereum: pallet_ethereum::{Module, Call, Storage, Event, Config, ValidateUnsigned},
         EVM: pallet_evm::{Module, Config, Call, Storage, Event<T>},
-        Aura: pallet_aura::{Module, Config<T>},
     }
 );
 
@@ -1347,16 +1338,6 @@ impl_runtime_apis! {
             Executive::offchain_worker(header)
         }
     }
-
-    impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
-		fn slot_duration() -> u64 {
-			Aura::slot_duration()
-		}
-
-		fn authorities() -> Vec<AuraId> {
-			Aura::authorities()
-		}
-	}
 
     impl sp_consensus_babe::BabeApi<Block> for Runtime {
         fn configuration() -> sp_consensus_babe::BabeGenesisConfiguration {

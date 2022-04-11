@@ -1096,6 +1096,28 @@ impl pallet_game_recharge_pro::Config for Runtime {
 	type WeightInfo = ();
 }
 
+
+/*** Pallet sonic racer ***/
+ord_parameter_types! {
+    pub const SonicRacerOwner: AccountId = AccountId::from(
+        // 3iFsAZv22G5cTuGQzBpFKu58wWiQ7oFJuBcgkMsQPUirm2tu	
+        hex_literal::hex!("2c46f54479f019745c0a06d5de89fa7c8b61005233ceb2cd81fcbb7bf334ac23")
+    );
+    pub const PackagePoolAddress: AccountId = AccountId::from(
+        // 3iFsAZv22G5cTuGQzBpFKu58wWiQ7oFJuBcgkMsQPUirm2tu	
+        hex_literal::hex!("2c46f54479f019745c0a06d5de89fa7c8b61005233ceb2cd81fcbb7bf334ac23")
+    );
+}
+impl pallet_sonic_racer::Config for Runtime {
+	type Event = Event;
+    type Assets = SubgameAssets;
+    type UniqueAssets = SubgameNFT;
+    type OwnerAddress = SonicRacerOwner;
+    type PackagePoolAddress = PackagePoolAddress;
+    type Balances = Balances;
+	type WeightInfo = ();
+}
+
 ord_parameter_types! {
     pub const TSPWhitelistOwner: AccountId = AccountId::from(
         // 3j9yeQo2gNaSMQJFMGAZn6P84sjADngxTHXbdcGZDAvx9v7w
@@ -1138,7 +1160,7 @@ construct_runtime!(
 		Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>},
 		Bounties: pallet_bounties::{Module, Call, Storage, Event<T>},
 		Tips: pallet_tips::{Module, Call, Storage, Event<T>},
-		// Democracy: pallet_democracy::{Module, Call, Storage, Config, Event<T>},
+		Democracy: pallet_democracy::{Module, Call, Storage, Config, Event<T>},
 		Council: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
 		TechnicalCommittee: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
 		TechnicalMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>},
@@ -1164,6 +1186,7 @@ construct_runtime!(
         NftExchange: pallet_nft_exchange::{Module, Call, Storage, Event<T>},
         GameRecharge: pallet_game_recharge::{Module, Call, Storage, Event<T>},
         GameRechargePro: pallet_game_recharge_pro::{Module, Call, Storage, Event<T>},
+        SonicRacer: pallet_sonic_racer::{Module, Call, Storage, Event<T>},
         TspWhitelist: pallet_tspwhitelist::{Module, Call, Storage, Event<T>},
     }
 );

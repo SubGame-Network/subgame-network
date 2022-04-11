@@ -46,6 +46,7 @@ pallet-nft-exchange = { path = '../pallets/nft-exchange', default-features = fal
 pallet-game-recharge = { path = '../pallets/game-recharge', default-features = false, version = '3.0.0'  }
 pallet-game-recharge-pro = { path = '../pallets/game-recharge-pro', default-features = false, version = '3.0.0'  }
 pallet-tspwhitelist = { path = '../pallets/tspwhitelist', default-features = false, version = '3.0.0' }
+pallet-sonic-racer = { path = '../pallets/sonic-racer', default-features = false, version = '3.0.0' }
 
 # Substrate dependencies
 frame-benchmarking = { default-features = false, optional = true, version = '3.0.0' }
@@ -180,4 +181,5 @@ std = [
     'pallet-nft-exchange/std',
     'pallet-game-recharge/std',
     'pallet-game-recharge-pro/std',
+    'pallet-sonic-racer/std',
 ]

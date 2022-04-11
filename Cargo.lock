@@ -4304,6 +4304,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-sonic-racer"
+version = "3.0.0"
+dependencies = [
+ "chrono",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "pallet-balances",
+ "pallet-lease",
+ "pallet-nft",
+ "pallet-subgame-assets",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "rand 0.8.4",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-stake"
 version = "3.0.0"
 dependencies = [
@@ -7787,6 +7810,7 @@ dependencies = [
  "pallet-scheduler",
  "pallet-session",
  "pallet-seventh-planet",
+ "pallet-sonic-racer",
  "pallet-stake",
  "pallet-stake-nft",
  "pallet-staking",

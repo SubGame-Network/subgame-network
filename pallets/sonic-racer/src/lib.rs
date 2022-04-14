@@ -7,7 +7,7 @@ use default_weight::WeightInfo;
 use sp_std::{prelude::*};
 use sp_runtime::{RuntimeDebug,RandomNumberGenerator};
 
-use sp_runtime::traits::{Hash, BlakeTwo256};
+use sp_runtime::traits::{Hash, BlakeTwo256, SaturatedConversion};
 use codec::{Encode, Decode};
 use frame_support::{decl_module, decl_event, decl_storage, decl_error, ensure,
 	traits::{Currency,ExistenceRequirement,Get},
@@ -15,10 +15,6 @@ use frame_support::{decl_module, decl_event, decl_storage, decl_error, ensure,
 };
 
 use frame_system::ensure_signed;
-
-use frame_support::{
-    debug,
-};
 
 use pallet_nft::UniqueAssets;
 
@@ -101,8 +97,8 @@ pub struct BlindBoxBoughtCount {
 }
 
 // nft typeId
-// 盲盒
-const NFT_TYPE_ID_BLINDBOX:u8 = 1;
+// // 盲盒
+// const NFT_TYPE_ID_BLINDBOX:u8 = 1;
 // 角色
 const NFT_TYPE_ID_ROLE:u8 = 2;
 // 道具
@@ -415,16 +411,19 @@ decl_module! {
 			ensure!(new_game_setting.max_num_of_research == new_game_setting.research_consumes_amount_of_esor_list.len() as u32, Error::<T>::InputDataInvalid);
 
 			// 融合消耗esor > 0
-			ensure!(new_game_setting.fusion_consumes_amount_of_esor > 0.into(), Error::<T>::InputDataInvalid);
+			ensure!(new_game_setting.fusion_consumes_amount_of_esor.saturated_into::<u64>() > 0u64, Error::<T>::InputDataInvalid);
 
 			// 研究消耗sor > 0
-			ensure!(new_game_setting.research_consumes_amount_of_sor > 0.into(), Error::<T>::InputDataInvalid);
+			ensure!(new_game_setting.research_consumes_amount_of_sor.saturated_into::<u64>() > 0u64, Error::<T>::InputDataInvalid);
+			
+			// let origin_coin1: T::AssetId = 10020u32.into();
+			// let origin_coin2: T::AssetId = 10020u32.into();
 
 			// sor_asset_id目前不給修改，固定帶入值為1002
-			ensure!(new_game_setting.sor_asset_id == 1002.into(), Error::<T>::InputDataInvalid);
+			ensure!(new_game_setting.sor_asset_id == 10020u32.into(), Error::<T>::InputDataInvalid);
 
 			// sor_asset_id目前不給修改，固定帶入值為1003
-			ensure!(new_game_setting.esor_asset_id == 1003.into(), Error::<T>::InputDataInvalid);
+			ensure!(new_game_setting.esor_asset_id == 10030u32.into(), Error::<T>::InputDataInvalid);
 			
 			
 			
@@ -682,7 +681,7 @@ decl_module! {
 			}
 			
 			// 計算所需SGB
-			let mut price: BalanceOf<T>;
+			let price: BalanceOf<T>;
 			if blindbox_type_id == BLINDBOX_TYPE_ID_ROLE {
 				price = _applybuy_setting.role_price
 			}else{
@@ -764,7 +763,7 @@ decl_module! {
 			}
 			
 			// 計算所需SGB
-			let mut price: BalanceOf<T>;
+			let price: BalanceOf<T>;
 			if blindbox_type_id == BLINDBOX_TYPE_ID_ROLE {
 				price = _applybuy_setting.role_price
 			}else{
@@ -930,7 +929,7 @@ decl_module! {
 			ensure!(T::UniqueAssets::owner_of(&nfthash2) == sender, Error::<T>::NotNftOwner);
 
 			// 計算融合等級(2者最低等升級)
-			let mut new_level = 2;
+			let new_level;
 			if prop1.level <= prop2.level {
 				new_level = prop1.level + 1;
 			}else{
@@ -1116,7 +1115,7 @@ impl<T: Config> Module<T> {
 		for n in min..max{
 			range.push(n);
 		}
-		let result = rng.pick_item(&range).unwrap();
+		result = rng.pick_item(&range).unwrap();
 		*result
 	}
 

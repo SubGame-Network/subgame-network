@@ -1,4 +1,4 @@
-FROM rust:1.50.0
+FROM rust:1.52.0
 
 RUN apt update && apt install -y \
     cmake \

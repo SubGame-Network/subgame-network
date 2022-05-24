@@ -62,9 +62,9 @@ decl_event! {
 		BalanceOf = BalanceOf<T>,
 	{
 		NewAuction(u128,u128,NftId,AccountId,BalanceOf),
-		AuctionBuy(u128,AccountId,u8,BalanceOf),
-		NewPlatform(AccountId,u8,AccountId),
-		UpdatePlatform(AccountId,u128,u8,AccountId),
+		AuctionBuy(u128,AccountId,u16,BalanceOf),
+		NewPlatform(AccountId,u16,AccountId),
+		UpdatePlatform(AccountId,u128,u16,AccountId),
 		AuctionDone(u128),
 	}
 }
@@ -96,7 +96,7 @@ decl_module! {
 		#[weight = T::WeightInfo::create_platform()]
 		fn create_platform(origin,
 			admin: T::AccountId,
-			percentage_of_fee: u8,
+			percentage_of_fee: u16,
 			fee_account: T::AccountId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
@@ -114,7 +114,7 @@ decl_module! {
 		#[weight = T::WeightInfo::update_platform()]
 		fn update_platform(origin,
 			id: u128,
-			percentage_of_fee: u8,
+			percentage_of_fee: u16,
 			fee_account: T::AccountId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
@@ -194,11 +194,11 @@ impl<T: Config> NftExchange<T::AccountId, NftId<T>, BalanceOf<T>> for Module<T> 
 	// Public immutables
 	fn _create_platform(
 			admin: T::AccountId,
-			percentage_of_fee: u8,
+			percentage_of_fee: u16,
 			fee_account: T::AccountId,
 	) -> DispatchResult {
-		// percentage_of_fee 0~99
-		ensure!(percentage_of_fee < 100, Error::<T>::PercentageOfFeeNotAllowed);
+		// percentage_of_fee 0~999(0~99%)
+		ensure!(percentage_of_fee < 1000, Error::<T>::PercentageOfFeeNotAllowed);
 
 		let platform_id = Self::next_platform_id();
 
@@ -222,11 +222,11 @@ impl<T: Config> NftExchange<T::AccountId, NftId<T>, BalanceOf<T>> for Module<T> 
 	fn _update_platform(
 		admin: T::AccountId,
 		id: u128,
-		percentage_of_fee: u8,
+		percentage_of_fee: u16,
 		fee_account: T::AccountId,
 	) -> DispatchResult {
-		// percentage_of_fee 0~99
-		ensure!(percentage_of_fee < 100, Error::<T>::PercentageOfFeeNotAllowed);
+		// percentage_of_fee 0~999(0~99%)
+		ensure!(percentage_of_fee < 1000, Error::<T>::PercentageOfFeeNotAllowed);
 
 		Platforms::<T>::try_mutate_exists(id, |platform| {
 			let _platform = platform.take().ok_or( Error::<T>::NotFoundData)?;
@@ -323,7 +323,7 @@ impl<T: Config> NftExchange<T::AccountId, NftId<T>, BalanceOf<T>> for Module<T> 
 			let _platform = Platforms::<T>::get(_auction.platform_id).ok_or(Error::<T>::UnknowPlatform)?;
 			let amount_u64 = TryInto::<u64>::try_into(_auction.amount).ok().unwrap();
 			let percentage_of_fee: u64 = _platform.percentage_of_fee.into();
-			let fee: u64 = amount_u64/100u64*percentage_of_fee;
+			let fee: u64 = amount_u64 * percentage_of_fee/1000u64;
 
 			_auction.buyer = Some(buyer.clone());
 			_auction.percentage_of_fee = _platform.percentage_of_fee;

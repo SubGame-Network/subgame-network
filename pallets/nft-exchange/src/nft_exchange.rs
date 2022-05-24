@@ -17,7 +17,7 @@ use codec::{Encode, Decode};
 pub struct Platform<Account> {
 	pub id: u128,
 	pub admin: Account,
-	pub percentage_of_fee: u8,
+	pub percentage_of_fee: u16,
 	pub fee_account: Account,
 }
 
@@ -29,21 +29,21 @@ pub struct Auction<Account, NftId, BalanceOf> {
 	pub seller: Account,
 	pub buyer: Option<Account>,
 	pub amount: BalanceOf,
-	pub percentage_of_fee: u8,
+	pub percentage_of_fee: u16,
 	pub platform_fee: BalanceOf,
 }
 
 pub trait NftExchange<AccountId, NftId, BalanceOf> {
 	fn _create_platform(
 		admin: AccountId,
-		percentage_of_fee: u8,
+		percentage_of_fee: u16,
 		fee_account: AccountId,
 	) -> DispatchResult;
 
 	fn _update_platform(
 		admin: AccountId,
 		id: u128,
-		percentage_of_fee: u8,
+		percentage_of_fee: u16,
 		fee_account: AccountId,
 	) -> DispatchResult;
 

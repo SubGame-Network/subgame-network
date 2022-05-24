@@ -10,7 +10,7 @@ use sp_runtime::{RuntimeDebug,RandomNumberGenerator};
 use sp_runtime::traits::{Hash, BlakeTwo256, SaturatedConversion};
 use codec::{Encode, Decode};
 use frame_support::{decl_module, decl_event, decl_storage, decl_error, ensure,
-	traits::{Currency,ExistenceRequirement,Get},
+	traits::{Currency,Get},
 	dispatch::{DispatchResult},
 };
 
@@ -77,16 +77,17 @@ pub struct ResearchConsumesAmount<SGAssetBalance> {
 
 // ----------------------銷售盲盒-------------------------
 #[derive(Clone, Encode, Decode, Eq, PartialEq, RuntimeDebug, Default)]
-pub struct ApplybuySetting<Moment,Balance,AccountId> {
+pub struct ApplybuySetting<Moment,SGAssetBalance,AccountId,AssetId> {
     pub start_time: Moment,    // 開放購買時間
     pub end_time: Moment,    // 結束購買時間
-    pub role_price: Balance,    // 購買金額
-    pub props_price: Balance,    // 購買金額
+    pub role_price: SGAssetBalance,    // 購買金額
+    pub props_price: SGAssetBalance,    // 購買金額
     pub role_sell_count: u32,    // 總銷售數量
     pub role_user_max_buy:u32,   // 限制購買上限
     pub props_sell_count: u32,	
     pub props_user_max_buy: u32,	
 	pub income_account: AccountId,	
+	pub asset_id: AssetId,
 }
 
 // 盲盒已購數量
@@ -223,8 +224,8 @@ decl_storage! {
 		// 銷售相關
 		
 		// 申購設定
-		pub ApplybuySet: map hasher(blake2_128_concat) u8 => ApplybuySetting<<T as pallet_timestamp::Config>::Moment, BalanceOf<T>, T::AccountId>;
-		pub ApplybuyWhitelistSet: map hasher(blake2_128_concat) u8 => ApplybuySetting<<T as pallet_timestamp::Config>::Moment, BalanceOf<T>, T::AccountId>;
+		pub ApplybuySet: map hasher(blake2_128_concat) u8 => ApplybuySetting<<T as pallet_timestamp::Config>::Moment, T::SGAssetBalance, T::AccountId, T::AssetId>;
+		pub ApplybuyWhitelistSet: map hasher(blake2_128_concat) u8 => ApplybuySetting<<T as pallet_timestamp::Config>::Moment, T::SGAssetBalance, T::AccountId, T::AssetId>;
 
 		// 下梯次申購Id
 		pub NextApplybuyBatchId get(fn next_applybuy_batch_id): u8 = 1;
@@ -251,7 +252,7 @@ decl_event! {
 	NftId = NftId<T>,
 	SonicRacerSetting = SonicRacerSetting<ResearchConsumesAmount<<T as SubGameAssets::Config>::SGAssetBalance>, <T as SubGameAssets::Config>::SGAssetBalance, <T as SubGameAssets::Config>::AssetId, <T as frame_system::Config>::AccountId>,
 	Moment = <T as pallet_timestamp::Config>::Moment,
-	BalanceOf = BalanceOf<T>,
+	// BalanceOf = BalanceOf<T>,
 	{
 		// 將Asset打包成nft(打包人, 資產Id, 金額, NftHash)
 		AssetPackaged(AccountId, AssetId, SGAssetBalance, NftId),
@@ -264,17 +265,17 @@ decl_event! {
 		// 批量刪除白名單
 		DelApplybuyWhitelist(Vec<AccountId>),
 		// 新增申購
-		AddApplybuySetting(ApplybuySetting<Moment, BalanceOf, AccountId>),
+		AddApplybuySetting(ApplybuySetting<Moment, SGAssetBalance, AccountId, AssetId>),
 		// 更新申購(梯次Id, 參數)
-		UpdateApplybuySetting(u8, ApplybuySetting<Moment, BalanceOf, AccountId>),
+		UpdateApplybuySetting(u8, ApplybuySetting<Moment, SGAssetBalance, AccountId, AssetId>),
 		// 新增申購-白名單
-		AddApplybuyWhitelistSetting(ApplybuySetting<Moment, BalanceOf, AccountId>),
+		AddApplybuyWhitelistSetting(ApplybuySetting<Moment, SGAssetBalance, AccountId, AssetId>),
 		// 更新申購-白名單(梯次Id, 參數)
-		UpdateApplybuyWhitelistSetting(u8, ApplybuySetting<Moment, BalanceOf, AccountId>),
+		UpdateApplybuyWhitelistSetting(u8, ApplybuySetting<Moment, SGAssetBalance, AccountId, AssetId>),
 		// 購買盲盒(購買人, 梯次Id, type_id(=1(ROLE) or 2(PROPS)), NftHash, 花費SGB)
-		UserApplybuy(AccountId, u8, u8, NftId, BalanceOf),
+		UserApplybuy(AccountId, u8, u8, NftId, SGAssetBalance),
 		// 購買盲盒-白名單(購買人, 梯次Id, type_id(=1(ROLE) or 2(PROPS)), NftHash, 花費SGB)
-		WhitelistUserApplybuy(AccountId, u8, u8, NftId, BalanceOf),
+		WhitelistUserApplybuy(AccountId, u8, u8, NftId, SGAssetBalance),
 		// 開啟盲盒(開啟人,盲盒種類,盲盒nfthash,獲得new nfthash, props or role的typeid, props等級 若role=0)
 		OpenBlindbox(AccountId, u8, NftId, NftId, u32, u32),
 		// 更新Props升等機率
@@ -322,6 +323,7 @@ decl_error! {
 		EsorNotEnough,
 		// 研究冷卻中
 		ResearchCooling,
+		BalanceNotEnough
 	}
 }
 
@@ -484,7 +486,7 @@ decl_module! {
 		// 新增申購設定
 		#[weight = <T as Config>::WeightInfo::set_applybuy_whitelist()]
 		fn add_applybuy_setting(origin,
-			applybuy_setting: ApplybuySetting<<T as pallet_timestamp::Config>::Moment, BalanceOf<T>, T::AccountId>,
+			applybuy_setting: ApplybuySetting<<T as pallet_timestamp::Config>::Moment, T::SGAssetBalance, T::AccountId, T::AssetId>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
@@ -498,6 +500,10 @@ decl_module! {
 			let new_end_time_ms = TryInto::<u64>::try_into(new_end_time).ok().unwrap(); // convert to u64
 			ensure!(new_end_time_ms > new_start_time_ms, Error::<T>::ApplybuyEndLessThenStart);
 
+			// check asset_id exist
+			let asset = SubGameAssets::Asset::<T>::get(applybuy_setting.asset_id);
+			ensure!(asset != None, Error::<T>::NotFoundAsset);
+			
 			// 檢查price
 			ensure!(applybuy_setting.role_price > 0_u32.into(), Error::<T>::InputDataInvalid);
 			ensure!(applybuy_setting.props_price > 0_u32.into(), Error::<T>::InputDataInvalid);
@@ -518,7 +524,7 @@ decl_module! {
 		#[weight = <T as Config>::WeightInfo::set_applybuy_whitelist()]
 		fn update_applybuy_setting(origin,
 			applybuy_batch_id: u8,
-			new_applybuy_setting: ApplybuySetting<<T as pallet_timestamp::Config>::Moment, BalanceOf<T>, T::AccountId>,
+			new_applybuy_setting: ApplybuySetting<<T as pallet_timestamp::Config>::Moment, T::SGAssetBalance, T::AccountId, T::AssetId>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
@@ -528,6 +534,10 @@ decl_module! {
 			// 檢查price
 			ensure!(new_applybuy_setting.role_price > 0_u32.into(), Error::<T>::InputDataInvalid);
 			ensure!(new_applybuy_setting.props_price > 0_u32.into(), Error::<T>::InputDataInvalid);
+
+			// check asset_id exist
+			let asset = SubGameAssets::Asset::<T>::get(new_applybuy_setting.asset_id);
+			ensure!(asset != None, Error::<T>::NotFoundAsset);
 			
 			ApplybuySet::<T>::try_mutate_exists(applybuy_batch_id, |applybuy_setting| {
 				let _applybuy_setting = applybuy_setting.as_mut().ok_or( Error::<T>::NotFoundData)?;
@@ -560,7 +570,7 @@ decl_module! {
 		// 新增申購設定(白名單)
 		#[weight = <T as Config>::WeightInfo::set_applybuy_whitelist()]
 		fn add_applybuy_whitelist_setting(origin,
-			applybuy_setting: ApplybuySetting<<T as pallet_timestamp::Config>::Moment, BalanceOf<T>, T::AccountId>,
+			applybuy_setting: ApplybuySetting<<T as pallet_timestamp::Config>::Moment, T::SGAssetBalance, T::AccountId, T::AssetId>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
@@ -570,7 +580,11 @@ decl_module! {
 			// 檢查price
 			ensure!(applybuy_setting.role_price > 0_u32.into(), Error::<T>::InputDataInvalid);
 			ensure!(applybuy_setting.props_price > 0_u32.into(), Error::<T>::InputDataInvalid);
-			
+
+			// check asset_id exist
+			let asset = SubGameAssets::Asset::<T>::get(applybuy_setting.asset_id);
+			ensure!(asset != None, Error::<T>::NotFoundAsset);
+
 			// 檢查資料 start < end
 			let new_start_time = applybuy_setting.start_time;
 			let new_start_time_ms = TryInto::<u64>::try_into(new_start_time).ok().unwrap(); // convert to u64
@@ -594,7 +608,7 @@ decl_module! {
 		#[weight = <T as Config>::WeightInfo::set_applybuy_whitelist()]
 		fn update_applybuy_whitelist_setting(origin,
 			applybuy_batch_id: u8,
-			new_applybuy_setting: ApplybuySetting<<T as pallet_timestamp::Config>::Moment, BalanceOf<T>, T::AccountId>,
+			new_applybuy_setting: ApplybuySetting<<T as pallet_timestamp::Config>::Moment, T::SGAssetBalance, T::AccountId, T::AssetId>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
@@ -604,7 +618,11 @@ decl_module! {
 			// 檢查price
 			ensure!(new_applybuy_setting.role_price > 0_u32.into(), Error::<T>::InputDataInvalid);
 			ensure!(new_applybuy_setting.props_price > 0_u32.into(), Error::<T>::InputDataInvalid);
-			
+
+			// check asset_id exist
+			let asset = SubGameAssets::Asset::<T>::get(new_applybuy_setting.asset_id);
+			ensure!(asset != None, Error::<T>::NotFoundAsset);
+
 			ApplybuyWhitelistSet::<T>::try_mutate_exists(applybuy_batch_id, |applybuy_setting| {
 				let _applybuy_setting = applybuy_setting.as_mut().ok_or( Error::<T>::NotFoundData)?;
 				
@@ -650,6 +668,10 @@ decl_module! {
 			// check applybuy_batch exist
 			let _applybuy_setting = ApplybuySet::<T>::try_get(&applybuy_batch_id).map_err(|_| Error::<T>::UnknownApplybuy)?;
 
+			// check asset_id exist
+			let asset = SubGameAssets::Asset::<T>::get(_applybuy_setting.asset_id);
+			ensure!(asset != None, Error::<T>::NotFoundAsset);
+
 			// 是否為申購期間
 			let now = pallet_timestamp::Pallet::<T>::get();
 			let now_ms = TryInto::<u64>::try_into(now).ok().unwrap(); // convert to u64
@@ -681,14 +703,18 @@ decl_module! {
 			}
 			
 			// 計算所需SGB
-			let price: BalanceOf<T>;
+			let price: T::SGAssetBalance;
 			if blindbox_type_id == BLINDBOX_TYPE_ID_ROLE {
 				price = _applybuy_setting.role_price
 			}else{
 				price = _applybuy_setting.props_price
 			}
 			let amount = price * quantity.into();
-			T::Balances::transfer(&sender, &_applybuy_setting.income_account, amount, ExistenceRequirement::KeepAlive)?;
+
+			// 檢查餘額足夠
+			ensure!(SubGameAssets::Module::<T>::balance(_applybuy_setting.asset_id, sender.clone()) >= amount, Error::<T>::BalanceNotEnough);
+
+			SubGameAssets::Module::<T>::_transfer(sender.clone(), _applybuy_setting.asset_id, _applybuy_setting.income_account.clone(), amount)?;
 
 			// update storage
 			ApplyboughtCount::mutate(applybuy_batch_id, |count_data| *count_data = _applybought_count);
@@ -729,6 +755,10 @@ decl_module! {
 			// check applybuy_batch exist
 			let _applybuy_setting = ApplybuyWhitelistSet::<T>::try_get(&applybuy_batch_id).map_err(|_| Error::<T>::UnknownApplybuy)?;
 
+			// check asset_id exist
+			let asset = SubGameAssets::Asset::<T>::get(_applybuy_setting.asset_id);
+			ensure!(asset != None, Error::<T>::NotFoundAsset);
+			
 			// 檢查是否為白名單
 			ensure!(ApplybuyWhitelist::<T>::contains_key(&sender) , Error::<T>::NotWhitelist);
 
@@ -763,14 +793,18 @@ decl_module! {
 			}
 			
 			// 計算所需SGB
-			let price: BalanceOf<T>;
+			let price: T::SGAssetBalance;
 			if blindbox_type_id == BLINDBOX_TYPE_ID_ROLE {
 				price = _applybuy_setting.role_price
 			}else{
 				price = _applybuy_setting.props_price
 			}
 			let amount = price * quantity.into();
-			T::Balances::transfer(&sender, &_applybuy_setting.income_account, amount, ExistenceRequirement::KeepAlive)?;
+
+			// 檢查餘額足夠
+			ensure!(SubGameAssets::Module::<T>::balance(_applybuy_setting.asset_id, sender.clone()) >= amount, Error::<T>::BalanceNotEnough);
+
+			SubGameAssets::Module::<T>::_transfer(sender.clone(), _applybuy_setting.asset_id, _applybuy_setting.income_account.clone(), amount)?;
 
 			// update storage
 			ApplyboughtWhitelistCount::mutate(applybuy_batch_id, |count_data| *count_data = _applybought_count);

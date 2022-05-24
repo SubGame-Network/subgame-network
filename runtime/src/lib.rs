@@ -1101,11 +1101,13 @@ impl pallet_game_recharge_pro::Config for Runtime {
 /*** Pallet sonic racer ***/
 ord_parameter_types! {
     pub const SonicRacerOwner: AccountId = AccountId::from(
+        // 這私鑰有提供給廠商，只能用在測試
         // 0x6662e9bcbe30bf5da25d08d51c62ba8ac5dfcb0e8231e5b2432f53d8b1d3da42	
         // bounce crew own spice time mobile whisper collect chef crouch prevent gallery
         hex_literal::hex!("6662e9bcbe30bf5da25d08d51c62ba8ac5dfcb0e8231e5b2432f53d8b1d3da42")
     );
     pub const PackagePoolAddress: AccountId = AccountId::from(
+        // 這私鑰有提供給廠商，只能用在測試
         // 0x6662e9bcbe30bf5da25d08d51c62ba8ac5dfcb0e8231e5b2432f53d8b1d3da42	
         // bounce crew own spice time mobile whisper collect chef crouch prevent gallery
         hex_literal::hex!("6662e9bcbe30bf5da25d08d51c62ba8ac5dfcb0e8231e5b2432f53d8b1d3da42")

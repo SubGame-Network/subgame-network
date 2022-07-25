@@ -144,7 +144,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("subgame"),
     impl_name: create_runtime_str!("subgame"),
     authoring_version: 1,
-    spec_version: 175,
+    spec_version: 176,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -347,7 +347,7 @@ pallet_staking_reward_curve::build! {
 
 parameter_types! {
 	pub const SessionsPerEra: sp_staking::SessionIndex = 24; // 24 hours
-	pub const BondingDuration: pallet_staking::EraIndex = 7; // 24 * 7 hours
+	pub const BondingDuration: pallet_staking::EraIndex = 0; // 24 * 7 hours
 	pub const SlashDeferDuration: pallet_staking::EraIndex = 1; // 24 hours
 	pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
 	pub const ElectionLookahead: BlockNumber = EPOCH_DURATION_IN_BLOCKS / 4;
